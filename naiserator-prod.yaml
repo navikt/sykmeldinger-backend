@@ -36,21 +36,21 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: /azuread/data/dev/creds/sykmeldinger-backend
+      - kvPath: /azuread/data/prod/creds/sykmeldinger-backend
         mountPath: /secrets/azuread/sykmeldinger-backend
-      - kvPath: serviceuser/data/dev/srvsykm-backend
+      - kvPath: serviceuser/data/prod/srvsykm-backend
         mountPath: /secrets/serviceuser
-      - kvPath: /kv/preprod/fss/sykmeldinger-backend/default
+      - kvPath: /kv/prod/fss/sykmeldinger-backend/default
         mountPath: /secrets/default
   ingresses:
-    - "https://sykmeldinger-backend.nais.preprod.local"
+    - "https://sykmeldinger-backend.nais.adeo.no"
   webproxy: true
   env:
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
-      value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: JWT_ISSUER
-      value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
     - name: STS_OIDC_ISSUER
-      value: https://security-token-service.nais.preprod.local
+      value: https://security-token-service.nais.adeo.no
     - name: STS_OIDC_AUDIENCE
-      value: preprod.local
+      value: adeo.no
