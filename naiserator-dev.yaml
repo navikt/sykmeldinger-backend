@@ -41,7 +41,7 @@ spec:
       - kvPath: serviceuser/data/dev/srvsykm-backend
         mountPath: /secrets/serviceuser
       - kvPath: /kv/preprod/fss/sykmeldinger-backend/default
-        mountPath: /secrets/default
+        mountPath: /var/run/secrets/nais.io/vault
   ingresses:
     - "https://sykmeldinger-backend.nais.preprod.local"
   webproxy: true
