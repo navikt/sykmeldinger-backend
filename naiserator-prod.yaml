@@ -1,0 +1,56 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: sykmeldinger-backend
+  namespace: default
+  labels:
+    team: teamsykefravr
+spec:
+  image: {{ image }}
+  replicas:
+    min: 2
+    max: 2
+    cpuThresholdPercentage: 90
+  port: 8080
+  liveness:
+    path: /is_alive
+    initialDelay: 10
+    timeout: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  readiness:
+    path: /is_ready
+    initialDelay: 30
+    periodSeconds: 5
+    timeout: 5
+  prometheus:
+    enabled: true
+    path: /prometheus
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 400m
+      memory: 768Mi
+  vault:
+    enabled: true
+    paths:
+      - kvPath: /azuread/data/prod/creds/sykmeldinger-backend
+        mountPath: /secrets/azuread/sykmeldinger-backend
+      - kvPath: serviceuser/data/prod/srvsykm-backend
+        mountPath: /secrets/serviceuser
+      - kvPath: /kv/prod/fss/sykmeldinger-backend/default
+        mountPath: /var/run/secrets/nais.io/vault
+  ingresses:
+    - "https://sykmeldinger-backend.nais.adeo.no"
+  webproxy: true
+  env:
+    - name: KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
+    - name: JWT_ISSUER
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
+    - name: STS_OIDC_ISSUER
+      value: https://security-token-service.nais.adeo.no
+    - name: STS_OIDC_AUDIENCE
+      value: adeo.no
