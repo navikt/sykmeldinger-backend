@@ -1,0 +1,23 @@
+{
+  "topics": [
+    {
+      "topicName": "aapen-syfo-sykmeldingstatus-leesah-v1",
+      "members": [
+        {"member":"srvsykm-backend", "role":"PRODUCER"},
+        {"member":"srvsyfosmregister", "role":"PRODUCER"},
+        {"member":"srvsyfosmregister", "role":"CONSUMER"},
+        {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
+        {"member":"s151890", "role":"MANAGER"},
+        {"member":"k143566", "role":"MANAGER"},
+        {"member":"f133008", "role":"MANAGER"},
+        {"member":"n157016", "role":"MANAGER"},
+        {"member":"k157140", "role":"MANAGER"},
+        {"member":"H157812", "role":"MANAGER"}
+      ],
+      "numPartitions": 3,
+      "configEntries": {
+        "retention.ms": "-1"
+      }
+    }
+  ]
+}

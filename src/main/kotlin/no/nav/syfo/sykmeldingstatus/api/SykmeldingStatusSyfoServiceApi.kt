@@ -7,7 +7,6 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import no.nav.syfo.log
-import no.nav.syfo.sykmeldingstatus.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
 fun Route.registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService: SykmeldingStatusService) {
@@ -16,7 +15,7 @@ fun Route.registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService: Sykmel
         val sykmeldingId = call.parameters["sykmeldingsid"]!!
         val sykmeldingStatusEventDTO = call.receive<SykmeldingStatusEventDTO>()
         try {
-            sykmeldingStatusService.registrerStatus(sykmeldingStatusEventDTO, sykmeldingId)
+            sykmeldingStatusService.registrerStatus(sykmeldingStatusEventDTO = sykmeldingStatusEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice")
             call.respond(HttpStatusCode.Created)
         } catch (ex: Exception) {
             log.error("Internal server error", ex)

@@ -16,7 +16,7 @@ fun Route.registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService: Sykme
         val sykmeldingBekreftEventDTO = call.receive<SykmeldingBekreftEventDTO>()
 
         try {
-            sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO, sykmeldingId)
+            sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = sykmeldingBekreftEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice")
             log.info("Bekreftet sykmelding {}", sykmeldingId)
             call.respond(HttpStatusCode.Created)
         } catch (ex: Exception) {

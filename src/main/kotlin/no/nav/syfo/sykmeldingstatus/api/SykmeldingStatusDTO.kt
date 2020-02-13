@@ -1,17 +1,25 @@
 package no.nav.syfo.sykmeldingstatus.api
 
-import java.time.LocalDateTime
-import no.nav.syfo.sykmeldingstatus.StatusEventDTO
+import java.time.ZonedDateTime
+
+data class SykmeldingStatusEventDTO(
+    val statusEvent: StatusEventDTO,
+    val timestamp: ZonedDateTime
+)
+
+enum class StatusEventDTO {
+    APEN, AVBRUTT, UTGATT, SENDT, BEKREFTET
+}
 
 data class SykmeldingStatusDTO(
-    val timestamp: LocalDateTime,
+    val timestamp: ZonedDateTime,
     val statusEvent: StatusEventDTO,
     val arbeidsgiver: ArbeidsgiverStatusDTO?,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 
 data class SykmeldingSendEventDTO(
-    val timestamp: LocalDateTime,
+    val timestamp: ZonedDateTime,
     val arbeidsgiver: ArbeidsgiverStatusDTO,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>
 )
@@ -23,7 +31,7 @@ data class ArbeidsgiverStatusDTO(
 )
 
 data class SykmeldingBekreftEventDTO(
-    val timestamp: LocalDateTime,
+    val timestamp: ZonedDateTime,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 
