@@ -21,7 +21,9 @@ val mockkVersion = "1.9.3"
 val javaTimeAdapterVersion = "1.1.3"
 val junitJupiterVersion = "5.4.0"
 val nimbusdsVersion = "7.5.1"
-
+val jedisVersion = "3.1.0"
+val spekVersion = "2.0.9"
+val testcontainersVersion = "1.12.5"
 plugins {
     kotlin("jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
@@ -79,6 +81,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
+    implementation("redis.clients:jedis:$jedisVersion")
+
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
@@ -89,6 +93,15 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
+
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+
+    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
 }
 
 
@@ -113,10 +126,10 @@ tasks {
     }
 
     withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            showStandardStreams = true
+        useJUnitPlatform {
+            includeEngines("spek2")
         }
+        testLogging.showStandardStreams = true
     }
 
     "check" {

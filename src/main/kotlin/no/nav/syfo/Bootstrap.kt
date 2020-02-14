@@ -16,6 +16,8 @@ import no.nav.syfo.sykmeldingstatus.kafka.KafkaFactory.Companion.getSykmeldingSt
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sykmeldinger-backend")
 
@@ -39,6 +41,8 @@ fun main() {
 
     DefaultExports.initialize()
 
+    val jedisPool = JedisPool(JedisPoolConfig(), env.redisHost, env.redisPort)
+
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
     val producerConfig = kafkaBaseConfig.toProducerConfig(
         "${env.applicationName}-producer", valueSerializer = StringSerializer::class
@@ -52,7 +56,8 @@ fun main() {
         jwkProvider,
         wellKnown.issuer,
         sykmeldingStatusKafkaProducer,
-        jwkProviderStsOidc
+        jwkProviderStsOidc,
+        jedisPool
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
