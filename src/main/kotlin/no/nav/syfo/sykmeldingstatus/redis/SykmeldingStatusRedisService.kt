@@ -28,8 +28,10 @@ class SykmeldingStatusRedisService(private val jedisPool: JedisPool) {
         var jedis: Jedis? = null
         return try {
             jedis = jedisPool.resource
-            val stringValue = jedis.get(sykmeldingId)
-            objectMapper.readValue(stringValue, SykmeldingStatusRedisModel::class.java)
+            when (val stringValue = jedis.get(sykmeldingId)) {
+                null -> null
+                else -> objectMapper.readValue(stringValue, SykmeldingStatusRedisModel::class.java)
+            }
         } catch (ex: Exception) {
             log.error("Could not get redis for sykmeldingId {}", sykmeldingId, ex)
             null

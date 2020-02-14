@@ -3,6 +3,7 @@ package no.nav.syfo.sykmeldingstatus.redis
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import no.nav.syfo.sykmeldingstatus.StatusEventDTO
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -24,6 +25,11 @@ class SykmeldingStatusRedisServiceTest : Spek({
             sykmeldingStatusRedisService.updateStatus(status, "123")
             val redisStatus = sykmeldingStatusRedisService.getStatus("123")
             redisStatus shouldEqual status
+        }
+
+        it("Get sykmelding status empty") {
+            val status = sykmeldingStatusRedisService.getStatus("1234")
+            status shouldBe null
         }
     }
 })
