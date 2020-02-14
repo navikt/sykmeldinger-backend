@@ -35,6 +35,8 @@ import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingStatusSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
+import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import redis.clients.jedis.JedisPool
 
 @KtorExperimentalAPI
 fun createApplicationEngine(
@@ -44,7 +46,8 @@ fun createApplicationEngine(
     jwkProvider: JwkProvider,
     issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
-    jwkProviderStsOidc: JwkProvider
+    jwkProviderStsOidc: JwkProvider,
+    jedisPool: JedisPool
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -71,7 +74,8 @@ fun createApplicationEngine(
         }
 
         val sykmeldingService = SykmeldingService()
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer)
+        val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService)
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {
