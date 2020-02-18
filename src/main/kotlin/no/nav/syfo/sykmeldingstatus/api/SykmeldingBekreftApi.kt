@@ -12,8 +12,7 @@ import no.nav.syfo.hentsykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
 fun Route.registerSykmeldingBekreftApi(sykmeldingService: SykmeldingService, sykmeldingStatusService: SykmeldingStatusService) {
-
-    post("/sykmeldinger/{sykmeldingsid}/bekreft") {
+    post("/api/v1/sykmeldinger/{sykmeldingsid}/bekreft") {
         val sykmeldingsid = call.parameters["sykmeldingsid"]!!
         val principal: JWTPrincipal = call.authentication.principal()!!
         val subject = principal.payload.subject

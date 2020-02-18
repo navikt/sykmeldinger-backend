@@ -10,15 +10,15 @@ import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 
-fun SykmeldingStatusEventDTO.toSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
+fun SykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, this.statusEvent.tilStatusEventDTO(), null, null)
 }
 
-fun SykmeldingSendEventDTO.toSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
+fun SykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, StatusEventDTO.SENDT, this.arbeidsgiver.tilArbeidsgiverStatusDTO(), tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
 }
 
-fun SykmeldingBekreftEventDTO.toSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
+fun SykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, StatusEventDTO.BEKREFTET, null, tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
 }
 
