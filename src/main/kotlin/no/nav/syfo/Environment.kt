@@ -11,7 +11,7 @@ data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "sykmeldinger-backend"),
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
-    val sykmeldingStatusTopic: String = getEnvVar("KAFKA_SYKMELDING_STATUS_TOPIC", "aapen-sykmelding-status"),
+    val sykmeldingStatusTopic: String = getEnvVar("KAFKA_SYKMELDING_STATUS_TOPIC", "aapen-syfo-sykmeldingstatus-leesah-v1"),
     val stsOidcIssuer: String = getEnvVar("STS_OIDC_ISSUER"),
     val stsOidcAudience: String = getEnvVar("STS_OIDC_AUDIENCE"),
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.default.svc.nais.local"),
