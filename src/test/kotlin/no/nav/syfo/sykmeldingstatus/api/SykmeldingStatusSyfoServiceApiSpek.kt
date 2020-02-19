@@ -21,7 +21,8 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockkClass
 import java.nio.file.Paths
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.setupAuth
@@ -57,7 +58,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
                 val sykmeldingId = "123"
                 every { sykmeldingStatusService.registrerStatus(any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
-                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, ZonedDateTime.now())))
+                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                 }) {
                     response.status() shouldEqual HttpStatusCode.Created
@@ -94,7 +95,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
 
             it("Should authenticate") {
                 val sykmeldingId = "123"
-                val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, ZonedDateTime.now())
+                val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))
                 every { sykmeldingStatusService.registrerStatus(any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
                     setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
@@ -108,7 +109,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
                 }
             }
             it("Should not authenticate") {
-                val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, ZonedDateTime.now())
+                val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/123/status") {
                     setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
                     addHeader("Content-Type", ContentType.Application.Json.toString())

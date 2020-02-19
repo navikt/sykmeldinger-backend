@@ -7,7 +7,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.hentsykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
@@ -17,7 +18,7 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingService: SykmeldingService, syk
         val principal: JWTPrincipal = call.authentication.principal()!!
         val subject = principal.payload.subject
         if (sykmeldingService.erEier(sykmeldingsid, subject)) {
-            sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(ZonedDateTime.now(), null), sykmeldingId = sykmeldingsid, source = "user")
+            sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null), sykmeldingId = sykmeldingsid, source = "user")
             call.respond(HttpStatusCode.OK)
         } else {
             call.respond(HttpStatusCode.NotFound)

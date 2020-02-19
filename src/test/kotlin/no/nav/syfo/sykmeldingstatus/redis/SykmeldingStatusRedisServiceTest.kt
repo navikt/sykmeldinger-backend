@@ -1,7 +1,7 @@
 package no.nav.syfo.sykmeldingstatus.redis
 
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldEqual
@@ -21,7 +21,7 @@ class SykmeldingStatusRedisServiceTest : Spek({
 
     describe("SykmeldingStatusRedisService") {
         it("Should update status in redis") {
-            val status = SykmeldingStatusRedisModel(ZonedDateTime.now(ZoneOffset.UTC), StatusEventDTO.APEN, null, null)
+            val status = SykmeldingStatusRedisModel(OffsetDateTime.now(ZoneOffset.UTC), StatusEventDTO.APEN, null, null)
             sykmeldingStatusRedisService.updateStatus(status, "123")
             val redisStatus = sykmeldingStatusRedisService.getStatus("123")
             redisStatus shouldEqual status

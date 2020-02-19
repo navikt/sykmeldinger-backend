@@ -1,6 +1,6 @@
 package no.nav.syfo.sykmeldingstatus.redis
 
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
@@ -9,7 +9,7 @@ import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 
 data class SykmeldingStatusRedisModel(
-    val timestamp: ZonedDateTime,
+    val timestamp: OffsetDateTime,
     val statusEvent: StatusEventDTO,
     val arbeidsgiver: ArbeidsgiverStatusDTO?,
     val sporsmals: List<SporsmalOgSvarDTO>?

@@ -1,10 +1,10 @@
 package no.nav.syfo.sykmeldingstatus.api
 
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 
 data class SykmeldingStatusEventDTO(
     val statusEvent: StatusEventDTO,
-    val timestamp: ZonedDateTime
+    val timestamp: OffsetDateTime
 )
 
 enum class StatusEventDTO {
@@ -12,14 +12,14 @@ enum class StatusEventDTO {
 }
 
 data class SykmeldingStatusDTO(
-    val timestamp: ZonedDateTime,
+    val timestamp: OffsetDateTime,
     val statusEvent: StatusEventDTO,
     val arbeidsgiver: ArbeidsgiverStatusDTO?,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 
 data class SykmeldingSendEventDTO(
-    val timestamp: ZonedDateTime,
+    val timestamp: OffsetDateTime,
     val arbeidsgiver: ArbeidsgiverStatusDTO,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>
 )
@@ -31,7 +31,7 @@ data class ArbeidsgiverStatusDTO(
 )
 
 data class SykmeldingBekreftEventDTO(
-    val timestamp: ZonedDateTime,
+    val timestamp: OffsetDateTime,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 

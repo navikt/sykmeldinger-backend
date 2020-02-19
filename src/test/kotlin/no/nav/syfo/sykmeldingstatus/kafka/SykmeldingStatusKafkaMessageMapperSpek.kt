@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmeldingstatus.kafka
 
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.ShortNameDTO
@@ -18,7 +19,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
     describe("Test av tilSykmeldingStatusKafkaEventDTO - send") {
         it("Mapper SykmeldingSendEventDTO riktig") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingSendEventDTO = SykmeldingSendEventDTO(
                 timestamp,
                 ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
@@ -47,7 +48,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
     describe("Test av tilSykmeldingStatusKafkaEventDTO - bekreft") {
         it("Mapper SykmeldingBekreftEventDTO med spørsmål riktig") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(timestamp, lagSporsmalOgSvarDTOListe())
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
@@ -80,7 +81,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         }
 
         it("Mapper SykmeldingBekreftEventDTO uten spørsmål riktig") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingBekreftEventDTOUtenSpm = SykmeldingBekreftEventDTO(timestamp, null)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTOUtenSpm.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
@@ -93,7 +94,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         }
 
         it("Mapper sykmeldingBekreftEventDTO med tom spørsmålsliste riktig") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingBekreftEventDTOUtenSpm = SykmeldingBekreftEventDTO(timestamp, emptyList())
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTOUtenSpm.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
@@ -108,7 +109,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
     describe("Test av tilSykmeldingStatusKafkaEventDTO for SykmeldingStatusEventDTO") {
         it("Mapper SykmeldingStatusEventDTO for AVBRUTT") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
@@ -121,7 +122,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         }
 
         it("Mapper SykmeldingStatusEventDTO for APEN riktig") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)

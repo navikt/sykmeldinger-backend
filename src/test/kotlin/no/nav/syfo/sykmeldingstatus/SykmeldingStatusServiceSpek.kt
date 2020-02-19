@@ -6,7 +6,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.verify
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingBekreftEventDTO
@@ -31,7 +32,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
     describe("Test av at SykmeldingStatusService skriver til kafka, redis og sjekker tilgang (etterhvert)") {
         it("registrerStatus legger melding på kafka og oppdaterer redis") {
-            val timestamp = ZonedDateTime.now()
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             sykmeldingStatusService.registrerStatus(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp), sykmeldingId, "syfoservice")
 
             verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice")) }

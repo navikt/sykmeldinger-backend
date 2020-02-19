@@ -20,7 +20,8 @@ import io.ktor.server.testing.setBody
 import io.mockk.every
 import io.mockk.mockkClass
 import java.nio.file.Paths
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.setupAuth
@@ -130,7 +131,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
 
 fun opprettSykmeldingBekreftEventDTO(): SykmeldingBekreftEventDTO =
     SykmeldingBekreftEventDTO(
-        ZonedDateTime.now(),
+        OffsetDateTime.now(ZoneOffset.UTC),
         listOf(SporsmalOgSvarDTO("Sykmeldt fra ", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "Frilanser"),
             SporsmalOgSvarDTO("Har forsikring?", ShortNameDTO.FORSIKRING, SvartypeDTO.JA_NEI, "Ja"),
             SporsmalOgSvarDTO("Hatt fravær?", ShortNameDTO.FRAVAER, SvartypeDTO.JA_NEI, "Ja"),
