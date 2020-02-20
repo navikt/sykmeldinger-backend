@@ -9,6 +9,12 @@ import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.features.CallId
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
@@ -25,6 +31,7 @@ import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.client.SyfosmregisterClient
 import no.nav.syfo.hentsykmelding.SykmeldingService
 import no.nav.syfo.hentsykmelding.api.registerSykmeldingApi
 import no.nav.syfo.log
@@ -73,6 +80,21 @@ fun createApplicationEngine(
             }
         }
 
+        val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+            install(JsonFeature) {
+                serializer = JacksonSerializer {
+                    registerKotlinModule()
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+            expectSuccess = false
+        }
+        val httpClient = HttpClient(Apache, config)
+
+        val syfosmregisterClient = SyfosmregisterClient(env.syfosmregisterUrl, httpClient)
+
         val sykmeldingService = SykmeldingService()
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService)
@@ -80,7 +102,7 @@ fun createApplicationEngine(
             registerNaisApi(applicationState)
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
-                registerSykmeldingBekreftApi(sykmeldingService, sykmeldingStatusService)
+                registerSykmeldingBekreftApi(syfosmregisterClient, sykmeldingStatusService)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)
