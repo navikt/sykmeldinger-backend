@@ -18,7 +18,7 @@ class SyfosmregisterClient(private val endpointUrl: String, private val httpClie
         val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
             accept(ContentType.Application.Json)
             headers {
-                append("Authorization", "Bearer $token")
+                append("Authorization", token)
                 append("Nav-CallId", sykmeldingId)
             }
         }.execute()
