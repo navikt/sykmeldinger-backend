@@ -22,12 +22,12 @@ class SyfosmregisterClient(private val endpointUrl: String, private val httpClie
                 append("Nav-CallId", sykmeldingId)
             }
         }.execute()
-        if (httpResponse.status == HttpStatusCode.InternalServerError) {
-            log.error("Noe gikk galt ved sjekking av status eller tilgang for sykmeldingId {}", sykmeldingId)
-            throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId")
-        }
-        when (HttpStatusCode.Forbidden) {
-            httpResponse.status -> {
+        when (httpResponse.status) {
+            HttpStatusCode.InternalServerError -> {
+                log.error("Noe gikk galt ved sjekking av status eller tilgang for sykmeldingId {}", sykmeldingId)
+                throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId")
+            }
+            HttpStatusCode.Forbidden -> {
                 log.warn("Bruker har ikke tilgang til sykmelding med id $sykmeldingId")
                 throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId")
             }
