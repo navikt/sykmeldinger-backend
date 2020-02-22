@@ -60,13 +60,13 @@ class SyfosmregisterClientSpek : Spek({
             get("/smreg/sykmeldinger/{sykmeldingsid}/status") {
                 when {
                     call.parameters["sykmeldingsid"] == "1" ->
-                        call.respond(SykmeldingStatusEventDTO(StatusEventDTO.APEN, timestamp))
+                        call.respond(listOf(SykmeldingStatusEventDTO(StatusEventDTO.APEN, timestamp)))
                     call.parameters["sykmeldingsid"] == "2" ->
-                        call.respond(SykmeldingStatusEventDTO(StatusEventDTO.SENDT, timestamp))
+                        call.respond(listOf(SykmeldingStatusEventDTO(StatusEventDTO.SENDT, timestamp)))
                     call.parameters["sykmeldingsid"] == "3" ->
-                        call.respond(SykmeldingStatusEventDTO(StatusEventDTO.BEKREFTET, timestamp))
+                        call.respond(listOf(SykmeldingStatusEventDTO(StatusEventDTO.BEKREFTET, timestamp)))
                     call.parameters["sykmeldingsid"] == "4" ->
-                        call.respond(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp))
+                        call.respond(listOf(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp)))
                     call.parameters["sykmeldingsid"] == "5" ->
                         call.respond(HttpStatusCode.Forbidden)
                     else -> call.respond(HttpStatusCode.InternalServerError)

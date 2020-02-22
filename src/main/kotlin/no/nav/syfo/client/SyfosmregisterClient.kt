@@ -33,7 +33,8 @@ class SyfosmregisterClient(private val endpointUrl: String, private val httpClie
             }
             else -> {
                 log.info("Hentet status for sykmeldingId {}", sykmeldingId)
-                return httpResponse.call.response.receive()
+                val statusliste: List<SykmeldingStatusEventDTO> = httpResponse.call.response.receive()
+                return statusliste.first()
             }
         }
     }
