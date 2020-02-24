@@ -16,6 +16,7 @@ data class Environment(
     val stsOidcAudience: String = getEnvVar("STS_OIDC_AUDIENCE"),
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.default.svc.nais.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
+    val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL")
 ) : KafkaConfig
 

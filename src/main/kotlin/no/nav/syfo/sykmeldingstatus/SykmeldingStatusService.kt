@@ -12,19 +12,16 @@ import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 class SykmeldingStatusService(private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer, private val sykmeldingStatusJedisService: SykmeldingStatusRedisService) {
 
     fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String) {
-        // tilgangskontroll!
         sykmeldingStatusKafkaProducer.send(sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source)
         sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
     }
 
     fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String) {
-        // tilgangskontroll!
         sykmeldingStatusKafkaProducer.send(sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source)
         sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
     }
 
     fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String) {
-        // tilgangskontroll!
         sykmeldingStatusKafkaProducer.send(sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source)
         sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
     }
