@@ -9,6 +9,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.client.SyfosmregisterClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
 fun Route.registerSykmeldingBekreftApi(syfosmregisterClient: SyfosmregisterClient, sykmeldingStatusService: SykmeldingStatusService) {
@@ -22,6 +23,7 @@ fun Route.registerSykmeldingBekreftApi(syfosmregisterClient: SyfosmregisterClien
         } else {
             if (kanBekrefte(sisteStatus, sykmeldingsid)) {
                 sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null), sykmeldingId = sykmeldingsid, source = "user")
+                BEKREFTET_AV_BRUKER_COUNTER.inc()
                 call.respond(HttpStatusCode.Accepted)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
