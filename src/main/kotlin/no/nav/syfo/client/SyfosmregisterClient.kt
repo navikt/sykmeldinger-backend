@@ -5,7 +5,7 @@ import io.ktor.client.call.receive
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.response.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import no.nav.syfo.log
@@ -15,13 +15,13 @@ class SyfosmregisterClient(private val endpointUrl: String, private val httpClie
 
     suspend fun hentSykmeldingstatus(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
         log.info("Henter status for sykmeldingId {}", sykmeldingId)
-        val httpResponse = httpClient.get<HttpStatement>("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
+        val httpResponse = httpClient.get<HttpResponse>("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
             accept(ContentType.Application.Json)
             headers {
                 append("Authorization", token)
                 append("Nav-CallId", sykmeldingId)
             }
-        }.execute()
+        }
         when (httpResponse.status) {
             HttpStatusCode.InternalServerError -> {
                 log.error("Noe gikk galt ved sjekking av status eller tilgang for sykmeldingId {}", sykmeldingId)
