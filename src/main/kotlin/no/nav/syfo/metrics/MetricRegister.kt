@@ -13,6 +13,6 @@ val HTTP_HISTOGRAM: Histogram = Histogram.Builder()
 
 val BEKREFTET_AV_BRUKER_COUNTER: Counter = Counter.build()
     .namespace(METRICS_NS)
-    .name("bereftet_counter")
+    .name("bekreftet_counter")
     .help("Antall sykmeldinger bekreftet av bruker")
     .register()
