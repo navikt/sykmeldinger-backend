@@ -19,6 +19,7 @@ import org.spekframework.spek2.style.specification.describe
 
 class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingId = "id"
+    val fnr = "fnr"
 
     val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
     val sykmeldingStatusJedisService = mockkClass(SykmeldingStatusRedisService::class)
@@ -26,38 +27,30 @@ class SykmeldingStatusServiceSpek : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        every { sykmeldingStatusKafkaProducer.send(any(), any()) } just Runs
+        every { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
         every { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
     }
 
-    describe("Test av at SykmeldingStatusService skriver til kafka, redis og sjekker tilgang (etterhvert)") {
+    describe("Test av at SykmeldingStatusService skriver til kafka og redis") {
         it("registrerStatus legger melding på kafka og oppdaterer redis") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-            sykmeldingStatusService.registrerStatus(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp), sykmeldingId, "syfoservice")
+            sykmeldingStatusService.registrerStatus(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp), sykmeldingId, "syfoservice", fnr)
 
-            verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice")) }
+            verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice"), fnr) }
             verify { sykmeldingStatusJedisService.updateStatus(any(), sykmeldingId) }
         }
 
         it("registrerSendt legger melding på kafka og oppdaterer redis") {
-            sykmeldingStatusService.registrerSendt(opprettSykmeldingSendEventDTO(), sykmeldingId, "syfoservice")
+            sykmeldingStatusService.registrerSendt(opprettSykmeldingSendEventDTO(), sykmeldingId, "syfoservice", fnr)
 
-            verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice")) }
+            verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice"), fnr) }
             verify { sykmeldingStatusJedisService.updateStatus(any(), sykmeldingId) }
         }
 
         it("registrerBekreftet legger melding på kafka og oppdaterer redis") {
-            sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "syfoservice")
+            sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "syfoservice", fnr)
 
-            verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice")) }
-            verify { sykmeldingStatusJedisService.updateStatus(any(), sykmeldingId) }
-        }
-
-        it("registrerBekreftet sjekker tilgang, legger melding på kafka og oppdaterer redis") {
-            sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "user")
-
-            // verifiser tilgangskontroll-sjekk
-            verify { sykmeldingStatusKafkaProducer.send(any(), eq("user")) }
+            verify { sykmeldingStatusKafkaProducer.send(any(), eq("syfoservice"), fnr) }
             verify { sykmeldingStatusJedisService.updateStatus(any(), sykmeldingId) }
         }
     }
