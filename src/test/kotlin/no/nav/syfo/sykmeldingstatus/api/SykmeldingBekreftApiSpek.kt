@@ -41,7 +41,7 @@ class SykmeldingBekreftApiSpek : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        every { sykmeldingStatusService.registrerBekreftet(any(), any(), any()) } just Runs
+        every { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any()) } just Runs
     }
 
     describe("Test SykmeldingBekreftAPI for sluttbruker med tilgangskontroll") {

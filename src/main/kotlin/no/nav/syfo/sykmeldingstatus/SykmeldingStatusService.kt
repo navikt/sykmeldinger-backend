@@ -11,18 +11,18 @@ import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 
 class SykmeldingStatusService(private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer, private val sykmeldingStatusJedisService: SykmeldingStatusRedisService) {
 
-    fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String) {
-        sykmeldingStatusKafkaProducer.send(sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source)
+    fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String) {
+        sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
         sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
     }
 
-    fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String) {
-        sykmeldingStatusKafkaProducer.send(sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source)
+    fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String, fnr: String) {
+        sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
         sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
     }
 
-    fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String) {
-        sykmeldingStatusKafkaProducer.send(sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source)
+    fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String) {
+        sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
         sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
     }
 }

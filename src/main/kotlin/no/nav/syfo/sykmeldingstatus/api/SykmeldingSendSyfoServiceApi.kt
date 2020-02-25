@@ -13,10 +13,11 @@ fun Route.registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService: Sykmeldi
 
     post("/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
+        val fnr = call.request.headers["FNR"]!!
         val sykmeldingSendEventDTO = call.receive<SykmeldingSendEventDTO>()
 
         try {
-            sykmeldingStatusService.registrerSendt(sykmeldingSendEventDTO = sykmeldingSendEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice")
+            sykmeldingStatusService.registrerSendt(sykmeldingSendEventDTO = sykmeldingSendEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr)
             log.info("Sendt sykmelding {}", sykmeldingId)
             call.respond(HttpStatusCode.Created)
         } catch (ex: Exception) {

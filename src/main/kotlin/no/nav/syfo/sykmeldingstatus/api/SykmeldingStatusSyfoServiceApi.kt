@@ -13,9 +13,10 @@ fun Route.registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService: Sykmel
 
     post("/sykmeldinger/{sykmeldingsid}/status") {
         val sykmeldingId = call.parameters["sykmeldingsid"]!!
+        val fnr = call.request.headers["FNR"]!!
         val sykmeldingStatusEventDTO = call.receive<SykmeldingStatusEventDTO>()
         try {
-            sykmeldingStatusService.registrerStatus(sykmeldingStatusEventDTO = sykmeldingStatusEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice")
+            sykmeldingStatusService.registrerStatus(sykmeldingStatusEventDTO = sykmeldingStatusEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr)
             call.respond(HttpStatusCode.Created)
         } catch (ex: Exception) {
             log.error("Internal server error", ex)

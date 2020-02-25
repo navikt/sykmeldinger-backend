@@ -56,10 +56,11 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
 
             it("Should successfully post Status") {
                 val sykmeldingId = "123"
-                every { sykmeldingStatusService.registrerStatus(any(), any(), any()) } returns Unit
+                every { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
                     setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
@@ -96,7 +97,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
             it("Should authenticate") {
                 val sykmeldingId = "123"
                 val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))
-                every { sykmeldingStatusService.registrerStatus(any(), any(), any()) } returns Unit
+                every { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
                     setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -104,6 +105,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
                             "preprod.local",
                             subject = "srvsyfoservice",
                             issuer = env.stsOidcIssuer)}")
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
@@ -118,6 +120,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
                             "preprod.local",
                             subject = "srvsyforegister",
                             issuer = env.stsOidcIssuer)}")
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }

@@ -51,20 +51,22 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
 
             it("Skal returnere Created hvis alt går bra") {
                 val sykmeldingId = "123"
-                every { sykmeldingStatusService.registrerBekreftet(any(), any(), any()) } returns Unit
+                every { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Returnerer 500 hvis noe går galt") {
                 val sykmeldingId = "1235"
-                every { sykmeldingStatusService.registrerBekreftet(any(), any(), any()) } throws RuntimeException("Noe gikk galt")
+                every { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.InternalServerError
                 }
@@ -100,7 +102,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
 
             it("Should authenticate") {
                 val sykmeldingId = "123"
-                every { sykmeldingStatusService.registrerBekreftet(any(), any(), any()) } returns Unit
+                every { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -108,6 +110,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                             "preprod.local",
                             subject = "srvsyfoservice",
                             issuer = env.stsOidcIssuer)}")
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
@@ -121,6 +124,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                             "preprod.local",
                             subject = "srvsyforegister",
                             issuer = env.stsOidcIssuer)}")
+                    addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
