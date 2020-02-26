@@ -5,11 +5,15 @@ import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 
-class SykmeldingStatusService(private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer, private val sykmeldingStatusJedisService: SykmeldingStatusRedisService) {
+class SykmeldingStatusService(
+    private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
+    private val sykmeldingStatusJedisService: SykmeldingStatusRedisService
+) {
 
     fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String) {
         sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
@@ -25,4 +29,13 @@ class SykmeldingStatusService(private val sykmeldingStatusKafkaProducer: Sykmeld
         sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
         sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
     }
+
+    fun getLatestStatus(sykmeldingId: String): SykmeldingStatusEventDTO? {
+        return sykmeldingStatusJedisService.getStatus(sykmeldingId)?.toSykmeldingStatusDTO()
+    }
+}
+
+private fun SykmeldingStatusRedisModel.toSykmeldingStatusDTO(): SykmeldingStatusEventDTO {
+    return SykmeldingStatusEventDTO(timestamp = timestamp,
+            statusEvent = statusEvent)
 }

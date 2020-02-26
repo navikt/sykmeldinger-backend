@@ -20,7 +20,10 @@ fun Route.registerSykmeldingBekreftApi(syfosmregisterClient: SyfosmregisterClien
         val token = call.request.headers["Authorization"]!!
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(syfosmregisterClient = syfosmregisterClient, sykmeldingId = sykmeldingsid, token = token)
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(syfosmregisterClient = syfosmregisterClient,
+                sykmeldingStatusService = sykmeldingStatusService,
+                sykmeldingId = sykmeldingsid,
+                token = token)
 
         if (sisteStatus == null) {
             call.respond(HttpStatusCode.NotFound)
@@ -36,9 +39,15 @@ fun Route.registerSykmeldingBekreftApi(syfosmregisterClient: SyfosmregisterClien
     }
 }
 
-suspend fun hentSisteStatusOgSjekkTilgang(syfosmregisterClient: SyfosmregisterClient, sykmeldingId: String, token: String): SykmeldingStatusEventDTO? {
+suspend fun hentSisteStatusOgSjekkTilgang(syfosmregisterClient: SyfosmregisterClient, sykmeldingStatusService: SykmeldingStatusService, sykmeldingId: String, token: String): SykmeldingStatusEventDTO? {
     return try {
-        syfosmregisterClient.hentSykmeldingstatus(sykmeldingId = sykmeldingId, token = token)
+        val statusFromRegister = syfosmregisterClient.hentSykmeldingstatus(sykmeldingId = sykmeldingId, token = token)
+        val statusFromRedis = sykmeldingStatusService.getLatestStatus(sykmeldingId)
+        if (statusFromRedis != null && statusFromRedis.timestamp.isAfter(statusFromRegister.timestamp)) {
+            statusFromRedis
+        } else {
+            statusFromRegister
+        }
     } catch (e: Exception) {
         log.warn("Noe gikk galt ved oppdatering av status for sykmeldingid {}: {}", sykmeldingId, e.message)
         null

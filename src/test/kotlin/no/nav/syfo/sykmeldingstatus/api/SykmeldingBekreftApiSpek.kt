@@ -21,6 +21,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
+import io.mockk.verify
 import java.nio.file.Paths
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -42,6 +43,7 @@ class SykmeldingBekreftApiSpek : Spek({
     beforeEachTest {
         clearAllMocks()
         every { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any()) } just Runs
+        every { sykmeldingStatusService.getLatestStatus(any()) } returns null
     }
 
     describe("Test SykmeldingBekreftAPI for sluttbruker med tilgangskontroll") {
@@ -145,6 +147,58 @@ class SykmeldingBekreftApiSpek : Spek({
                 }) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
+            }
+
+            it("Skal hente nyeste status fra redis og få BadRequest") {
+                val firstStatusTime = OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
+                val redisStatusTime = firstStatusTime.plusSeconds(1)
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, firstStatusTime)
+                coEvery { sykmeldingStatusService.getLatestStatus(any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisStatusTime)
+                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                    addHeader("Authorization", "Bearer ${generateJWT(
+                            "client",
+                            "loginservice",
+                            subject = "12345678910",
+                            issuer = env.jwtIssuer)}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.BadRequest
+                }
+                verify(exactly = 1) { sykmeldingStatusService.getLatestStatus(any()) }
+            }
+
+            it("Skal hente nyeste status fra redis og få ACCEPTED") {
+                val firstStatusTime = OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
+                val redisStatusTime = firstStatusTime.plusSeconds(1)
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, firstStatusTime)
+                coEvery { sykmeldingStatusService.getLatestStatus(any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.BEKREFTET, redisStatusTime)
+                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                    addHeader("Authorization", "Bearer ${generateJWT(
+                            "client",
+                            "loginservice",
+                            subject = "12345678910",
+                            issuer = env.jwtIssuer)}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.Accepted
+                }
+
+                verify(exactly = 1) { sykmeldingStatusService.getLatestStatus(any()) }
+            }
+
+            it("Skal hente nyeste status fra registeret og få ACCEPTED") {
+                val firstStatusTime = OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, firstStatusTime)
+                coEvery { sykmeldingStatusService.getLatestStatus(any()) } returns null
+                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                    addHeader("Authorization", "Bearer ${generateJWT(
+                            "client",
+                            "loginservice",
+                            subject = "12345678910",
+                            issuer = env.jwtIssuer)}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.Accepted
+                }
+
+                verify(exactly = 1) { sykmeldingStatusService.getLatestStatus(any()) }
             }
         }
     }
