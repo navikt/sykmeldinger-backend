@@ -19,6 +19,6 @@ fun Route.registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService: Sykme
 
         sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = sykmeldingBekreftEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr, token = token)
         log.info("Bekreftet sykmelding {}", sykmeldingId)
-        call.respond(HttpStatusCode.Accepted)
+        call.respond(HttpStatusCode.Created)
     }
 }

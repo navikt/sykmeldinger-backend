@@ -47,7 +47,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
                     addHeader("FNR", "fnr")
                     addHeader("Authorization", "Bearer token")
                 }) {
-                    response.status() shouldEqual HttpStatusCode.Accepted
+                    response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Returnerer 500 hvis noe går galt") {
@@ -121,7 +121,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
                             issuer = env.stsOidcIssuer)}")
                     addHeader("FNR", "fnr")
                 }) {
-                    response.status() shouldEqual HttpStatusCode.Accepted
+                    response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Should not authenticate") {

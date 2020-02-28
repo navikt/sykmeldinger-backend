@@ -24,6 +24,6 @@ fun Route.registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService: Sykmeldi
                 fnr = fnr,
                 token = token)
         log.info("Sendt sykmelding {}", sykmeldingId)
-        call.respond(HttpStatusCode.Accepted)
+        call.respond(HttpStatusCode.Created)
     }
 }

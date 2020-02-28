@@ -16,6 +16,6 @@ fun Route.registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService: Sykmel
         val sykmeldingStatusEventDTO = call.receive<SykmeldingStatusEventDTO>()
         val token = call.request.headers["Authorization"]!!
         sykmeldingStatusService.registrerStatus(sykmeldingStatusEventDTO = sykmeldingStatusEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr, token = token)
-        call.respond(HttpStatusCode.Accepted)
+        call.respond(HttpStatusCode.Created)
     }
 }
