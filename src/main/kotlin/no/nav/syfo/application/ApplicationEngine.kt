@@ -32,15 +32,16 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.client.SyfosmregisterClient
-import no.nav.syfo.hentsykmelding.SykmeldingService
-import no.nav.syfo.hentsykmelding.api.registerSykmeldingApi
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
+import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingStatusSyfoServiceApi
+import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import redis.clients.jedis.JedisPool
@@ -72,11 +73,10 @@ fun createApplicationEngine(
             header(HttpHeaders.XCorrelationId)
         }
         install(StatusPages) {
+            setUpSykmeldingStatusExeptionHandler()
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-
                 log.error("Caught exception", cause)
-                throw cause
             }
         }
 
@@ -97,12 +97,12 @@ fun createApplicationEngine(
 
         val sykmeldingService = SykmeldingService()
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient)
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
-                registerSykmeldingBekreftApi(syfosmregisterClient, sykmeldingStatusService)
+                registerSykmeldingBekreftApi(sykmeldingStatusService)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)

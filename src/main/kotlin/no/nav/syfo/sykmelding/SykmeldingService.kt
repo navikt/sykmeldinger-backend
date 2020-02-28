@@ -1,6 +1,6 @@
-package no.nav.syfo.hentsykmelding
+package no.nav.syfo.sykmelding
 
-import no.nav.syfo.hentsykmelding.api.SykmeldingDTO
+import no.nav.syfo.sykmelding.api.SykmeldingDTO
 
 class SykmeldingService() {
     fun hentSykmeldinger(fnr: String): List<SykmeldingDTO> {

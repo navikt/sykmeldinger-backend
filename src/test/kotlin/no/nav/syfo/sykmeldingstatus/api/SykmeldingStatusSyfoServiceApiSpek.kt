@@ -2,23 +2,16 @@ package no.nav.syfo.sykmeldingstatus.api
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.install
 import io.ktor.auth.authenticate
-import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockkClass
 import java.nio.file.Paths
 import java.time.OffsetDateTime
@@ -28,7 +21,10 @@ import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
+import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
+import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -43,26 +39,45 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
 
     describe("Test SykmeldingStatusAPI") {
         with(TestApplicationEngine()) {
-            start(true)
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
-            }
+            setUpTestApplication()
             application.routing { registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService) }
 
             it("Should successfully post Status") {
                 val sykmeldingId = "123"
-                every { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } returns Unit
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
                     setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("FNR", "fnr")
+                    addHeader("Authorization", "Bearer token")
                 }) {
-                    response.status() shouldEqual HttpStatusCode.Created
+                    response.status() shouldEqual HttpStatusCode.Accepted
+                }
+            }
+            it("Returerer BadRequest når man ikke kan endre status") {
+                val sykmeldingId = "1234"
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId")
+                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
+                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("AUTHORIZATION", "Bearer token")
+                    addHeader("FNR", "fnr")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.BadRequest
+                    response.content shouldEqual "Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId"
+                }
+            }
+            it("Returerer NotFound når status ikke finnes for bruker") {
+                val sykmeldingId = "1234"
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
+                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
+                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("AUTHORIZATION", "Bearer token")
+                    addHeader("FNR", "fnr")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.NotFound
+                    response.content shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
                 }
             }
         }
@@ -70,15 +85,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
 
     describe("Test SykmeldingStatusAPI with security") {
         with(TestApplicationEngine()) {
-            start(true)
-            application.install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
-            }
+            setUpTestApplication()
 
             val env = Environment(jwtIssuer = "issuer",
                 kafkaBootstrapServers = "",
@@ -97,7 +104,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
             it("Should authenticate") {
                 val sykmeldingId = "123"
                 val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))
-                every { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } returns Unit
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
                     setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -107,7 +114,7 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
                             issuer = env.stsOidcIssuer)}")
                     addHeader("FNR", "fnr")
                 }) {
-                    response.status() shouldEqual HttpStatusCode.Created
+                    response.status() shouldEqual HttpStatusCode.Accepted
                 }
             }
             it("Should not authenticate") {
