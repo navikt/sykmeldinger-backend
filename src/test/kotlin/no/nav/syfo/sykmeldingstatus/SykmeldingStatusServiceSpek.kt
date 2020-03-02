@@ -3,6 +3,7 @@ package no.nav.syfo.sykmeldingstatus
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
@@ -98,6 +99,39 @@ class SykmeldingStatusServiceSpek : Spek({
                     sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
                 }
                 exception.message shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+            }
+        }
+    }
+
+    describe("Spesialhåndtering for syfoservice") {
+        it("Skal ikke sjekke status eller tilgang når source er syfoservice ved sending") {
+            runBlocking {
+                sykmeldingStatusService.registrerSendt(opprettSykmeldingSendEventDTO(), sykmeldingId, "syfoservice", fnr, token)
+
+                coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            }
+        }
+        it("Skal ikke sjekke status eller tilgang når source er syfoservice ved bekrefting") {
+            runBlocking {
+                sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "syfoservice", fnr, token)
+
+                coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            }
+        }
+        it("Skal ikke sjekke status eller tilgang når source er syfoservice ved statusendring") {
+            runBlocking {
+                sykmeldingStatusService.registrerStatus(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC)), sykmeldingId, "syfoservice", fnr, token)
+
+                coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }
     }
