@@ -1,5 +1,7 @@
 package no.nav.syfo.testutils
 
+import com.auth0.jwk.JwkProvider
+import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -12,7 +14,13 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.server.testing.TestApplicationEngine
+import io.mockk.mockkClass
+import java.nio.file.Paths
+import no.nav.syfo.Environment
+import no.nav.syfo.VaultSecrets
+import no.nav.syfo.application.setupAuth
 import no.nav.syfo.log
+import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 
 fun TestApplicationEngine.setUpTestApplication() {
@@ -23,6 +31,7 @@ fun TestApplicationEngine.setUpTestApplication() {
             log.error("Caught exception", cause)
         }
         setUpSykmeldingStatusExeptionHandler()
+        setUpSykmeldingExceptionHandler()
     }
     application.install(ContentNegotiation) {
         jackson {
@@ -32,4 +41,20 @@ fun TestApplicationEngine.setUpTestApplication() {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
+}
+
+fun TestApplicationEngine.setUpAuth(): Environment {
+    val env = Environment(jwtIssuer = "issuer",
+            kafkaBootstrapServers = "",
+            stsOidcIssuer = "https://security-token-service.nais.preprod.local",
+            stsOidcAudience = "preprod.local")
+
+    val mockJwkProvider = mockkClass(JwkProvider::class)
+    val path = "src/test/resources/jwkset.json"
+    val uri = Paths.get(path).toUri().toURL()
+    val jwkProvider = JwkProviderBuilder(uri).build()
+    val vaultSecrets = VaultSecrets("", "", "1", "", "", "loginservice")
+
+    application.setupAuth(vaultSecrets, jwkProvider, env.jwtIssuer, env, mockJwkProvider)
+    return env
 }

@@ -11,7 +11,7 @@ import io.ktor.http.HttpStatusCode
 import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 
-class SyfosmregisterClient(private val endpointUrl: String, private val httpClient: HttpClient) {
+class SyfosmregisterStatusClient(private val endpointUrl: String, private val httpClient: HttpClient) {
 
     suspend fun hentSykmeldingstatus(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
         log.info("Henter status for sykmeldingId {}", sykmeldingId)

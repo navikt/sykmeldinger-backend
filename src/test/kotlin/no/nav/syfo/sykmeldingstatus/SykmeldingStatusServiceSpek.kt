@@ -12,7 +12,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.SyfosmregisterClient
+import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingBekreftEventDTO
@@ -31,7 +31,7 @@ class SykmeldingStatusServiceSpek : Spek({
     val token = "token"
     val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
     val sykmeldingStatusJedisService = mockkClass(SykmeldingStatusRedisService::class)
-    val syfosmregisterClient = mockkClass(SyfosmregisterClient::class)
+    val syfosmregisterClient = mockkClass(SyfosmregisterStatusClient::class)
     val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient)
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO) {
