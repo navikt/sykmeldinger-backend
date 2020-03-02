@@ -30,26 +30,38 @@ class SykmeldingStatusService(
     }
 
     suspend fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-        if (canChangeStatus(sykmeldingStatusEventDTO.statusEvent, sisteStatus.statusEvent, sykmeldingId)) {
+        if (source == "syfoservice") {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-            sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
+        } else {
+            val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+            if (canChangeStatus(sykmeldingStatusEventDTO.statusEvent, sisteStatus.statusEvent, sykmeldingId)) {
+                sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+                sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
+            }
         }
     }
 
     suspend fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-        if (canChangeStatus(StatusEventDTO.SENDT, sisteStatus.statusEvent, sykmeldingId)) {
+        if (source == "syfoservice") {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-            sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+        } else {
+            val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+            if (canChangeStatus(StatusEventDTO.SENDT, sisteStatus.statusEvent, sykmeldingId)) {
+                sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+                sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+            }
         }
     }
 
     suspend fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-        if (canChangeStatus(StatusEventDTO.BEKREFTET, sisteStatus.statusEvent, sykmeldingId)) {
+        if (source == "syfoservice") {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-            sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+        } else {
+            val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+            if (canChangeStatus(StatusEventDTO.BEKREFTET, sisteStatus.statusEvent, sykmeldingId)) {
+                sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+                sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+            }
         }
     }
 
