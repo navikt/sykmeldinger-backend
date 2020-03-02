@@ -37,6 +37,7 @@ import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
@@ -75,6 +76,7 @@ fun createApplicationEngine(
         }
         install(StatusPages) {
             setUpSykmeldingStatusExeptionHandler()
+            setUpSykmeldingExceptionHandler()
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
