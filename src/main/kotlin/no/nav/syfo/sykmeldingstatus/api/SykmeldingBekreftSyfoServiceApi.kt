@@ -15,14 +15,10 @@ fun Route.registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService: Sykme
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val fnr = call.request.headers["FNR"]!!
         val sykmeldingBekreftEventDTO = call.receive<SykmeldingBekreftEventDTO>()
+        val token = call.request.headers["Authorization"]!!
 
-        try {
-            sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = sykmeldingBekreftEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr)
-            log.info("Bekreftet sykmelding {}", sykmeldingId)
-            call.respond(HttpStatusCode.Created)
-        } catch (ex: Exception) {
-            log.error("Noe gikk galt ved bekrefting av sykmelding {}", sykmeldingId, ex)
-            call.respond(HttpStatusCode.InternalServerError)
-        }
+        sykmeldingStatusService.registrerBekreftet(sykmeldingBekreftEventDTO = sykmeldingBekreftEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr, token = token)
+        log.info("Bekreftet sykmelding {}", sykmeldingId)
+        call.respond(HttpStatusCode.Created)
     }
 }

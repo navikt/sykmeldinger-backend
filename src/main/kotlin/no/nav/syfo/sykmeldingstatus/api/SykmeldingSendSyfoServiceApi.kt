@@ -15,14 +15,15 @@ fun Route.registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService: Sykmeldi
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val fnr = call.request.headers["FNR"]!!
         val sykmeldingSendEventDTO = call.receive<SykmeldingSendEventDTO>()
+        val token = call.request.headers["Authorization"]!!
 
-        try {
-            sykmeldingStatusService.registrerSendt(sykmeldingSendEventDTO = sykmeldingSendEventDTO, sykmeldingId = sykmeldingId, source = "syfoservice", fnr = fnr)
-            log.info("Sendt sykmelding {}", sykmeldingId)
-            call.respond(HttpStatusCode.Created)
-        } catch (ex: Exception) {
-            log.error("Noe gikk galt ved innsending av sykmelding {}", sykmeldingId, ex)
-            call.respond(HttpStatusCode.InternalServerError)
-        }
+        sykmeldingStatusService.registrerSendt(sykmeldingSendEventDTO = sykmeldingSendEventDTO,
+                sykmeldingId =
+                sykmeldingId,
+                source = "syfoservice",
+                fnr = fnr,
+                token = token)
+        log.info("Sendt sykmelding {}", sykmeldingId)
+        call.respond(HttpStatusCode.Created)
     }
 }

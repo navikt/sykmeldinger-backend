@@ -1,8 +1,12 @@
 package no.nav.syfo.sykmeldingstatus
 
+import no.nav.syfo.client.SyfosmregisterClient
+import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
+import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
@@ -12,26 +16,67 @@ import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
-    private val sykmeldingStatusJedisService: SykmeldingStatusRedisService
+    private val sykmeldingStatusJedisService: SykmeldingStatusRedisService,
+    private val syfosmregisterClient: SyfosmregisterClient
 ) {
-
-    fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String) {
-        sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-        sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
+    companion object {
+        private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
+                Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT, StatusEventDTO.SENDT, StatusEventDTO.APEN, StatusEventDTO.UTGATT)),
+                Pair(StatusEventDTO.BEKREFTET, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN, StatusEventDTO.AVBRUTT)),
+                Pair(StatusEventDTO.SENDT, emptyList()),
+                Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN)),
+                Pair(StatusEventDTO.UTGATT, emptyList())
+        )
     }
 
-    fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String, fnr: String) {
-        sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-        sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+    suspend fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        if (canChangeStatus(sykmeldingStatusEventDTO.statusEvent, sisteStatus.statusEvent, sykmeldingId)) {
+            sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
+        }
     }
 
-    fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String) {
-        sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-        sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+    suspend fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        if (canChangeStatus(StatusEventDTO.SENDT, sisteStatus.statusEvent, sykmeldingId)) {
+            sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+        }
     }
 
-    fun getLatestStatus(sykmeldingId: String): SykmeldingStatusEventDTO? {
+    suspend fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        if (canChangeStatus(StatusEventDTO.BEKREFTET, sisteStatus.statusEvent, sykmeldingId)) {
+            sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
+        }
+    }
+
+    private fun getLatestStatus(sykmeldingId: String): SykmeldingStatusEventDTO? {
         return sykmeldingStatusJedisService.getStatus(sykmeldingId)?.toSykmeldingStatusDTO()
+    }
+
+    private fun canChangeStatus(nyStatusEvent: StatusEventDTO, sisteStatus: StatusEventDTO, sykmeldingId: String): Boolean {
+        val allowedStatuses = statusStates[sisteStatus]
+        if (allowedStatuses != null && allowedStatuses.contains(nyStatusEvent)) {
+            return true
+        }
+        throw InvalidSykmeldingStatusException("Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId")
+    }
+
+    suspend fun hentSisteStatusOgSjekkTilgang(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
+        return try {
+            val statusFromRegister = syfosmregisterClient.hentSykmeldingstatus(sykmeldingId = sykmeldingId, token = token)
+            val statusFromRedis = getLatestStatus(sykmeldingId)
+            if (statusFromRedis != null && statusFromRedis.timestamp.isAfter(statusFromRegister.timestamp)) {
+                statusFromRedis
+            } else {
+                statusFromRegister
+            }
+        } catch (e: Exception) {
+            throw SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", e)
+        }
     }
 }
 

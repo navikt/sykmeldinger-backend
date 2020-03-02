@@ -1,4 +1,4 @@
-package no.nav.syfo.hentsykmelding.api
+package no.nav.syfo.sykmelding.api
 
 import java.time.LocalDate
 import java.time.LocalDateTime
