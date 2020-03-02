@@ -1,7 +1,5 @@
 package no.nav.syfo.sykmeldingstatus.api
 
-import com.auth0.jwk.JwkProvider
-import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -13,14 +11,11 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockkClass
-import java.nio.file.Paths
-import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
-import no.nav.syfo.application.setupAuth
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
+import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
@@ -38,19 +33,8 @@ class SykmeldingBekreftApiSpek : Spek({
     describe("Test SykmeldingBekreftAPI for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
+            val env = setUpAuth()
 
-            val env = Environment(jwtIssuer = "issuer",
-                    kafkaBootstrapServers = "",
-                    stsOidcIssuer = "https://security-token-service.nais.preprod.local",
-                    stsOidcAudience = "preprod.local")
-
-            val mockJwkProvider = mockkClass(JwkProvider::class)
-            val path = "src/test/resources/jwkset.json"
-            val uri = Paths.get(path).toUri().toURL()
-            val jwkProvider = JwkProviderBuilder(uri).build()
-            val vaultSecrets = VaultSecrets("", "", "1", "", "", "loginservice")
-
-            application.setupAuth(vaultSecrets, jwkProvider, env.jwtIssuer, env, mockJwkProvider)
             application.routing { authenticate("jwt") { registerSykmeldingBekreftApi(sykmeldingStatusService) } }
 
             it("Bruker skal få bekrefte sin egen sykmelding") {
@@ -68,7 +52,6 @@ class SykmeldingBekreftApiSpek : Spek({
             it("Bruker skal ikke få bekrefte sin egen sykmelding når den ikke kan bekreftes") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
-
                 with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
                             "loginservice",

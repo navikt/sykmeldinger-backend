@@ -1,6 +1,6 @@
 package no.nav.syfo.sykmeldingstatus
 
-import no.nav.syfo.client.SyfosmregisterClient
+import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
@@ -17,7 +17,7 @@ import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val sykmeldingStatusJedisService: SykmeldingStatusRedisService,
-    private val syfosmregisterClient: SyfosmregisterClient
+    private val syfosmregisterStatusClient: SyfosmregisterStatusClient
 ) {
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
@@ -67,7 +67,7 @@ class SykmeldingStatusService(
 
     suspend fun hentSisteStatusOgSjekkTilgang(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
         return try {
-            val statusFromRegister = syfosmregisterClient.hentSykmeldingstatus(sykmeldingId = sykmeldingId, token = token)
+            val statusFromRegister = syfosmregisterStatusClient.hentSykmeldingstatus(sykmeldingId = sykmeldingId, token = token)
             val statusFromRedis = getLatestStatus(sykmeldingId)
             if (statusFromRedis != null && statusFromRedis.timestamp.isAfter(statusFromRegister.timestamp)) {
                 statusFromRedis

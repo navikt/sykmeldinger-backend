@@ -31,11 +31,13 @@ import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
-import no.nav.syfo.client.SyfosmregisterClient
+import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
+import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
@@ -74,6 +76,7 @@ fun createApplicationEngine(
         }
         install(StatusPages) {
             setUpSykmeldingStatusExeptionHandler()
+            setUpSykmeldingExceptionHandler()
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception", cause)
@@ -93,11 +96,12 @@ fun createApplicationEngine(
         }
         val httpClient = HttpClient(Apache, config)
 
-        val syfosmregisterClient = SyfosmregisterClient(env.syfosmregisterUrl, httpClient)
+        val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
+        val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
 
-        val sykmeldingService = SykmeldingService()
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient)
+        val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService)
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {

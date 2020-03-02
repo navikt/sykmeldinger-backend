@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusDTO
 
-abstract class SykmeldingDTO(
+data class SykmeldingDTO(
     val id: String,
     val mottattTidspunkt: LocalDateTime,
     val bekreftetDato: LocalDateTime?,
@@ -13,52 +13,8 @@ abstract class SykmeldingDTO(
     val legeNavn: String?,
     val arbeidsgiver: ArbeidsgiverDTO?,
     val sykmeldingsperioder: List<SykmeldingsperiodeDTO>,
-    val sykmeldingStatus: SykmeldingStatusDTO
-)
-
-class SkjermetSykmeldingDTO(
-    id: String,
-    mottattTidspunkt: LocalDateTime,
-    bekreftetDato: LocalDateTime?,
-    behandlingsutfall: BehandlingsutfallDTO,
-    legekontorOrgnummer: String?,
-    legeNavn: String?,
-    arbeidsgiver: ArbeidsgiverDTO?,
-    sykmeldingsperioder: List<SykmeldingsperiodeDTO>,
-    sykmeldingStatus: SykmeldingStatusDTO
-) : SykmeldingDTO(
-        id,
-        mottattTidspunkt,
-        bekreftetDato,
-        behandlingsutfall,
-        legekontorOrgnummer,
-        legeNavn,
-        arbeidsgiver,
-        sykmeldingsperioder,
-        sykmeldingStatus
-)
-
-class FullstendigSykmeldingDTO(
-    id: String,
-    mottattTidspunkt: LocalDateTime,
-    bekreftetDato: LocalDateTime?,
-    behandlingsutfall: BehandlingsutfallDTO,
-    legekontorOrgnummer: String?,
-    legeNavn: String?,
-    arbeidsgiver: ArbeidsgiverDTO?,
-    sykmeldingsperioder: List<SykmeldingsperiodeDTO>,
-    sykmeldingStatus: SykmeldingStatusDTO,
-    val medisinskVurdering: MedisinskVurderingDTO
-) : SykmeldingDTO(
-        id,
-        mottattTidspunkt,
-        bekreftetDato,
-        behandlingsutfall,
-        legekontorOrgnummer,
-        legeNavn,
-        arbeidsgiver,
-        sykmeldingsperioder,
-        sykmeldingStatus
+    val sykmeldingStatus: SykmeldingStatusDTO,
+    val medisinskVurdering: MedisinskVurderingDTO?
 )
 
 data class MedisinskVurderingDTO(
