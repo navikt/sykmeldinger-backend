@@ -104,7 +104,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
             val path = "src/test/resources/jwkset.json"
             val uri = Paths.get(path).toUri().toURL()
             val jwkProvider = JwkProviderBuilder(uri).build()
-            val vaultSecrets = VaultSecrets("", "", "1", "", "", "")
+            val vaultSecrets = VaultSecrets("", "", "1", "", "", "", "")
 
             application.setupAuth(vaultSecrets, mockJwkProvider, "issuer1", env, jwkProvider)
             application.routing { authenticate("oidc") { registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService) } }

@@ -7,17 +7,26 @@ import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import redis.clients.jedis.JedisPool
 
 class SykmeldingStatusRedisServiceTest : Spek({
 
-    val redisContainer: GenericContainer<Nothing> = GenericContainer("redis:5-alpine")
+    val redisContainer: GenericContainer<Nothing> = GenericContainer("navikt/secure-redis:5.0.3-alpine-2")
     redisContainer.withExposedPorts(6379)
+    redisContainer.withEnv("REDIS_PASSWORD", "secret")
+    redisContainer.withClasspathResourceMapping("redis.env",
+        "/var/run/secrets/nais.io/vault/redis.env",
+        BindMode.READ_ONLY)
 
     redisContainer.start()
     val jedisPool = JedisPool(JedisConfig(), redisContainer.containerIpAddress, redisContainer.getMappedPort(6379))
-    val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool)
+    val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, "secret")
+
+    afterGroup {
+        redisContainer.stop()
+    }
 
     describe("SykmeldingStatusRedisService") {
         it("Should update status in redis") {
