@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
 
-class SykmeldingStatusRedisService(private val jedisPool: JedisPool) {
+class SykmeldingStatusRedisService(private val jedisPool: JedisPool, private val redisSecret: String) {
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(SykmeldingStatusRedisService::class.java)
@@ -16,6 +16,7 @@ class SykmeldingStatusRedisService(private val jedisPool: JedisPool) {
         var jedis: Jedis? = null
         try {
             jedis = jedisPool.resource
+            jedis.auth(redisSecret)
             jedis.setex(sykmeldingId, redisTimeoutSeconds, objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
         } catch (ex: Exception) {
             log.error("Could not update redis for sykmeldingId {}", sykmeldingId, ex)
@@ -28,6 +29,7 @@ class SykmeldingStatusRedisService(private val jedisPool: JedisPool) {
         var jedis: Jedis? = null
         return try {
             jedis = jedisPool.resource
+            jedis.auth(redisSecret)
             when (val stringValue = jedis.get(sykmeldingId)) {
                 null -> null
                 else -> objectMapper.readValue(stringValue, SykmeldingStatusRedisModel::class.java)

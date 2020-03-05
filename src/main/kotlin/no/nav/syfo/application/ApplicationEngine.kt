@@ -99,7 +99,7 @@ fun createApplicationEngine(
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
 
-        val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool)
+        val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient)
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService)
         routing {

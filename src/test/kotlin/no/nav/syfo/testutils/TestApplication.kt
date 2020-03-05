@@ -53,7 +53,7 @@ fun TestApplicationEngine.setUpAuth(): Environment {
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
-    val vaultSecrets = VaultSecrets("", "", "1", "", "", "loginservice")
+    val vaultSecrets = VaultSecrets("", "", "1", "", "", "loginservice", "")
 
     application.setupAuth(vaultSecrets, jwkProvider, env.jwtIssuer, env, mockJwkProvider)
     return env

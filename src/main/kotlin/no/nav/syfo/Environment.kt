@@ -26,7 +26,8 @@ data class VaultSecrets(
     val clientId: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_id"),
     val oidcWellKnownUri: String = getEnvVar("OIDC_WELLKNOWN_URI"),
     val stsOidcWellKnownUri: String = getEnvVar("STS_OIDC_WELLKNOWN_URI"),
-    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENTID")
+    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENTID"),
+    val redisSecret: String = getEnvVar("REDIS_SECRET")
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername
     override val kafkaPassword: String = serviceuserPassword
