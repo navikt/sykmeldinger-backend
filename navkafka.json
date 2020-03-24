@@ -16,7 +16,7 @@
       ],
       "numPartitions": 3,
       "configEntries": {
-        "retention.ms": "604800000"
+        "retention.ms": "-1"
       }
     }
   ]
