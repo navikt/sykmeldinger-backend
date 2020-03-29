@@ -8,6 +8,7 @@
         {"member":"srvsyfosmregister", "role":"CONSUMER"},
         {"member":"srvsyfosmvarsel", "role":"CONSUMER"},
         {"member":"srvsyfosoknad", "role":"CONSUMER"},
+        {"member":"srvegenmeldt", "role":"CONSUMER"},
         {"member":"s151890", "role":"MANAGER"},
         {"member":"k143566", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
