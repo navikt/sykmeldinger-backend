@@ -41,7 +41,10 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
                     PeriodetypeDTO.AKTIVITET_IKKE_MULIG
             )),
             legeNavn = "lege",
-            bekreftetDato = LocalDateTime.now()
+            bekreftetDato = LocalDateTime.now(),
+            egenmeldt = false,
+            papirsykmelding = false,
+            harRedusertArbeidsgiverperiode = false
             )
 }
 

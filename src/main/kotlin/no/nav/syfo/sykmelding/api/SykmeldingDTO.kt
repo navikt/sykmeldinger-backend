@@ -14,7 +14,10 @@ data class SykmeldingDTO(
     val arbeidsgiver: ArbeidsgiverDTO?,
     val sykmeldingsperioder: List<SykmeldingsperiodeDTO>,
     val sykmeldingStatus: SykmeldingStatusDTO,
-    val medisinskVurdering: MedisinskVurderingDTO?
+    val medisinskVurdering: MedisinskVurderingDTO?,
+    val egenmeldt: Boolean?,
+    val papirsykmelding: Boolean?,
+    val harRedusertArbeidsgiverperiode: Boolean?
 )
 
 data class MedisinskVurderingDTO(

@@ -26,10 +26,10 @@ class SykmeldingServiceTest : Spek({
     describe("Get Sykmeldinger and latest status") {
         it("Get sykmeldinger") {
             val sykmelding = getSykmeldingModel()
-            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token") } returns listOf(sykmelding)
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
             runBlocking {
-                val returndSykmelding = sykmeldingService.hentSykmeldinger("token")
+                val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
                 returndSykmelding shouldEqual listOf(sykmelding)
             }
         }
@@ -40,10 +40,10 @@ class SykmeldingServiceTest : Spek({
             val statusFromRedis = getSykmeldingStatusRedisModel(
                     StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
             )
-            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token") } returns listOf(sykmelding)
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
             runBlocking {
-                val returndSykmelding = sykmeldingService.hentSykmeldinger("token")
+                val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
                 returndSykmelding shouldNotEqual listOf(sykmelding)
                 returndSykmelding[0].sykmeldingStatus shouldEqual SykmeldingStatusDTO(
                         statusFromRedis.timestamp, statusFromRedis.statusEvent, null, null
