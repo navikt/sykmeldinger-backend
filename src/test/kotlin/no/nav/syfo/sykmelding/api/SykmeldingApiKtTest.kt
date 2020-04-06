@@ -10,6 +10,7 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.coEvery
 import io.mockk.mockkClass
 import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.redis.objectMapper
 import no.nav.syfo.testutils.generateJWT
@@ -22,14 +23,30 @@ import org.spekframework.spek2.style.specification.describe
 class SykmeldingApiKtTest : Spek({
 
     val sykmeldingService = mockkClass(SykmeldingService::class)
-    coEvery { sykmeldingService.hentSykmeldinger(any()) } returns listOf(getSykmeldingModel())
+    coEvery { sykmeldingService.hentSykmeldinger(any(), any()) } returns listOf(getSykmeldingModel())
 
-    describe("Sykmelidng Api test") {
+    describe("Sykmelding Api test") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             application.routing { registerSykmeldingApi(sykmeldingService) }
             it("Hent sykmeldinger") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    addHeader("Authorization", "Bearer token")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
+                }
+            }
+            it("Hent sykmeldinger med fom og tom") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
+                    addHeader("Authorization", "Bearer token")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
+                }
+            }
+            it("Hent sykmeldinger med fom og tom og exclude") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
                     addHeader("Authorization", "Bearer token")
                 }) {
                     response.status() shouldEqual HttpStatusCode.OK

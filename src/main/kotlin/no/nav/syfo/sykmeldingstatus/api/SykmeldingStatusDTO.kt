@@ -7,15 +7,26 @@ data class SykmeldingStatusEventDTO(
     val timestamp: OffsetDateTime
 )
 
+data class SykmeldingStatusDTO(
+    val statusEvent: String,
+    val timestamp: OffsetDateTime,
+    val arbeidsgiver: ArbeidsgiverStatusDTO?,
+    val sporsmalOgSvarListe: List<SporsmalDTO>
+)
+
 enum class StatusEventDTO {
     APEN, AVBRUTT, UTGATT, SENDT, BEKREFTET
 }
 
-data class SykmeldingStatusDTO(
-    val timestamp: OffsetDateTime,
-    val statusEvent: StatusEventDTO,
-    val arbeidsgiver: ArbeidsgiverStatusDTO?,
-    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
+data class SporsmalDTO(
+    val tekst: String,
+    val shortName: ShortNameDTO,
+    val svar: SvarDTO
+)
+
+data class SvarDTO(
+    val svarType: SvartypeDTO,
+    val svar: String
 )
 
 data class SykmeldingSendEventDTO(

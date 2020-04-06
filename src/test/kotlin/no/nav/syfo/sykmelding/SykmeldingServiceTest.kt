@@ -7,8 +7,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
@@ -26,27 +26,27 @@ class SykmeldingServiceTest : Spek({
     describe("Get Sykmeldinger and latest status") {
         it("Get sykmeldinger") {
             val sykmelding = getSykmeldingModel()
-            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token") } returns listOf(sykmelding)
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
             runBlocking {
-                val returndSykmelding = sykmeldingService.hentSykmeldinger("token")
+                val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
                 returndSykmelding shouldEqual listOf(sykmelding)
             }
         }
         it("Get sykmeldinger with newest status from redis") {
             val sykmelding = getSykmeldingModel(SykmeldingStatusDTO(
-                    OffsetDateTime.now(ZoneOffset.UTC).minusHours(1), StatusEventDTO.APEN, null, null
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1), statusEvent = StatusEventDTO.APEN.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
             ))
             val statusFromRedis = getSykmeldingStatusRedisModel(
                     StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
             )
-            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token") } returns listOf(sykmelding)
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
             runBlocking {
-                val returndSykmelding = sykmeldingService.hentSykmeldinger("token")
+                val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
                 returndSykmelding shouldNotEqual listOf(sykmelding)
                 returndSykmelding[0].sykmeldingStatus shouldEqual SykmeldingStatusDTO(
-                        statusFromRedis.timestamp, statusFromRedis.statusEvent, null, null
+                        timestamp = statusFromRedis.timestamp, statusEvent = statusFromRedis.statusEvent.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
                 )
             }
         }
