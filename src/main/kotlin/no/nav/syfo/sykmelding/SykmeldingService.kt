@@ -3,6 +3,9 @@ package no.nav.syfo.sykmelding
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.api.SykmeldingDTO
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmeldingstatus.api.SporsmalDTO
+import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
+import no.nav.syfo.sykmeldingstatus.api.SvarDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
@@ -28,7 +31,11 @@ class SykmeldingService(
 
 private fun SykmeldingStatusRedisModel.toSykmeldingStatusDto(): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(timestamp = timestamp,
-            statusEvent = statusEvent,
+            statusEvent = statusEvent.name,
             arbeidsgiver = arbeidsgiver,
-            sporsmalOgSvarListe = sporsmals)
+            sporsmalOgSvarListe = sporsmals?.map { it.toSporsmalDTO() } ?: emptyList())
+}
+
+private fun SporsmalOgSvarDTO.toSporsmalDTO(): SporsmalDTO {
+    return SporsmalDTO(tekst = tekst, shortName = shortName, svar = SvarDTO(svarType = svartype, svar = svar))
 }

@@ -49,5 +49,5 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
 }
 
 fun getSykmeldingStatusDto(statusEventDTO: StatusEventDTO, offsetDateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)): SykmeldingStatusDTO {
-    return SykmeldingStatusDTO(offsetDateTime, statusEventDTO, null, null)
+    return SykmeldingStatusDTO(timestamp = offsetDateTime, statusEvent = statusEventDTO.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList())
 }

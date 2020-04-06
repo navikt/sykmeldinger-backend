@@ -101,9 +101,9 @@ class SykmeldingApiIntegrationTest : Spek({
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldEqual
                             listOf(sykmeldingDTO.copy(sykmeldingStatus = SykmeldingStatusDTO(
                                     timestamp = newSykmeldingStatus.timestamp,
-                                    statusEvent = newSykmeldingStatus.statusEvent,
+                                    statusEvent = newSykmeldingStatus.statusEvent.name,
                                     arbeidsgiver = null,
-                                    sporsmalOgSvarListe = null)
+                                    sporsmalOgSvarListe = emptyList())
                             ))
                 }
             }

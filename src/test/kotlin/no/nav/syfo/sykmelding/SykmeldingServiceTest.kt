@@ -35,7 +35,7 @@ class SykmeldingServiceTest : Spek({
         }
         it("Get sykmeldinger with newest status from redis") {
             val sykmelding = getSykmeldingModel(SykmeldingStatusDTO(
-                    OffsetDateTime.now(ZoneOffset.UTC).minusHours(1), StatusEventDTO.APEN, null, null
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1), statusEvent = StatusEventDTO.APEN.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
             ))
             val statusFromRedis = getSykmeldingStatusRedisModel(
                     StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
@@ -46,7 +46,7 @@ class SykmeldingServiceTest : Spek({
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
                 returndSykmelding shouldNotEqual listOf(sykmelding)
                 returndSykmelding[0].sykmeldingStatus shouldEqual SykmeldingStatusDTO(
-                        statusFromRedis.timestamp, statusFromRedis.statusEvent, null, null
+                        timestamp = statusFromRedis.timestamp, statusEvent = statusFromRedis.statusEvent.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
                 )
             }
         }
