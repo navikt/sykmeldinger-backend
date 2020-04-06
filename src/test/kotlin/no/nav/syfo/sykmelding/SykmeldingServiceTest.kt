@@ -7,8 +7,8 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService

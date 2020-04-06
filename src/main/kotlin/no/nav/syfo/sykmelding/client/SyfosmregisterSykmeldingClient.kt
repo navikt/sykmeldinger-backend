@@ -6,7 +6,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import no.nav.syfo.sykmelding.api.ApiFilter
-import no.nav.syfo.sykmelding.api.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
 
 class SyfosmregisterSykmeldingClient(private val endpointUrl: String, private val httpClient: HttpClient) {
     suspend fun getSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {

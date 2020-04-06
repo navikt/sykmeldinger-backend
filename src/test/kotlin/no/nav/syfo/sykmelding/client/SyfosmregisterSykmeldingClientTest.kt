@@ -20,7 +20,7 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.ApiFilter
-import no.nav.syfo.sykmelding.api.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek

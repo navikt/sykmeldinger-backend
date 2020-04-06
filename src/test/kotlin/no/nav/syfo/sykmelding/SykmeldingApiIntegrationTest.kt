@@ -27,11 +27,11 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.objectMapper
-import no.nav.syfo.sykmelding.api.SykmeldingDTO
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusDto
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel

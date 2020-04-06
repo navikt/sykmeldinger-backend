@@ -10,6 +10,7 @@ import io.ktor.server.testing.handleRequest
 import io.mockk.coEvery
 import io.mockk.mockkClass
 import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.redis.objectMapper
 import no.nav.syfo.testutils.generateJWT
