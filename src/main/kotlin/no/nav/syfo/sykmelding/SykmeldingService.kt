@@ -8,6 +8,8 @@ import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
+import no.nav.syfo.sykmelding.syforestmodel.tilSyforestSykmelding
 import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
@@ -19,6 +21,13 @@ class SykmeldingService(
     suspend fun hentSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
                 .map(this::getSykmeldingWithLatestStatus)
+    }
+
+    suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, apiFilter: ApiFilter?): List<SyforestSykmelding> {
+        val sykmeldingsliste = syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
+            .map(this::getSykmeldingWithLatestStatus)
+        // hent pasient
+        return sykmeldingsliste.map { tilSyforestSykmelding(it) }
     }
 
     private fun getSykmeldingWithLatestStatus(sykmelding: SykmeldingDTO): SykmeldingDTO {
