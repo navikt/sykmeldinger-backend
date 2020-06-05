@@ -15,6 +15,8 @@ import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
+import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
@@ -80,6 +82,20 @@ class SykmeldingServiceTest : Spek({
                 syforestSykmeldinger shouldEqual listOf(lagSyforestSykmelding())
             }
             coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
+        }
+
+        it("Avviste sykmeldinger hentes ikke med syforest-apiet") {
+            val avvistSykmelding = getSykmeldingModel().copy(behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.INVALID, emptyList()))
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(avvistSykmelding)
+            every { sykmeldingStatusRedisService.getStatus(any()) } returns null
+            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"))
+
+            runBlocking {
+                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+
+                syforestSykmeldinger shouldEqual emptyList()
+            }
+            coVerify(exactly = 0) { pdlPersonService.getPersonnavn(any(), any(), any()) }
         }
 
         it("Skal ikke hente person fra PDL hvis bruker ikke har sykmeldinger") {

@@ -5,6 +5,7 @@ import java.util.UUID
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
@@ -31,6 +32,7 @@ class SykmeldingService(
 
     suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, apiFilter: ApiFilter?): List<SyforestSykmelding> {
         val sykmeldingsliste = syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
+            .filter { it.behandlingsutfall.status != RegelStatusDTO.INVALID }
             .map(this::getSykmeldingWithLatestStatus)
         if (sykmeldingsliste.isNotEmpty()) {
             val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPersonnavn(fnr = fnr, userToken = token, callId = UUID.randomUUID().toString()))
