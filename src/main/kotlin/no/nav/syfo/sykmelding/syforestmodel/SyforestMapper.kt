@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import no.nav.syfo.objectMapper
+import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.sykmelding.model.BehandlerDTO
 import no.nav.syfo.sykmelding.model.DiagnoseDTO
 import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
@@ -20,7 +21,16 @@ import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
 
-fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO): SyforestSykmelding {
+fun pdlPersonTilPasient(fnr: String, pdlPerson: PdlPerson): Pasient {
+    return Pasient(
+        fnr = fnr,
+        fornavn = pdlPerson.navn.fornavn,
+        mellomnavn = pdlPerson.navn.mellomnavn,
+        etternavn = pdlPerson.navn.etternavn
+    )
+}
+
+fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient): SyforestSykmelding {
     val arbeidsgiverNavnHvisSendt = sykmeldingDTO.sykmeldingStatus.arbeidsgiver?.orgNavn
 
     return SyforestSykmelding(
@@ -38,7 +48,7 @@ fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO): SyforestSykmelding {
         orgnummer = sykmeldingDTO.sykmeldingStatus.arbeidsgiver?.orgnummer,
         sendtdato = finnSendtDato(sykmeldingDTO.sykmeldingStatus),
         sporsmal = tilSporsmal(sykmeldingDTO.sykmeldingStatus),
-        pasient = Pasient(), // må hentes fra PDL!
+        pasient = pasient,
         arbeidsgiver = sykmeldingDTO.arbeidsgiver?.navn,
         stillingsprosent = sykmeldingDTO.arbeidsgiver?.stillingsprosent,
         diagnose = tilDiagnoseinfo(sykmeldingDTO.skjermesForPasient, sykmeldingDTO.medisinskVurdering),

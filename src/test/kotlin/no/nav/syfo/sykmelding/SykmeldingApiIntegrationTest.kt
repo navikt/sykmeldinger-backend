@@ -21,12 +21,14 @@ import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
+import io.ktor.util.KtorExperimentalAPI
 import io.mockk.every
 import io.mockk.mockkClass
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.objectMapper
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
@@ -43,6 +45,7 @@ import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
+@KtorExperimentalAPI
 class SykmeldingApiIntegrationTest : Spek({
     var block: () -> HttpResponseData = {
         respondError(HttpStatusCode.NotFound)
@@ -69,8 +72,9 @@ class SykmeldingApiIntegrationTest : Spek({
             setResponseData(respond(objectMapper.writeValueAsString(sykmeldingData), HttpStatusCode.OK, headersOf("Content-Type", "application/json")))
 
     val redisService = mockkClass(SykmeldingStatusRedisService::class)
+    val pdlPersonService = mockkClass(PdlPersonService::class)
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient)
-    val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService)
+    val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
 
     every { redisService.getStatus(any()) } returns null
 

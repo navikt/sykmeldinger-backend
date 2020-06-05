@@ -13,8 +13,9 @@ class SyforestMapperTest : Spek({
         it("Test av fullstendig, ny sykmelding") {
             val sykmeldingDTO: SykmeldingDTO = objectMapper.readValue(SyforestMapperTest::class.java.getResourceAsStream("/smFraRegister.json").readBytes().toString(Charsets.UTF_8))
             val syforestSykmeldingFasit: SyforestSykmelding = objectMapper.readValue(SyforestMapperTest::class.java.getResourceAsStream("/syforestSM.json").readBytes().toString(Charsets.UTF_8))
+            val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO)
+            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient)
 
             syforestSykmelding.id shouldEqual syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldEqual syforestSykmeldingFasit.startLegemeldtFravaer
@@ -30,6 +31,7 @@ class SyforestMapperTest : Spek({
             syforestSykmelding.orgnummer shouldEqual syforestSykmeldingFasit.orgnummer
             syforestSykmelding.sendtdato shouldEqual syforestSykmeldingFasit.sendtdato
             syforestSykmelding.sporsmal shouldEqual syforestSykmeldingFasit.sporsmal
+            syforestSykmelding.pasient shouldEqual syforestSykmeldingFasit.pasient
             syforestSykmelding.arbeidsgiver shouldEqual syforestSykmeldingFasit.arbeidsgiver
             syforestSykmelding.stillingsprosent shouldEqual syforestSykmeldingFasit.stillingsprosent
             syforestSykmelding.diagnose shouldEqual syforestSykmeldingFasit.diagnose
@@ -46,8 +48,9 @@ class SyforestMapperTest : Spek({
         it("Test av fullstendig, sendt sykmelding") {
             val sykmeldingDTO: SykmeldingDTO = objectMapper.readValue(SyforestMapperTest::class.java.getResourceAsStream("/sendtSMFraRegister.json").readBytes().toString(Charsets.UTF_8))
             val syforestSykmeldingFasit: SyforestSykmelding = objectMapper.readValue(SyforestMapperTest::class.java.getResourceAsStream("/sendtSyforestSM.json").readBytes().toString(Charsets.UTF_8))
+            val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO)
+            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient)
 
             syforestSykmelding.id shouldEqual syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldEqual syforestSykmeldingFasit.startLegemeldtFravaer
@@ -63,6 +66,7 @@ class SyforestMapperTest : Spek({
             syforestSykmelding.orgnummer shouldEqual syforestSykmeldingFasit.orgnummer
             syforestSykmelding.sendtdato shouldEqual syforestSykmeldingFasit.sendtdato
             syforestSykmelding.sporsmal shouldEqual syforestSykmeldingFasit.sporsmal
+            syforestSykmelding.pasient shouldEqual syforestSykmeldingFasit.pasient
             syforestSykmelding.arbeidsgiver shouldEqual syforestSykmeldingFasit.arbeidsgiver
             syforestSykmelding.stillingsprosent shouldEqual syforestSykmeldingFasit.stillingsprosent
             syforestSykmelding.diagnose shouldEqual syforestSykmeldingFasit.diagnose
