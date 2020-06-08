@@ -15,7 +15,7 @@ class KafkaFactory private constructor() {
             val kafkaStatusProducerConfig = kafkaBaseConfig.toProducerConfig(
                     "${environment.applicationName}-producer", JacksonKafkaSerializer::class
             )
-            kafkaStatusProducerConfig[ProducerConfig.RETRIES_CONFIG] = 50
+            kafkaStatusProducerConfig[ProducerConfig.RETRIES_CONFIG] = 2
             val kafkaProducer = KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>(kafkaStatusProducerConfig)
             return SykmeldingStatusKafkaProducer(kafkaProducer, environment.sykmeldingStatusTopic)
         }
