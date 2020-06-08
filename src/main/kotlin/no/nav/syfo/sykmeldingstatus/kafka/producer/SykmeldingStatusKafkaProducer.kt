@@ -14,6 +14,11 @@ class SykmeldingStatusKafkaProducer(private val kafkaProducer: KafkaProducer<Str
         log.info("Skriver statusendring for sykmelding med id {} til topic", sykmeldingStatusKafkaEventDTO.sykmeldingId)
         val metadataDTO = KafkaMetadataDTO(sykmeldingId = sykmeldingStatusKafkaEventDTO.sykmeldingId, timestamp = OffsetDateTime.now(ZoneOffset.UTC), fnr = fnr, source = source)
         val sykmeldingStatusKafkaMessageDTO = SykmeldingStatusKafkaMessageDTO(metadataDTO, sykmeldingStatusKafkaEventDTO)
-        kafkaProducer.send(ProducerRecord(topicName, sykmeldingStatusKafkaMessageDTO.event.sykmeldingId, sykmeldingStatusKafkaMessageDTO))
+        try {
+            kafkaProducer.send(ProducerRecord(topicName, sykmeldingStatusKafkaMessageDTO.event.sykmeldingId, sykmeldingStatusKafkaMessageDTO)).get()
+        } catch (ex: Exception) {
+            log.error("Failed to send sykmeldingStatus to kafkatopic {}", metadataDTO.sykmeldingId)
+            throw ex
+        }
     }
 }
