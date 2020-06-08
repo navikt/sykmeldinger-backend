@@ -31,9 +31,12 @@ import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
+import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
@@ -95,13 +98,20 @@ fun createApplicationEngine(
             expectSuccess = false
         }
         val httpClient = HttpClient(Apache, config)
+        val stsOidcClient = StsOidcClient(vaultSecrets.serviceuserUsername, vaultSecrets.serviceuserPassword)
 
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
 
+        val pdlClient = PdlClient(httpClient,
+            env.pdlGraphqlPath,
+            PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), ""))
+
+        val pdlService = PdlPersonService(pdlClient, stsOidcClient)
+
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient)
-        val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService)
+        val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
             authenticate("jwt") {

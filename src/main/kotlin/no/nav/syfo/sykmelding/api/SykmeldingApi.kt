@@ -1,6 +1,8 @@
 package no.nav.syfo.sykmelding.api
 
 import io.ktor.application.call
+import io.ktor.auth.authentication
+import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -27,6 +29,13 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
                 hasInvalidStatus(exclude ?: include) -> call.respond(HttpStatusCode.BadRequest, "include or exclude can only contain ${StatusEventDTO.values().joinToString()}")
                 else -> call.respond(sykmeldingService.hentSykmeldinger(token = token, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include)))
             }
+        }
+
+        get("/syforest/sykmeldinger") {
+            val token = call.request.headers["Authorization"]!!
+            val principal: JWTPrincipal = call.authentication.principal()!!
+            val fnr = principal.payload.subject
+            call.respond(sykmeldingService.hentSykmeldingerSyforestFormat(token = token, fnr = fnr, apiFilter = null))
         }
     }
 }

@@ -1,24 +1,44 @@
 package no.nav.syfo.sykmelding
 
+import io.ktor.util.KtorExperimentalAPI
+import java.util.UUID
+import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
+import no.nav.syfo.sykmelding.syforestmodel.pdlPersonTilPasient
+import no.nav.syfo.sykmelding.syforestmodel.tilSyforestSykmelding
 import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 
+@KtorExperimentalAPI
 class SykmeldingService(
     private val syfosmregisterSykmeldingClient: SyfosmregisterSykmeldingClient,
-    private val sykmeldingStatusRedisService: SykmeldingStatusRedisService
+    private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
+    private val pdlPersonService: PdlPersonService
 ) {
     suspend fun hentSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
                 .map(this::getSykmeldingWithLatestStatus)
+    }
+
+    suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, apiFilter: ApiFilter?): List<SyforestSykmelding> {
+        val sykmeldingsliste = syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
+            .filter { it.behandlingsutfall.status != RegelStatusDTO.INVALID }
+            .map(this::getSykmeldingWithLatestStatus)
+        if (sykmeldingsliste.isNotEmpty()) {
+            val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPersonnavn(fnr = fnr, userToken = token, callId = UUID.randomUUID().toString()))
+            return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient) }
+        }
+        return emptyList()
     }
 
     private fun getSykmeldingWithLatestStatus(sykmelding: SykmeldingDTO): SykmeldingDTO {

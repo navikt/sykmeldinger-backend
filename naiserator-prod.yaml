@@ -54,3 +54,5 @@ spec:
       value: https://security-token-service.nais.adeo.no
     - name: STS_OIDC_AUDIENCE
       value: adeo.no
+    - name: PDL_GRAPHQL_PATH
+      value: https://pdl-api.nais.adeo.no/graphql
