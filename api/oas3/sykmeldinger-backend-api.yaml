@@ -145,22 +145,22 @@ components:
   requestBodies:
     SyfoServiceLagreSykmeldingStatusEvent:
       description: "Lagre StatusEvent"
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SykmeldingStatusEventDTO'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SykmeldingStatusEventDTO'
     SyfoServiceBekreftSykmeldingEvent:
       description: "BekreftEvent"
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SykmeldingBekreftEventDTO'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SykmeldingBekreftEventDTO'
     SyfoServiceSendSykmeldingEvent:
       description: "SendEvent"
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SykmeldingSendEventDTO'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SykmeldingSendEventDTO'
 
   parameters:
     sykmeldingId:
@@ -270,33 +270,6 @@ components:
     Periodetype:
       type: string
       enum: [ AKTIVITET_IKKE_MULIG, AVVENTENDE, BEHANDLINGSDAGER, GRADERT, REISETILSKUDD]
-    Sykmeldingsperiode:
-      type: object
-      required:
-        - fom
-        - tom
-        - type
-        - reisetilskudd
-      properties:
-        fom:
-          $ref: '#/components/schemas/Date'
-        tom:
-          $ref: '#/components/schemas/Date'
-        gradert:
-          $ref: '#/components/schemas/Gradert'
-        behandlingsdager:
-          type: integer
-        innspillTilArbeidsgiver:
-          type: string
-        type:
-          $ref: '#/components/schemas/Periodetype'
-      example:
-        {
-          fom: '2019-10-01',
-          tom: '2019-10-04',
-          type: AKTIVITET_IKKE_MULIG,
-          reisetilskudd: false,
-        }
     AktivitetIkkeMulig:
       type: object
       properties:
@@ -337,19 +310,6 @@ components:
           type: string
         tekst:
           type: string
-    MedisinskVurdering:
-      description: Medisinsk vurdering er bare tilgjengelig for brukere med tilgang til det.
-      type: object
-      required:
-        - biDiagnoser
-      properties:
-        hovedDiagnose:
-          $ref: '#/components/schemas/Diagnose'
-        biDiagnoser:
-          type: array
-          description: påkreved men kan være en tom liste
-          items:
-            $ref: '#/components/schemas/Diagnose'
     SvarType:
       type: string
       enum: [ARBEIDSSITUASJON, PERIODER, JA_NEI]
@@ -728,11 +688,11 @@ components:
         statusEvent:
           $ref: '#/components/schemas/StatusEvent'
         arbeidsgiver:
-          description: Arbeidsgiver er bare tilgjengelig om sykmeldingStatus.statusevent = SENDT
           $ref: '#/components/schemas/ArbeidsgiverStatus'
         sporsmalOgSvarListe:
           $ref: '#/components/schemas/SporsmalOgSvarListe'
     ArbeidsgiverStatus:
+      description: Arbeidsgiver er bare tilgjengelig om sykmeldingStatus.statusevent = SENDT
       type: object
       required:
         - orgnummer
@@ -769,8 +729,8 @@ components:
           type: boolean
         fravaersperioder:
           type: array
-            items:
-              $ref: '#/components/schemas/Datospenn'
+          items:
+            $ref: '#/components/schemas/Datospenn'
     Datospenn:
       type: object
       properties:
@@ -800,8 +760,8 @@ components:
           $ref: '#/components/schemas/SyforestDiagnose'
         bidiagnoser:
           type: array
-           items:
-             $ref: '#/components/schemas/SyforestDiagnose'
+          items:
+            $ref: '#/components/schemas/SyforestDiagnose'
         fravaersgrunnLovfestet:
           type: string
         fravaerBeskrivelse:
@@ -826,16 +786,16 @@ components:
       properties:
         perioder:
           type: array
-           items:
+          items:
             $ref: '#/components/schemas/SyforestPeriode'
         aktivitetIkkeMulig433:
           type: array
-           items:
-             type: string
+          items:
+            type: string
         aktivitetIkkeMulig434:
           type: array
-            items:
-              type: string
+          items:
+            type: string
         aarsakAktivitetIkkeMulig433:
           type: string
         aarsakAktivitetIkkeMulig434:
@@ -895,8 +855,8 @@ components:
           type: string
         grupper:
           type: array
-           items:
-             $ref: '#/components/schemas/Sporsmalsgruppe'
+          items:
+            $ref: '#/components/schemas/Sporsmalsgruppe'
     Sporsmalsgruppe:
       type: object
       properties:
@@ -904,7 +864,7 @@ components:
           type: string
         sporsmal:
           type: array
-           items:
+          items:
             $ref: '#/components/schemas/Sporsmal'
     Sporsmal:
       type: object
