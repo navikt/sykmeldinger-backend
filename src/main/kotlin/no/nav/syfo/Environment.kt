@@ -9,6 +9,7 @@ import no.nav.syfo.kafka.KafkaCredentials
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "sykmeldinger-backend"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
     val sykmeldingStatusTopic: String = getEnvVar("KAFKA_SYKMELDING_STATUS_TOPIC", "aapen-syfo-sykmeldingstatus-leesah-v1"),

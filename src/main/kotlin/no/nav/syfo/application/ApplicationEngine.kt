@@ -31,6 +31,7 @@ import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
@@ -114,6 +115,9 @@ fun createApplicationEngine(
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
+            if (env.cluster == "dev-fss") {
+                setupSwaggerDocApi()
+            }
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
