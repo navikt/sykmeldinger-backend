@@ -125,11 +125,16 @@ tasks {
         kotlinOptions.jvmTarget = "12"
     }
 
+    withType<org.hidetake.gradle.swagger.generator.GenerateSwaggerUI> {
+        outputDir = File(buildDir.path + "/resources/main/api")
+    }
+
     withType<ShadowJar> {
         transform(ServiceFileTransformer::class.java) {
             setPath("META-INF/cxf")
             include("bus-extensions.txt")
         }
+        dependsOn("generateSwaggerUI")
     }
 
     withType<Test> {
