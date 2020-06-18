@@ -49,7 +49,7 @@ paths:
     post:
       operationId: bekreftAvvistSykmelding
       tags:
-        - Sykmelding status
+        - Sykmeldingstatus
       security:
         - bearerAuth: []
       summary: Bekreft avviste sykmeldinger for sluttbruker
@@ -67,7 +67,6 @@ paths:
     post:
       operationId: lagreSykmeldingStatusSyfoService
       tags:
-        - Sykmelding status
         - SyfoService
       security:
         - bearerAuth: []
@@ -87,7 +86,6 @@ paths:
     post:
       operationId: bekreftSykmeldingSyfoService
       tags:
-        - Sykmelding status
         - SyfoService
       security:
         - bearerAuth: []
@@ -107,7 +105,6 @@ paths:
     post:
       operationId: sendSykmeldingSyfoService
       tags:
-        - Sykmelding status
         - SyfoService
       security:
         - bearerAuth: []
