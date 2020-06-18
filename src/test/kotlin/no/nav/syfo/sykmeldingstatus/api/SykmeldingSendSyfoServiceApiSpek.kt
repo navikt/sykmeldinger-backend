@@ -99,7 +99,8 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
                     kafkaBootstrapServers = "",
                     stsOidcIssuer = "https://security-token-service.nais.preprod.local",
                     stsOidcAudience = "preprod.local",
-                    pdlGraphqlPath = "http://graphql")
+                    pdlGraphqlPath = "http://graphql",
+                    cluster = "dev-fss")
 
             val mockJwkProvider = mockkClass(JwkProvider::class)
             val path = "src/test/resources/jwkset.json"

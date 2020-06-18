@@ -25,10 +25,12 @@ val nimbusdsVersion = "7.5.1"
 val jedisVersion = "3.1.0"
 val spekVersion = "2.0.9"
 val testcontainersVersion = "1.12.5"
+val swaggerUiVersion = "3.10.0"
 plugins {
     kotlin("jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("org.jmailen.kotlinter") version "2.2.0"
+    id("org.hidetake.swagger.generator") version "2.18.1" apply true
 }
 
 val githubUser: String by project
@@ -83,6 +85,7 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
     implementation("redis.clients:jedis:$jedisVersion")
+    swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
 
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
@@ -103,6 +106,11 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
 }
 
+swaggerSources {
+    create("sykmeldinger-backend").apply {
+        setInputFile(file("api/oas3/sykmeldinger-backend-api.yaml"))
+    }
+}
 
 tasks {
     withType<Jar> {
