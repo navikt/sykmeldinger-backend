@@ -160,7 +160,7 @@ fun tilPeriode(sykmeldingsperiodeDTO: SykmeldingsperiodeDTO, harRedusertArbeidsg
     return Periode(
         fom = sykmeldingsperiodeDTO.fom,
         tom = sykmeldingsperiodeDTO.tom,
-        grad = sykmeldingsperiodeDTO.gradert?.grad ?: 100,
+        grad = sykmeldingsperiodeDTO.gradert?.grad ?: if (sykmeldingsperiodeDTO.type == PeriodetypeDTO.AKTIVITET_IKKE_MULIG) { 100 } else { null },
         behandlingsdager = sykmeldingsperiodeDTO.behandlingsdager,
         reisetilskudd = if (sykmeldingsperiodeDTO.reisetilskudd) { true } else { null },
         avventende = if (sykmeldingsperiodeDTO.type == PeriodetypeDTO.AVVENTENDE) { sykmeldingsperiodeDTO.innspillTilArbeidsgiver } else { null },
