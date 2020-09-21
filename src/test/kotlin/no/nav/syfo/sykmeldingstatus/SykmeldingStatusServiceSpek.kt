@@ -8,13 +8,14 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.verify
-import java.lang.RuntimeException
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.RuntimeException
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingSendEventDTO
@@ -132,6 +133,33 @@ class SykmeldingStatusServiceSpek : Spek({
                 verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
                 verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            }
+        }
+    }
+
+    describe("Test av BEKREFT for sluttbruker") {
+        it("Happy-case") {
+            runBlocking {
+                sykmeldingStatusService.registrerBekreftet(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null), sykmeldingId, "user", fnr, token)
+
+                coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+                verify { sykmeldingStatusJedisService.getStatus(any()) }
+                verify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            }
+        }
+        it("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } throws RuntimeException("Ingen tilgang")
+
+            runBlocking {
+                assertFailsWith<SykmeldingStatusNotFoundException> {
+                    sykmeldingStatusService.registrerBekreftet(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null), sykmeldingId, "user", fnr, token)
+                }
+
+                coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
+                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }
     }

@@ -1,16 +1,21 @@
 package no.nav.syfo.sykmeldingstatus.api
 
 import io.ktor.auth.authenticate
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockkClass
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
@@ -40,6 +45,8 @@ class SykmeldingBekreftApiSpek : Spek({
             it("Bruker skal få bekrefte sin egen sykmelding") {
                 val sykmeldingId = "123"
                 with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
+                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
                             "loginservice",
                             subject = "12345678910",
@@ -49,10 +56,26 @@ class SykmeldingBekreftApiSpek : Spek({
                 }
             }
 
+            it("Bruker skal få bekrefte sin egen avviste sykmelding") {
+                val sykmeldingId = "123"
+                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
+                    setBody(objectMapper.writeValueAsString(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null)))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
+                        "loginservice",
+                        subject = "12345678910",
+                        issuer = env.jwtIssuer)}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.Accepted
+                }
+            }
+
             it("Bruker skal ikke få bekrefte sin egen sykmelding når den ikke kan bekreftes") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
+                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
                             "loginservice",
                             subject = "12345678910",
@@ -65,6 +88,8 @@ class SykmeldingBekreftApiSpek : Spek({
             it("Skal ikke kunne bekrefte annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("Authorization", "Bearer ${generateJWT(
                             "client",
                             "loginservice",
@@ -77,6 +102,8 @@ class SykmeldingBekreftApiSpek : Spek({
 
             it("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("Authorization", "Bearer ${generateJWT(
                             "client",
                             "annenservice",
