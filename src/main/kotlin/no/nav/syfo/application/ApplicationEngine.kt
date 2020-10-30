@@ -72,7 +72,7 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(vaultSecrets, jwkProvider, issuer, env, jwkProviderStsOidc)
+        setupAuth(env.loginserviceIdportenAudience, jwkProvider, issuer, env, jwkProviderStsOidc)
         install(CallId) {
             generate { UUID.randomUUID().toString() }
             verify { callId: String -> callId.isNotEmpty() }

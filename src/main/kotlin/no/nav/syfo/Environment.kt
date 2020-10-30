@@ -19,6 +19,8 @@ data class Environment(
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
     val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
+    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL")
 ) : KafkaConfig
 
@@ -26,9 +28,7 @@ data class VaultSecrets(
     val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
     val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password"),
     val clientId: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_id"),
-    val oidcWellKnownUri: String = getEnvVar("OIDC_WELLKNOWN_URI"),
     val stsOidcWellKnownUri: String = getEnvVar("STS_OIDC_WELLKNOWN_URI"),
-    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENTID"),
     val redisSecret: String = getEnvVar("REDIS_SECRET")
 ) : KafkaCredentials {
     override val kafkaUsername: String = serviceuserUsername

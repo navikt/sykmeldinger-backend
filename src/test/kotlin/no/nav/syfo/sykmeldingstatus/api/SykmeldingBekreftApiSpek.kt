@@ -48,7 +48,7 @@ class SykmeldingBekreftApiSpek : Spek({
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                            "loginservice",
+                            "loginserviceId2",
                             subject = "12345678910",
                             issuer = env.jwtIssuer)}")
                 }) {
@@ -62,7 +62,7 @@ class SykmeldingBekreftApiSpek : Spek({
                     setBody(objectMapper.writeValueAsString(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null)))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                        "loginservice",
+                        "loginserviceId2",
                         subject = "12345678910",
                         issuer = env.jwtIssuer)}")
                 }) {
@@ -77,7 +77,7 @@ class SykmeldingBekreftApiSpek : Spek({
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                            "loginservice",
+                            "loginserviceId2",
                             subject = "12345678910",
                             issuer = env.jwtIssuer)}")
                 }) {
@@ -92,7 +92,7 @@ class SykmeldingBekreftApiSpek : Spek({
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("Authorization", "Bearer ${generateJWT(
                             "client",
-                            "loginservice",
+                            "loginserviceId2",
                             subject = "00000000000",
                             issuer = env.jwtIssuer)}")
                 }) {

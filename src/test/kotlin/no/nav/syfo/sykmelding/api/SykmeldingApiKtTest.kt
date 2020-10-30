@@ -70,7 +70,7 @@ class SykmeldingApiKtTest : Spek({
             it("OK") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
                     addHeader("Authorization", "Bearer ${generateJWT("client",
-                            "loginservice",
+                            "loginserviceId1",
                             subject = "12345678901",
                             issuer = env.jwtIssuer)}")
                 }) {
