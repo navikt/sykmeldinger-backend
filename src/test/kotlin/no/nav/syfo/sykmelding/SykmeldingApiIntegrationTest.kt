@@ -165,7 +165,7 @@ private fun TestApplicationEngine.withGetSykmeldinger(env: Environment, block: T
 
 fun TestApplicationRequest.setUpAuthHeader(env: Environment) {
     addHeader("Authorization", "Bearer ${generateJWT("client",
-            "loginservice",
+            "loginserviceId1",
             subject = "12345678901",
             issuer = env.jwtIssuer)}")
 }
