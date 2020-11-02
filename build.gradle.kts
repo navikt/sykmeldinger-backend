@@ -24,7 +24,7 @@ val junitPlatformLauncher = "1.6.0"
 val nimbusdsVersion = "7.5.1"
 val jedisVersion = "3.1.0"
 val spekVersion = "2.0.9"
-val testcontainersVersion = "1.12.5"
+val testcontainersVersion = "1.15.0-rc2"
 val swaggerUiVersion = "3.10.0"
 plugins {
     kotlin("jvm") version "1.3.61"
