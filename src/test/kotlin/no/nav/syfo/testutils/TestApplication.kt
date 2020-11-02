@@ -17,7 +17,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.mockkClass
 import java.nio.file.Paths
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
@@ -44,19 +43,23 @@ fun TestApplicationEngine.setUpTestApplication() {
 }
 
 fun TestApplicationEngine.setUpAuth(): Environment {
-    val env = Environment(jwtIssuer = "issuer",
-            kafkaBootstrapServers = "",
-            stsOidcIssuer = "https://security-token-service.nais.preprod.local",
-            stsOidcAudience = "preprod.local",
-            pdlGraphqlPath = "http://graphql",
-            cluster = "dev-fss")
+    val audience = listOf("loginserviceId1", "loginserviceId2")
+    val env = Environment(
+        jwtIssuer = "issuer",
+        kafkaBootstrapServers = "",
+        stsOidcIssuer = "https://security-token-service.nais.preprod.local",
+        stsOidcAudience = "preprod.local",
+        pdlGraphqlPath = "http://graphql",
+        cluster = "dev-fss",
+        loginserviceIdportenDiscoveryUrl = "url",
+        loginserviceIdportenAudience = audience
+    )
 
     val mockJwkProvider = mockkClass(JwkProvider::class)
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
-    val vaultSecrets = VaultSecrets("", "", "1", "", "", "loginservice", "")
 
-    application.setupAuth(vaultSecrets, jwkProvider, env.jwtIssuer, env, mockJwkProvider)
+    application.setupAuth(audience, jwkProvider, env.jwtIssuer, env, mockJwkProvider)
     return env
 }

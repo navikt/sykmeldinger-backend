@@ -10,16 +10,15 @@ import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.log
 
-fun Application.setupAuth(vaultSecrets: VaultSecrets, jwkProvider: JwkProvider, issuer: String, env: Environment, stsOidcJwkProvider: JwkProvider) {
+fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvider: JwkProvider, issuer: String, env: Environment, stsOidcJwkProvider: JwkProvider) {
     install(Authentication) {
         jwt(name = "jwt") {
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
-                    hasLoginserviceClientIdAudience(credentials, vaultSecrets) -> JWTPrincipal(credentials.payload)
+                    hasLoginserviceIdportenClientIdAudience(credentials, loginserviceIdportenClientId) -> JWTPrincipal(credentials.payload)
                     else -> unauthorized(credentials)
                 }
             }
@@ -51,6 +50,6 @@ fun unauthorized(credentials: JWTCredential): Principal? {
     return null
 }
 
-fun hasLoginserviceClientIdAudience(credentials: JWTCredential, vaultSecrets: VaultSecrets): Boolean {
-    return credentials.payload.audience.contains(vaultSecrets.loginserviceClientId)
+fun hasLoginserviceIdportenClientIdAudience(credentials: JWTCredential, loginserviceIdportenClientId: List<String>): Boolean {
+    return loginserviceIdportenClientId.any { credentials.payload.audience.contains(it) }
 }

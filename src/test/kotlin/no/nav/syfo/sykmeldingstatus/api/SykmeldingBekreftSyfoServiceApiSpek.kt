@@ -14,7 +14,6 @@ import io.mockk.coEvery
 import io.mockk.mockkClass
 import java.nio.file.Paths
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
@@ -93,20 +92,24 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
         with(TestApplicationEngine()) {
             setUpTestApplication()
 
-            val env = Environment(jwtIssuer = "issuer",
-                    kafkaBootstrapServers = "",
-                    stsOidcIssuer = "https://security-token-service.nais.preprod.local",
-                    stsOidcAudience = "preprod.local",
-                    pdlGraphqlPath = "http://graphql",
-                    cluster = "dev-fss")
+            val audience = listOf("loginserviceId1", "loginserviceId2")
+            val env = Environment(
+                jwtIssuer = "issuer",
+                kafkaBootstrapServers = "",
+                stsOidcIssuer = "https://security-token-service.nais.preprod.local",
+                stsOidcAudience = "preprod.local",
+                pdlGraphqlPath = "http://graphql",
+                cluster = "dev-fss",
+                loginserviceIdportenDiscoveryUrl = "url",
+                loginserviceIdportenAudience = audience
+            )
 
             val mockJwkProvider = mockkClass(JwkProvider::class)
             val path = "src/test/resources/jwkset.json"
             val uri = Paths.get(path).toUri().toURL()
             val jwkProvider = JwkProviderBuilder(uri).build()
-            val vaultSecrets = VaultSecrets("", "", "1", "", "", "", "")
 
-            application.setupAuth(vaultSecrets, mockJwkProvider, "issuer1", env, jwkProvider)
+            application.setupAuth(audience, mockJwkProvider, "issuer1", env, jwkProvider)
             application.routing { authenticate("oidc") { registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService) } }
 
             it("Should authenticate") {
@@ -115,10 +118,12 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
+                    addHeader("AUTHORIZATION", "Bearer ${
+                        generateJWT("client",
                             "preprod.local",
                             subject = "srvsyfoservice",
-                            issuer = env.stsOidcIssuer)}")
+                            issuer = env.stsOidcIssuer)
+                    }")
                     addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Created
@@ -128,11 +133,13 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/123/bekreft") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT(
+                    addHeader("Authorization", "Bearer ${
+                        generateJWT(
                             "client",
                             "preprod.local",
                             subject = "srvsyforegister",
-                            issuer = env.stsOidcIssuer)}")
+                            issuer = env.stsOidcIssuer)
+                    }")
                     addHeader("FNR", "fnr")
                 }) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
