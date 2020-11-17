@@ -186,8 +186,8 @@ class SykmeldingStatusServiceSpek : Spek({
         it("Bruker skal få BEKREFTET sykmelding med status APEN") {
             checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN)
         }
-        it("Bruker skal få BEKREFTET en sykmelding med status BEKREFTET") {
-            checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.BEKREFTET)
+        it("Bruker skal ikke få BEKREFTET en sykmelding med status BEKREFTET") {
+            checkStatusFails(StatusEventDTO.BEKREFTET, StatusEventDTO.BEKREFTET)
         }
 
         it("Bruker skal ikke få bekrefte sin egen sykmelding med status AVBRUTT") {
