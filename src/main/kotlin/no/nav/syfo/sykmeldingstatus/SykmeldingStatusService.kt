@@ -42,8 +42,15 @@ class SykmeldingStatusService(
         }
     }
 
-    suspend fun registrerSendt(sykmeldingSendEventDTO: SykmeldingSendEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        if (source == "syfoservice") {
+    suspend fun registrerSendt(
+        sykmeldingSendEventDTO: SykmeldingSendEventDTO,
+        sykmeldingId: String,
+        source: String,
+        fnr: String,
+        token: String,
+        fromSyfoservice: Boolean
+    ) {
+        if (fromSyfoservice) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
