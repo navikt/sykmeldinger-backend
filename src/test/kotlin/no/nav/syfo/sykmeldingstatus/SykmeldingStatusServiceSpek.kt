@@ -42,7 +42,14 @@ class SykmeldingStatusServiceSpek : Spek({
             val expextedErrorMessage = "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
             val error = assertFailsWith<InvalidSykmeldingStatusException> {
                 when (newStatus) {
-                    StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(opprettSykmeldingSendEventDTO(), sykmeldingId, "user", fnr, token)
+                    StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(
+                        opprettSykmeldingSendEventDTO(),
+                        sykmeldingId,
+                        "user",
+                        fnr,
+                        token,
+                        false
+                    )
                     StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "user", fnr, token)
                     else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr, token)
                 }
@@ -54,7 +61,14 @@ class SykmeldingStatusServiceSpek : Spek({
         runBlocking {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus)
             when (newStatus) {
-                StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(opprettSykmeldingSendEventDTO(), sykmeldingId, "user", fnr, token)
+                StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(
+                    opprettSykmeldingSendEventDTO(),
+                    sykmeldingId,
+                    "user",
+                    fnr,
+                    token,
+                    false
+                )
                 StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "user", fnr, token)
                 else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr, token)
             }
@@ -107,7 +121,14 @@ class SykmeldingStatusServiceSpek : Spek({
     describe("Spesialhåndtering for syfoservice") {
         it("Skal ikke sjekke status eller tilgang når source er syfoservice ved sending") {
             runBlocking {
-                sykmeldingStatusService.registrerSendt(opprettSykmeldingSendEventDTO(), sykmeldingId, "syfoservice", fnr, token)
+                sykmeldingStatusService.registrerSendt(
+                    opprettSykmeldingSendEventDTO(),
+                    sykmeldingId,
+                    "syfoservice",
+                    fnr,
+                    token,
+                    true
+                )
 
                 coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }

@@ -18,12 +18,15 @@ fun Route.registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService: Sykmeldi
         val token = call.request.headers["Authorization"]!!
         val syfoserviceSource = call.request.headers["source"]
         val source = syfoserviceSource ?: "syfoservice"
-        sykmeldingStatusService.registrerSendt(sykmeldingSendEventDTO = sykmeldingSendEventDTO,
-                sykmeldingId =
-                sykmeldingId,
-                source = source,
-                fnr = fnr,
-                token = token)
+        sykmeldingStatusService.registrerSendt(
+            sykmeldingSendEventDTO = sykmeldingSendEventDTO,
+            sykmeldingId =
+            sykmeldingId,
+            source = source,
+            fnr = fnr,
+            token = token,
+            fromSyfoservice = true
+        )
         log.info("Sendt sykmelding {}", sykmeldingId)
         call.respond(HttpStatusCode.Created)
     }

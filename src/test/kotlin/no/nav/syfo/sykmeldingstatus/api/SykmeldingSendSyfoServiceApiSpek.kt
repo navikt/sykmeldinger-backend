@@ -39,7 +39,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
 
             it("Skal returnere Created hvis alt går bra") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } returns Unit
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -51,7 +51,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             }
             it("Returnerer 500 hvis noe går galt") {
                 val sykmeldingId = "1235"
-                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -63,7 +63,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             }
             it("Returerer BadRequest når man ikke kan endre status") {
                 val sykmeldingId = "1234"
-                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId")
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId")
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -76,7 +76,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             }
             it("Returerer NotFound når status ikke finnes for bruker") {
                 val sykmeldingId = "1234"
-                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -116,7 +116,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
 
             it("Should authenticate") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } returns Unit
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } returns Unit
                 with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
                     setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
