@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmeldingstatus
 
 import no.nav.syfo.client.SyfosmregisterStatusClient
+import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
@@ -87,6 +88,7 @@ class SykmeldingStatusService(
                 statusFromRegister
             }
         } catch (e: Exception) {
+            log.error("Could not find sykmeldingstatus for $sykmeldingId", e)
             throw SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", e)
         }
     }
