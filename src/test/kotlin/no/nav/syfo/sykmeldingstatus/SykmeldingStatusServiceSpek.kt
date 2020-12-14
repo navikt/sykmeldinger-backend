@@ -132,7 +132,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
                 coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
                 verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }
@@ -142,7 +142,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
                 coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
                 verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }
@@ -152,7 +152,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
                 coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+                verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
                 verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }

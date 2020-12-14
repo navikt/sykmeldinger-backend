@@ -33,6 +33,7 @@ class SykmeldingStatusService(
     suspend fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
         if (source == "syfoservice") {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
             if (canChangeStatus(sykmeldingStatusEventDTO.statusEvent, sisteStatus.statusEvent, sykmeldingId)) {
@@ -52,6 +53,7 @@ class SykmeldingStatusService(
     ) {
         if (fromSyfoservice) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
             if (canChangeStatus(StatusEventDTO.SENDT, sisteStatus.statusEvent, sykmeldingId)) {
@@ -64,6 +66,7 @@ class SykmeldingStatusService(
     suspend fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
         if (source == "syfoservice") {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
             if (canChangeStatus(StatusEventDTO.BEKREFTET, sisteStatus.statusEvent, sykmeldingId)) {
