@@ -78,7 +78,7 @@ class SyfosmregisterClientSpek : Spek({
     val syfosmregisterClient = SyfosmregisterStatusClient("$mockHttpServerUrl/smreg", httpClient)
 
     afterGroup {
-        mockServer.stop(1, 1, TimeUnit.SECONDS)
+        mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
     describe("Test av sykmeldingstatus-API") {

@@ -2,7 +2,10 @@ package no.nav.syfo.sykmeldingstatus.kafka
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
+import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
+import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
 import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.ShortNameDTO
 import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
@@ -31,7 +34,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
             sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual StatusEventDTO.SENDT
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_SENDT
             sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual listOf(
                 no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                     "Arbeidssituasjon",
@@ -55,7 +58,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
             sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual StatusEventDTO.BEKREFTET
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_BEKREFTET
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
             sykmeldingStatusKafkaEventDTO.sporsmals?.size shouldEqual 4
             sykmeldingStatusKafkaEventDTO.sporsmals!![0] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
@@ -88,7 +91,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
             sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual StatusEventDTO.BEKREFTET
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_BEKREFTET
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
             sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
         }
@@ -101,7 +104,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
             sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual StatusEventDTO.BEKREFTET
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_BEKREFTET
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
             sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
         }
@@ -116,7 +119,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
             sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual StatusEventDTO.AVBRUTT
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_AVBRUTT
             sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
         }
@@ -129,7 +132,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
             sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual StatusEventDTO.APEN
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_APEN
             sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
         }
