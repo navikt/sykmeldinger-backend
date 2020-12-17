@@ -101,7 +101,9 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                 pdlGraphqlPath = "http://graphql",
                 cluster = "dev-fss",
                 loginserviceIdportenDiscoveryUrl = "url",
-                loginserviceIdportenAudience = audience
+                loginserviceIdportenAudience = audience,
+                truststore = "",
+                truststorePassword = ""
             )
 
             val mockJwkProvider = mockkClass(JwkProvider::class)
