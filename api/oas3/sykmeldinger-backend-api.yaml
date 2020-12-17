@@ -438,6 +438,10 @@ components:
           type: boolean
         harRedusertArbeidsgiverperiode:
           type: boolean
+        merknader:
+          type: array
+          items:
+            $ref: '#/components/schemas/Merknad'
     SyforestSykmelding:
       type: object
       required:
@@ -508,6 +512,10 @@ components:
           $ref: '#/components/schemas/Tilbakedatering'
         bekreftelse:
           $ref: '#/components/schemas/Bekreftelse'
+        merknader:
+          type: array
+          items:
+            $ref: '#/components/schemas/Merknad'
     Prognose:
       type: object
       required:
@@ -941,6 +949,15 @@ components:
         sykmelder:
           type: string
         sykmelderTlf:
+          type: string
+    Merknad:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+        beskrivelse:
           type: string
 
   securitySchemes:

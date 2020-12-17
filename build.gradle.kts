@@ -5,17 +5,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.0.1"
-val ktorVersion = "1.2.6"
+val coroutinesVersion = "1.3.9"
+val ktorVersion = "1.4.1"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "5.1"
 val prometheusVersion = "0.8.0"
-val smCommonVersion = "1.7bf5e6f"
-val smCommonModelVersion = "1.7cb158e"
+val smCommonVersion = "1.836b169"
 val sykmeldingVersion = "2019.07.29-02-53-86b22e73f7843e422ee500b486dac387a582f2d1"
 val fellesformatVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
 val kithHodemeldingVersion = "2019.07.30-12-26-5c924ef4f04022bbb850aaf299eb8e4464c1ca6a"
-val jacksonVersion = "2.9.7"
+val jacksonVersion = "2.10.2"
 val kluentVersion = "1.49"
 val kafkaEmbeddedVersion = "2.3.0"
 val mockkVersion = "1.9.3"
@@ -24,7 +23,7 @@ val junitPlatformLauncher = "1.6.0"
 val nimbusdsVersion = "7.5.1"
 val jedisVersion = "3.1.0"
 val spekVersion = "2.0.9"
-val testcontainersVersion = "1.15.0-rc2"
+val testcontainersVersion = "1.15.0"
 val swaggerUiVersion = "3.10.0"
 plugins {
     kotlin("jvm") version "1.3.61"
@@ -68,7 +67,7 @@ dependencies {
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-models:$smCommonModelVersion")
+    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
 

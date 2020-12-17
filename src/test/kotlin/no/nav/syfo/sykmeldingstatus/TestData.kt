@@ -10,6 +10,7 @@ import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
 import no.nav.syfo.sykmelding.model.DiagnoseDTO
 import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
 import no.nav.syfo.sykmelding.model.MedisinskVurderingDTO
+import no.nav.syfo.sykmelding.model.MerknadDTO
 import no.nav.syfo.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
@@ -21,6 +22,7 @@ import no.nav.syfo.sykmelding.syforestmodel.Diagnose
 import no.nav.syfo.sykmelding.syforestmodel.Diagnoseinfo
 import no.nav.syfo.sykmelding.syforestmodel.Friskmelding
 import no.nav.syfo.sykmelding.syforestmodel.MeldingTilNav
+import no.nav.syfo.sykmelding.syforestmodel.Merknad
 import no.nav.syfo.sykmelding.syforestmodel.MulighetForArbeid
 import no.nav.syfo.sykmelding.syforestmodel.Pasient
 import no.nav.syfo.sykmelding.syforestmodel.Periode
@@ -39,7 +41,7 @@ fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: Offs
     return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null)
 }
 
-fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN)): SykmeldingDTO {
+fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): SykmeldingDTO {
     return SykmeldingDTO(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
@@ -67,7 +69,8 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         andreTiltak = null,
         egenmeldt = false,
         harRedusertArbeidsgiverperiode = false,
-        papirsykmelding = false)
+        papirsykmelding = false,
+        merknader = merknader)
 }
 
 fun getMedisinskVurdering(): MedisinskVurderingDTO {
@@ -85,7 +88,7 @@ fun getSykmeldingStatusDto(statusEventDTO: StatusEventDTO, offsetDateTime: Offse
     return SykmeldingStatusDTO(timestamp = offsetDateTime, statusEvent = statusEventDTO.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList())
 }
 
-fun lagSyforestSykmelding(): SyforestSykmelding {
+fun lagSyforestSykmelding(merknader: List<Merknad>? = null): SyforestSykmelding {
     return SyforestSykmelding(
         id = "1",
         startLegemeldtFravaer = null,
@@ -132,6 +135,7 @@ fun lagSyforestSykmelding(): SyforestSykmelding {
         meldingTilNav = MeldingTilNav(),
         innspillTilArbeidsgiver = null,
         tilbakedatering = Tilbakedatering(null, null),
-        bekreftelse = Bekreftelse(LocalDate.now(), "fornavn etternavn", null)
+        bekreftelse = Bekreftelse(LocalDate.now(), "fornavn etternavn", null),
+        merknader = merknader
     )
 }

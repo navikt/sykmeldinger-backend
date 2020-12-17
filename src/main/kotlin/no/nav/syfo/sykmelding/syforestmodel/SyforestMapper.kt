@@ -59,7 +59,8 @@ fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient): Syfor
         meldingTilNav = if (sykmeldingDTO.meldingTilNAV != null) { tilMeldingTilNav((sykmeldingDTO.meldingTilNAV)) } else { MeldingTilNav() },
         innspillTilArbeidsgiver = sykmeldingDTO.meldingTilArbeidsgiver,
         tilbakedatering = tilTilbakedatering(sykmeldingDTO.kontaktMedPasient),
-        bekreftelse = tilBekreftelse(sykmeldingDTO.behandler, sykmeldingDTO.behandletTidspunkt)
+        bekreftelse = tilBekreftelse(sykmeldingDTO.behandler, sykmeldingDTO.behandletTidspunkt),
+        merknader = sykmeldingDTO.merknader?.map { Merknad(type = it.type, beskrivelse = it.beskrivelse) }
     )
 }
 
@@ -79,7 +80,7 @@ fun finnArbeidssituasjon(sykmeldingStatusDTO: SykmeldingStatusDTO): String? {
 }
 
 fun finnSendtDato(sykmeldingStatusDTO: SykmeldingStatusDTO): LocalDateTime? {
-    if (sykmeldingStatusDTO.statusEvent == "SENDT" || sykmeldingStatusDTO.statusEvent == "BEKREFTET") {
+    if (sykmeldingStatusDTO.statusEvent == "SENDT" || sykmeldingStatusDTO.statusEvent == "BEKREFTET" || sykmeldingStatusDTO.statusEvent == "AVBRUTT") {
         return sykmeldingStatusDTO.timestamp.atZoneSameInstant(ZoneId.of("Europe/Oslo")).toLocalDateTime().withNano(0)
     }
     return null

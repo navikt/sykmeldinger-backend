@@ -1,21 +1,9 @@
 package no.nav.syfo.sykmelding
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.auth.authenticate
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.engine.mock.respondError
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
@@ -38,6 +26,8 @@ import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusDto
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import no.nav.syfo.testutils.HttpClientTest
+import no.nav.syfo.testutils.ResponseData
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
@@ -47,33 +37,13 @@ import org.spekframework.spek2.style.specification.describe
 
 @KtorExperimentalAPI
 class SykmeldingApiIntegrationTest : Spek({
-    var block: () -> HttpResponseData = {
-        respondError(HttpStatusCode.NotFound)
-    }
-    fun setResponseData(responseData: HttpResponseData) {
-        block = { responseData }
-    }
-    val httpClient = HttpClient(MockEngine) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        engine {
-            addHandler { request ->
-                block()
-            }
-        }
-    }
-    fun setSykmeldingRespons(sykmeldingData: List<SykmeldingDTO>) =
-            setResponseData(respond(objectMapper.writeValueAsString(sykmeldingData), HttpStatusCode.OK, headersOf("Content-Type", "application/json")))
+
+    val httpClient = HttpClientTest()
+    httpClient.responseData = ResponseData(HttpStatusCode.NotFound, "")
 
     val redisService = mockkClass(SykmeldingStatusRedisService::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
-    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient)
+    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient)
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
 
     every { redisService.getStatus(any()) } returns null
@@ -84,7 +54,7 @@ class SykmeldingApiIntegrationTest : Spek({
             val env = setUpAuth()
             application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
             it("Should get list of sykmeldinger OK") {
-                setSykmeldingRespons(emptyList())
+                httpClient.respond(emptyList<SykmeldingDTO>())
                 withGetSykmeldinger(env) {
                     response.status() shouldEqual HttpStatusCode.OK
                 }
@@ -94,7 +64,7 @@ class SykmeldingApiIntegrationTest : Spek({
                         StatusEventDTO.APEN,
                         OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
                 ))
-                setSykmeldingRespons(listOf(sykmeldingDTO))
+                httpClient.respond(listOf(sykmeldingDTO))
                 val newSykmeldingStatus = getSykmeldingStatusRedisModel(
                         StatusEventDTO.SENDT, sykmeldingDTO.sykmeldingStatus.timestamp.plusSeconds(1)
                 )
@@ -117,7 +87,7 @@ class SykmeldingApiIntegrationTest : Spek({
                         StatusEventDTO.APEN,
                         OffsetDateTime.now(ZoneOffset.UTC)
                 ))
-                setSykmeldingRespons(listOf(sykmeldingDTO))
+                httpClient.respond(listOf(sykmeldingDTO))
                 val redisSykmeldingStatus = getSykmeldingStatusRedisModel(
                         StatusEventDTO.BEKREFTET,
                         OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
@@ -131,21 +101,21 @@ class SykmeldingApiIntegrationTest : Spek({
                 }
             }
             it("Should get unauthorize when register returns unauthorized") {
-                setResponseData(respondError(HttpStatusCode.Unauthorized))
+                httpClient.respond(HttpStatusCode.Unauthorized, "Unauthorized")
                 withGetSykmeldinger(env) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                     response.content shouldEqual "Unauthorized"
                 }
             }
             it("Should get forbidden when register returns forbidden") {
-                setResponseData(respondError(HttpStatusCode.Forbidden))
+                httpClient.respond(HttpStatusCode.Forbidden, "Forbidden")
                 withGetSykmeldinger(env) {
                     response.status() shouldEqual HttpStatusCode.Forbidden
                     response.content shouldEqual "Forbidden"
                 }
             }
             it("Should get 500 when register returns 500") {
-                setResponseData(respondError(HttpStatusCode.InternalServerError, "Feil i registeret"))
+                httpClient.respond(HttpStatusCode.InternalServerError, "Feil i registeret")
                 withGetSykmeldinger(env) {
                     response.status() shouldEqual HttpStatusCode.InternalServerError
                     response.content shouldEqual "Feil i registeret"

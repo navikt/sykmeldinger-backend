@@ -1,9 +1,13 @@
 package no.nav.syfo.sykmeldingstatus.kafka
 
 import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
+import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
+import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
+import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
+import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
+import no.nav.syfo.model.sykmeldingstatus.STATUS_UTGATT
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.StatusEventDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
@@ -15,20 +19,20 @@ fun SykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: Stri
 }
 
 fun SykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
-    return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, StatusEventDTO.SENDT, this.arbeidsgiver.tilArbeidsgiverStatusDTO(), tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
+    return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, STATUS_SENDT, this.arbeidsgiver.tilArbeidsgiverStatusDTO(), tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
 }
 
 fun SykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
-    return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, StatusEventDTO.BEKREFTET, null, tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
+    return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, STATUS_BEKREFTET, null, tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.tilStatusEventDTO(): StatusEventDTO {
+fun no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.tilStatusEventDTO(): String {
     return when (this) {
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.BEKREFTET -> StatusEventDTO.BEKREFTET
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN -> StatusEventDTO.APEN
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.SENDT -> StatusEventDTO.SENDT
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT -> StatusEventDTO.AVBRUTT
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.UTGATT -> StatusEventDTO.UTGATT
+        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.BEKREFTET -> STATUS_BEKREFTET
+        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN -> STATUS_APEN
+        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.SENDT -> STATUS_SENDT
+        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT -> STATUS_AVBRUTT
+        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.UTGATT -> STATUS_UTGATT
     }
 }
 
