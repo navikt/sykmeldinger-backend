@@ -40,5 +40,6 @@ data class SyforestSykmelding(
     // 11 TILBAKEDATERING
     val tilbakedatering: Tilbakedatering = Tilbakedatering(),
     // 12 BEKREFTELSE
-    val bekreftelse: Bekreftelse = Bekreftelse()
+    val bekreftelse: Bekreftelse = Bekreftelse(),
+    val merknader: List<Merknad>?
 )

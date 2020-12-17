@@ -83,7 +83,7 @@ class SyfosmregisterClientSpek : Spek({
 
     describe("Test av sykmeldingstatus-API") {
         it("Kan hente status for egen sykmelding med status APEN") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO? = null
+            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("1", "token")
             }
@@ -93,7 +93,7 @@ class SyfosmregisterClientSpek : Spek({
         }
 
         it("Kan hente status for egen sykmelding med status SENDT") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO? = null
+            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("2", "token")
             }
@@ -103,7 +103,7 @@ class SyfosmregisterClientSpek : Spek({
         }
 
         it("Kan hente status for egen sykmelding med status BEKREFTET") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO? = null
+            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("3", "token")
             }
@@ -113,7 +113,7 @@ class SyfosmregisterClientSpek : Spek({
         }
 
         it("Kan hente status for egen sykmelding med status AVBRUTT") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO? = null
+            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("4", "token")
             }

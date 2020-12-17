@@ -16,8 +16,10 @@ import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
+import no.nav.syfo.sykmelding.model.MerknadDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.syforestmodel.Merknad
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
@@ -80,6 +82,20 @@ class SykmeldingServiceTest : Spek({
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
                 syforestSykmeldinger shouldEqual listOf(lagSyforestSykmelding())
+            }
+            coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
+        }
+
+        it("Hent sykmeldinger med merknad") {
+            val sykmelding = getSykmeldingModel(merknader = listOf(MerknadDTO("UGYLDIG_TILBAKEDATERING", null)))
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
+            every { sykmeldingStatusRedisService.getStatus(any()) } returns null
+            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"))
+
+            runBlocking {
+                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+
+                syforestSykmeldinger shouldEqual listOf(lagSyforestSykmelding(merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", null))))
             }
             coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
         }
