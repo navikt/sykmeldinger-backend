@@ -11,6 +11,7 @@ import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.HentPerson
 import no.nav.syfo.pdl.client.model.ResponseData
+import no.nav.syfo.pdl.client.model.ResponseError
 import no.nav.syfo.pdl.error.PersonNotFoundInPdl
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
@@ -35,7 +36,7 @@ class PdlServiceTest : Spek({
         }
 
         it("Skal feile når person ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(null))
+            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(null), listOf(ResponseError("melding", null, null, null)))
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
@@ -47,7 +48,7 @@ class PdlServiceTest : Spek({
         it("Skal feile når navn er tom liste") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(hentPerson = HentPerson(
                 navn = emptyList()
-            )))
+            )), listOf(ResponseError("melding", null, null, null)))
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
@@ -58,7 +59,7 @@ class PdlServiceTest : Spek({
         it("Skal feile når navn ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(hentPerson = HentPerson(
                 navn = null
-            )))
+            )), listOf(ResponseError("melding", null, null, null)))
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
