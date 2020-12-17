@@ -31,6 +31,8 @@ class PdlClientTest : Spek({
             runBlocking {
                 val response = pdlClient.getPerson("12345678901", "Bearer token", "Bearer token")
                 response.data.hentPerson shouldEqual null
+                response.errors?.size shouldEqual 1
+                response.errors!![0].message shouldEqual "Ikke tilgang til å se person"
             }
         }
     }
