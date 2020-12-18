@@ -33,5 +33,12 @@ data class ErrorLocation(
 
 data class ErrorExtension(
     val code: String?,
+    val details: ErrorDetails?,
     val classification: String?
+)
+
+data class ErrorDetails(
+    val type: String? = null,
+    val cause: String? = null,
+    val policy: String? = null
 )
