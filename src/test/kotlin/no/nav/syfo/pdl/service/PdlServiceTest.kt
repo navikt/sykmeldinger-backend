@@ -8,6 +8,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.client.model.ErrorDetails
+import no.nav.syfo.pdl.client.model.ErrorExtension
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.HentPerson
 import no.nav.syfo.pdl.client.model.ResponseData
@@ -36,7 +38,8 @@ class PdlServiceTest : Spek({
         }
 
         it("Skal feile når person ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(null), listOf(ResponseError("melding", null, null, null)))
+            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(null), listOf(
+                ResponseError("Ikke tilgang", null, null, ErrorExtension("unauthorized", ErrorDetails("abac-deny", "cause", "policy"), null))))
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")

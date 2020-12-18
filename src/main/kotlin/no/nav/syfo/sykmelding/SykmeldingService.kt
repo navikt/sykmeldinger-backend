@@ -2,6 +2,7 @@ package no.nav.syfo.sykmelding
 
 import io.ktor.util.KtorExperimentalAPI
 import java.util.UUID
+import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
@@ -35,8 +36,14 @@ class SykmeldingService(
             .filter { it.behandlingsutfall.status != RegelStatusDTO.INVALID }
             .map(this::getSykmeldingWithLatestStatus)
         if (sykmeldingsliste.isNotEmpty()) {
-            val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPersonnavn(fnr = fnr, userToken = token, callId = UUID.randomUUID().toString()))
-            return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient) }
+            val callId = UUID.randomUUID().toString()
+            try {
+                val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPersonnavn(fnr = fnr, userToken = token, callId = callId))
+                return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient) }
+            } catch (e: Exception) {
+                log.error("Noe gikk galt ved mapping av sykmeldinger med id: ${sykmeldingsliste.first().id}, callid: $callId")
+                throw e
+            }
         }
         return emptyList()
     }
