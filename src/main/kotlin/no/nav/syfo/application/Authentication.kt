@@ -18,7 +18,7 @@ fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvide
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
-                    hasLoginserviceIdportenClientIdAudience(credentials, loginserviceIdportenClientId) -> JWTPrincipal(credentials.payload)
+                    hasLoginserviceIdportenClientIdAudience(credentials, loginserviceIdportenClientId) && erNiva4(credentials) -> JWTPrincipal(credentials.payload)
                     else -> unauthorized(credentials)
                 }
             }
@@ -52,4 +52,8 @@ fun unauthorized(credentials: JWTCredential): Principal? {
 
 fun hasLoginserviceIdportenClientIdAudience(credentials: JWTCredential, loginserviceIdportenClientId: List<String>): Boolean {
     return loginserviceIdportenClientId.any { credentials.payload.audience.contains(it) }
+}
+
+fun erNiva4(credentials: JWTCredential): Boolean {
+    return "Level4" == credentials.payload.getClaim("acr").asString()
 }

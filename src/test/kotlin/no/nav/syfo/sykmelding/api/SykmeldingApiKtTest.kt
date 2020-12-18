@@ -87,6 +87,17 @@ class SykmeldingApiKtTest : Spek({
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }
+            it("Unauthorized, nivå 3") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    addHeader("Authorization", "Bearer ${generateJWT("client",
+                        "loginserviceId1",
+                        subject = "12345678901",
+                        issuer = env.jwtIssuer,
+                        level = "Level3")}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                }
+            }
             it("Unauthorized, missing token") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {}) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
