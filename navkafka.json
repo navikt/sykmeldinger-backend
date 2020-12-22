@@ -11,6 +11,7 @@
         {"member":"srvegenmeldt", "role":"CONSUMER"},
         {"member":"srvisprediksjon", "role":"CONSUMER"},
         {"member":"srvsyfoservice-dat", "role":"PRODUCER"},
+        {"member":"srvsyfoservice-dat", "role":"CONSUMER"},
         {"member":"s151890", "role":"MANAGER"},
         {"member":"k143566", "role":"MANAGER"},
         {"member":"f133008", "role":"MANAGER"},
