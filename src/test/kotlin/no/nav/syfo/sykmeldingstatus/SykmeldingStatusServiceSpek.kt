@@ -255,8 +255,8 @@ class SykmeldingStatusServiceSpek : Spek({
         it("Skal ikke kunne avbryte en allerede AVBRUTT sykmelding") {
             checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.AVBRUTT)
         }
-        it("Skal ikke kunne avbryte en UTGATT sykmelding") {
-            checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.UTGATT)
+        it("Skal kunne avbryte en UTGATT sykmelding") {
+            checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.UTGATT)
         }
     }
 })

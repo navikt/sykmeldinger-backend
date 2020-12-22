@@ -26,7 +26,7 @@ class SykmeldingStatusService(
                 Pair(StatusEventDTO.BEKREFTET, listOf(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT)),
                 Pair(StatusEventDTO.SENDT, emptyList()),
                 Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN)),
-                Pair(StatusEventDTO.UTGATT, emptyList())
+                Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT))
         )
     }
 
