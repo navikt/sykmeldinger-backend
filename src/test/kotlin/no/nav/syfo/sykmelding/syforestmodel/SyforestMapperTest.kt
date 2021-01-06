@@ -1,8 +1,13 @@
 package no.nav.syfo.sykmelding.syforestmodel
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -78,6 +83,17 @@ class SyforestMapperTest : Spek({
             syforestSykmelding.innspillTilArbeidsgiver shouldEqual syforestSykmeldingFasit.innspillTilArbeidsgiver
             syforestSykmelding.tilbakedatering shouldEqual syforestSykmeldingFasit.tilbakedatering
             syforestSykmelding.bekreftelse shouldEqual syforestSykmeldingFasit.bekreftelse
+        }
+
+        it("Setter status UTGAATT for ny sykmelding mottatt før 1/1 2020") {
+            val status = tilStatus(SykmeldingStatusDTO(STATUS_APEN, OffsetDateTime.now(ZoneOffset.UTC).minusYears(1), null, emptyList()), LocalDate.of(2019, 12, 31))
+
+            status shouldEqual "UTGAATT"
+        }
+        it("Setter status NY for ny sykmelding mottatt etter 1/1 2020") {
+            val status = tilStatus(SykmeldingStatusDTO(STATUS_APEN, OffsetDateTime.now(ZoneOffset.UTC).minusYears(1), null, emptyList()), LocalDate.of(2020, 1, 1))
+
+            status shouldEqual "NY"
         }
     }
 })

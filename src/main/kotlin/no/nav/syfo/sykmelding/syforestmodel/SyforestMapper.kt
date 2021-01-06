@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding.syforestmodel
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -38,7 +39,7 @@ fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient): Syfor
         startLegemeldtFravaer = sykmeldingDTO.syketilfelleStartDato,
         skalViseSkravertFelt = !sykmeldingDTO.skjermesForPasient,
         identdato = sykmeldingDTO.syketilfelleStartDato,
-        status = tilStatus(sykmeldingDTO.sykmeldingStatus),
+        status = tilStatus(sykmeldingDTO.sykmeldingStatus, sykmeldingDTO.mottattTidspunkt.toLocalDate()),
         naermesteLederStatus = null, // brukes ikke av frontend
         erEgenmeldt = sykmeldingDTO.egenmeldt ?: false,
         erPapirsykmelding = sykmeldingDTO.papirsykmelding ?: false,
@@ -64,8 +65,10 @@ fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient): Syfor
     )
 }
 
-fun tilStatus(sykmeldingStatusDTO: SykmeldingStatusDTO): String =
-    if (sykmeldingStatusDTO.statusEvent == "APEN") {
+fun tilStatus(sykmeldingStatusDTO: SykmeldingStatusDTO, mottattDato: LocalDate): String =
+    if (sykmeldingStatusDTO.statusEvent == "APEN" && mottattDato.isBefore(LocalDate.of(2020, 1, 1))) {
+        "UTGAATT"
+    } else if (sykmeldingStatusDTO.statusEvent == "APEN") {
         "NY"
     } else {
         sykmeldingStatusDTO.statusEvent
