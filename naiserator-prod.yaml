@@ -8,7 +8,7 @@ metadata:
 spec:
   image: {{ image }}
   replicas:
-    min: 2
+    min: 3
     max: 6
     cpuThresholdPercentage: 90
   port: 8080
@@ -28,11 +28,11 @@ spec:
     path: /prometheus
   resources:
     limits:
-      cpu: 500m
+      cpu: 2560m
       memory: 1Gi
     requests:
-      cpu: 400m
-      memory: 768Mi
+      cpu: 2048m
+      memory: 1Gi
   vault:
     enabled: true
     paths:
