@@ -6,8 +6,11 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.objectMapper
+import no.nav.syfo.sykmelding.model.GradertDTO
+import no.nav.syfo.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -94,6 +97,25 @@ class SyforestMapperTest : Spek({
             val status = tilStatus(SykmeldingStatusDTO(STATUS_APEN, OffsetDateTime.now(ZoneOffset.UTC).minusYears(1), null, emptyList()), LocalDate.of(2020, 1, 1))
 
             status shouldEqual "NY"
+        }
+
+        it("Setter reisetilskudd til true hvis periode er gradert med reisetilskudd") {
+            val sykmeldingsperiodeDTO = SykmeldingsperiodeDTO(
+                fom = LocalDate.now(),
+                tom = LocalDate.now(),
+                gradert = GradertDTO(
+                    grad = 50,
+                    reisetilskudd = true
+                ),
+                type = PeriodetypeDTO.GRADERT,
+                aktivitetIkkeMulig = null,
+                behandlingsdager = null,
+                innspillTilArbeidsgiver = null,
+                reisetilskudd = false
+            )
+            val periode = tilPeriode(sykmeldingsperiodeDTO, false)
+
+            periode.reisetilskudd shouldEqual true
         }
     }
 })
