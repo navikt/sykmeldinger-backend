@@ -43,6 +43,7 @@ import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingAvbrytApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendSyfoServiceApi
@@ -121,6 +122,7 @@ fun createApplicationEngine(
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
+                registerSykmeldingAvbrytApi(sykmeldingStatusService)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)
