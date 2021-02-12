@@ -46,6 +46,10 @@ data class SykmeldingBekreftEventDTO(
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 
+data class SykmeldingBekreftEventUserDTO(
+    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
+)
+
 data class SporsmalOgSvarDTO(
     val tekst: String,
     val shortName: ShortNameDTO,

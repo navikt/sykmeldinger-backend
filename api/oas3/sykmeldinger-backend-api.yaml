@@ -47,16 +47,16 @@ paths:
 
   /api/v1/sykmeldinger/{sykmeldingId}/bekreft:
     post:
-      operationId: bekreftAvvistSykmelding
+      operationId: bekreftSykmelding
       tags:
         - Sykmeldingstatus
       security:
         - bearerAuth: []
-      summary: Bekreft avviste sykmeldinger for sluttbruker
+      summary: Bekreft sykmeldinger for sluttbruker, både vanlige og avviste
       parameters:
         - $ref: '#/components/parameters/sykmeldingId'
       requestBody:
-        $ref: '#/components/requestBodies/SyfoServiceBekreftSykmeldingEvent'
+        $ref: '#/components/requestBodies/UserBekreftSykmeldingEvent'
       responses:
         '202':
           description: Accepted
@@ -177,6 +177,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SykmeldingSendEventDTO'
+    UserBekreftSykmeldingEvent:
+      description: "BekreftEvent sluttbruker"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SykmeldingBekreftEventUserDTO'
 
   parameters:
     sykmeldingId:
@@ -259,6 +265,11 @@ components:
       properties:
         timestamp:
           $ref: '#/components/schemas/Timestamp'
+        sporsmalOgSvarListe:
+          $ref: '#/components/schemas/SporsmalOgSvarListe'
+    SykmeldingBekreftEventUserDTO:
+      type: object
+      properties:
         sporsmalOgSvarListe:
           $ref: '#/components/schemas/SporsmalOgSvarListe'
     SykmeldingSendEventDTO:
