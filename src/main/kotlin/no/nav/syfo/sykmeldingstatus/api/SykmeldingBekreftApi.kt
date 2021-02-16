@@ -8,6 +8,8 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
@@ -17,10 +19,13 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
         val token = call.request.headers["Authorization"]!!
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
-        val sykmeldingBekreftEventDTO = call.receive<SykmeldingBekreftEventDTO>()
+        val sykmeldingBekreftEventDTO = call.receive<SykmeldingBekreftEventUserDTO>()
 
         sykmeldingStatusService.registrerBekreftet(
-            sykmeldingBekreftEventDTO = sykmeldingBekreftEventDTO,
+            sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                sporsmalOgSvarListe = sykmeldingBekreftEventDTO.sporsmalOgSvarListe
+            ),
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,

@@ -13,8 +13,6 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockkClass
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
@@ -59,7 +57,7 @@ class SykmeldingBekreftApiSpek : Spek({
             it("Bruker skal få bekrefte sin egen avviste sykmelding") {
                 val sykmeldingId = "123"
                 with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
-                    setBody(objectMapper.writeValueAsString(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null)))
+                    setBody(objectMapper.writeValueAsString(SykmeldingBekreftEventUserDTO(null)))
                     addHeader("Content-Type", ContentType.Application.Json.toString())
                     addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
                         "loginserviceId2",
