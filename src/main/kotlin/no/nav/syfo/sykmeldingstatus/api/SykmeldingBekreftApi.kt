@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus.api
 
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authentication
 import io.ktor.auth.jwt.JWTPrincipal
@@ -19,7 +20,7 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
         val token = call.request.headers["Authorization"]!!
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
-        val sykmeldingBekreftEventDTO = call.receiveOrNull<SykmeldingBekreftEventUserDTO>()
+        val sykmeldingBekreftEventDTO = call.safeReceiveOrNull<SykmeldingBekreftEventUserDTO>()
 
         sykmeldingStatusService.registrerBekreftet(
             sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
@@ -35,4 +36,11 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
         BEKREFTET_AV_BRUKER_COUNTER.inc()
         call.respond(HttpStatusCode.Accepted)
     }
+}
+
+// Workaround pga. bug i ktor: https://github.com/ktorio/ktor/issues/901
+suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? = try {
+    receiveOrNull()
+} catch (e: Exception) {
+    null
 }
