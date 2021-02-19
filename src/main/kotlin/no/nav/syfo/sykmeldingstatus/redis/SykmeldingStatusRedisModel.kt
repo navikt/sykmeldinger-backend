@@ -12,17 +12,19 @@ data class SykmeldingStatusRedisModel(
     val timestamp: OffsetDateTime,
     val statusEvent: StatusEventDTO,
     val arbeidsgiver: ArbeidsgiverStatusDTO?,
-    val sporsmals: List<SporsmalOgSvarDTO>?
+    val sporsmals: List<SporsmalOgSvarDTO>?,
+    val erAvvist: Boolean? = null,
+    val erEgenmeldt: Boolean? = null
 )
 
 fun SykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(): SykmeldingStatusRedisModel {
-    return SykmeldingStatusRedisModel(timestamp, StatusEventDTO.BEKREFTET, null, sporsmalOgSvarListe)
+    return SykmeldingStatusRedisModel(timestamp, StatusEventDTO.BEKREFTET, null, sporsmalOgSvarListe, erAvvist, erEgenmeldt)
 }
 
 fun SykmeldingSendEventDTO.toSykmeldingStatusRedisModel(): SykmeldingStatusRedisModel {
-    return SykmeldingStatusRedisModel(timestamp, StatusEventDTO.SENDT, arbeidsgiver, sporsmalOgSvarListe)
+    return SykmeldingStatusRedisModel(timestamp, StatusEventDTO.SENDT, arbeidsgiver, sporsmalOgSvarListe, erAvvist, erEgenmeldt)
 }
 
 fun SykmeldingStatusEventDTO.toSykmeldingRedisModel(): SykmeldingStatusRedisModel {
-    return SykmeldingStatusRedisModel(timestamp, statusEvent, null, null)
+    return SykmeldingStatusRedisModel(timestamp, statusEvent, null, null, erAvvist, erEgenmeldt)
 }

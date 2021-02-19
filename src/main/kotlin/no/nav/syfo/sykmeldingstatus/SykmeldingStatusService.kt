@@ -28,6 +28,15 @@ class SykmeldingStatusService(
                 Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN)),
                 Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT))
         )
+        private val statusStatesAvvistSykmelding: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
+            Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET)),
+            Pair(StatusEventDTO.BEKREFTET, emptyList())
+        )
+        private val statusStatesEgenmelding: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
+            Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT)),
+            Pair(StatusEventDTO.BEKREFTET, emptyList()),
+            Pair(StatusEventDTO.AVBRUTT, emptyList())
+        )
     }
 
     suspend fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
@@ -36,7 +45,7 @@ class SykmeldingStatusService(
             sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-            if (canChangeStatus(sykmeldingStatusEventDTO.statusEvent, sisteStatus.statusEvent, sykmeldingId)) {
+            if (canChangeStatus(sykmeldingStatusEventDTO.statusEvent, sisteStatus.statusEvent, sisteStatus.erAvvist, sisteStatus.erEgenmeldt, sykmeldingId)) {
                 sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
                 sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
             }
@@ -56,7 +65,7 @@ class SykmeldingStatusService(
             sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-            if (canChangeStatus(StatusEventDTO.SENDT, sisteStatus.statusEvent, sykmeldingId)) {
+            if (canChangeStatus(StatusEventDTO.SENDT, sisteStatus.statusEvent, sisteStatus.erAvvist, sisteStatus.erEgenmeldt, sykmeldingId)) {
                 sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
                 sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
             }
@@ -69,7 +78,7 @@ class SykmeldingStatusService(
             sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
         } else {
             val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-            if (canChangeStatus(StatusEventDTO.BEKREFTET, sisteStatus.statusEvent, sykmeldingId)) {
+            if (canChangeStatus(StatusEventDTO.BEKREFTET, sisteStatus.statusEvent, sisteStatus.erAvvist, sisteStatus.erEgenmeldt, sykmeldingId)) {
                 sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
                 sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
             }
@@ -80,8 +89,19 @@ class SykmeldingStatusService(
         return sykmeldingStatusJedisService.getStatus(sykmeldingId)?.toSykmeldingStatusDTO()
     }
 
-    private fun canChangeStatus(nyStatusEvent: StatusEventDTO, sisteStatus: StatusEventDTO, sykmeldingId: String): Boolean {
-        val allowedStatuses = statusStates[sisteStatus]
+    private fun canChangeStatus(nyStatusEvent: StatusEventDTO, sisteStatus: StatusEventDTO, erAvvist: Boolean?, erEgenmeldt: Boolean?, sykmeldingId: String): Boolean {
+        val allowedStatuses =
+            when {
+                erAvvist == true -> {
+                    statusStatesAvvistSykmelding[sisteStatus]
+                }
+                erEgenmeldt == true -> {
+                    statusStatesEgenmelding[sisteStatus]
+                }
+                else -> {
+                    statusStates[sisteStatus]
+                }
+            }
         if (allowedStatuses != null && allowedStatuses.contains(nyStatusEvent)) {
             return true
         }
@@ -105,6 +125,10 @@ class SykmeldingStatusService(
 }
 
 private fun SykmeldingStatusRedisModel.toSykmeldingStatusDTO(): SykmeldingStatusEventDTO {
-    return SykmeldingStatusEventDTO(timestamp = timestamp,
-            statusEvent = statusEvent)
+    return SykmeldingStatusEventDTO(
+        timestamp = timestamp,
+        statusEvent = statusEvent,
+        erAvvist = erAvvist,
+        erEgenmeldt = erEgenmeldt
+    )
 }

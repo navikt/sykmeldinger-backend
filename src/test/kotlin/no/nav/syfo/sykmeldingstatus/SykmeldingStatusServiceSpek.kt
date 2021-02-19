@@ -36,9 +36,9 @@ class SykmeldingStatusServiceSpek : Spek({
     val syfosmregisterClient = mockkClass(SyfosmregisterStatusClient::class)
     val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient)
 
-    fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO) {
+    fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
-            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus)
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
             val expextedErrorMessage = "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
             val error = assertFailsWith<InvalidSykmeldingStatusException> {
                 when (newStatus) {
@@ -57,9 +57,9 @@ class SykmeldingStatusServiceSpek : Spek({
             error.message shouldEqual expextedErrorMessage
         }
     }
-    fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO) {
+    fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
-            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus)
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
             when (newStatus) {
                 StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(
                     opprettSykmeldingSendEventDTO(),
@@ -89,11 +89,11 @@ class SykmeldingStatusServiceSpek : Spek({
     describe("Hent nyeste status") {
         it("Skal hente sendt status fra Redis") {
             runBlocking {
-                val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC))
+                val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC), erAvvist = true, erEgenmeldt = false)
                 coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingSendEventDTO
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.APEN, redisSykmeldingSendEventDTO.timestamp.minusNanos(1))
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.APEN, redisSykmeldingSendEventDTO.timestamp.minusNanos(1), erAvvist = true, erEgenmeldt = false)
                 val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                sisteStatusEventDTO shouldEqual SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisSykmeldingSendEventDTO.timestamp)
+                sisteStatusEventDTO shouldEqual SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisSykmeldingSendEventDTO.timestamp, erAvvist = true, erEgenmeldt = false)
             }
         }
 
@@ -101,9 +101,9 @@ class SykmeldingStatusServiceSpek : Spek({
             runBlocking {
                 val redisSykmeldingStatus = getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
                 coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingStatus
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.SENDT, redisSykmeldingStatus.timestamp.plusNanos(1))
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.SENDT, redisSykmeldingStatus.timestamp.plusNanos(1), erAvvist = false, erEgenmeldt = true)
                 val sisteStatus = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                sisteStatus shouldEqual SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisSykmeldingStatus.timestamp.plusNanos(1))
+                sisteStatus shouldEqual SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisSykmeldingStatus.timestamp.plusNanos(1), erAvvist = false, erEgenmeldt = true)
             }
         }
 
@@ -257,6 +257,39 @@ class SykmeldingStatusServiceSpek : Spek({
         }
         it("Skal kunne avbryte en UTGATT sykmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.UTGATT)
+        }
+    }
+
+    describe("Test statusendring for avviste sykmeldinger") {
+        it("Skal kunne bekrefte en APEN avvist sykmelding") {
+            checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN, erAvvist = true)
+        }
+        it("Skal ikke kunne gjenåpne en bekreftet avvist sykmelding") {
+            checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.BEKREFTET, erAvvist = true)
+        }
+        it("Skal ikke kunne sende en avvist sykmelding") {
+            checkStatusFails(StatusEventDTO.SENDT, StatusEventDTO.APEN, erAvvist = true)
+        }
+        it("Skal ikke kunne avbryte en avvist sykmelding") {
+            checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.APEN, erAvvist = true)
+        }
+    }
+
+    describe("Test statusendring for egenmeldinger") {
+        it("Skal kunne bekrefte en APEN egenmelding") {
+            checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN, erEgenmeldt = true)
+        }
+        it("Skal ikke kunne gjenåpne en bekreftet egenmelding") {
+            checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.BEKREFTET, erEgenmeldt = true)
+        }
+        it("Skal ikke kunne sende en egenmelding") {
+            checkStatusFails(StatusEventDTO.SENDT, StatusEventDTO.APEN, erEgenmeldt = true)
+        }
+        it("Skal kunne avbryte en egenmelding") {
+            checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.APEN, erEgenmeldt = true)
+        }
+        it("Skal ikke kunne gjenåpne en avbrutt egenmelding") {
+            checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT, erEgenmeldt = true)
         }
     }
 })

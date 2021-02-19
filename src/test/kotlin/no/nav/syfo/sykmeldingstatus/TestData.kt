@@ -33,12 +33,12 @@ import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 
-fun getSykmeldingStatus(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)): SykmeldingStatusEventDTO {
-    return SykmeldingStatusEventDTO(statusEventDTO, dateTime)
+fun getSykmeldingStatus(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean? = null, erEgenmeldt: Boolean? = null): SykmeldingStatusEventDTO {
+    return SykmeldingStatusEventDTO(statusEventDTO, dateTime, erAvvist, erEgenmeldt)
 }
 
-fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)): SykmeldingStatusRedisModel {
-    return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null)
+fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean = false, erEgenmeldt: Boolean? = null): SykmeldingStatusRedisModel {
+    return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null, erAvvist, erEgenmeldt)
 }
 
 fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): SykmeldingDTO {
