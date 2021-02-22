@@ -111,6 +111,19 @@ class SykmeldingBekreftApiSpek : Spek({
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }
+
+            it("Skal være mulig å gjøre en POST uten body") {
+                val sykmeldingId = "123"
+                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
+                    addHeader("Content-Type", ContentType.Application.Json.toString())
+                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
+                            "loginserviceId2",
+                            subject = "12345678910",
+                            issuer = env.jwtIssuer)}")
+                }) {
+                    response.status() shouldEqual HttpStatusCode.Accepted
+                }
+            }
         }
     }
 })
