@@ -3,7 +3,6 @@ package no.nav.syfo.pdl.service
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
@@ -18,6 +17,7 @@ import no.nav.syfo.pdl.error.PersonNotFoundInPdl
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 class PdlServiceTest : Spek({
@@ -38,8 +38,12 @@ class PdlServiceTest : Spek({
         }
 
         it("Skal feile når person ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(null), listOf(
-                ResponseError("Ikke tilgang", null, null, ErrorExtension("unauthorized", ErrorDetails("abac-deny", "cause", "policy"), null))))
+            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+                ResponseData(null),
+                listOf(
+                    ResponseError("Ikke tilgang", null, null, ErrorExtension("unauthorized", ErrorDetails("abac-deny", "cause", "policy"), null))
+                )
+            )
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
@@ -49,9 +53,14 @@ class PdlServiceTest : Spek({
         }
 
         it("Skal feile når navn er tom liste") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(hentPerson = HentPerson(
-                navn = emptyList()
-            )), listOf(ResponseError("melding", null, null, null)))
+            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+                ResponseData(
+                    hentPerson = HentPerson(
+                        navn = emptyList()
+                    )
+                ),
+                listOf(ResponseError("melding", null, null, null))
+            )
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
@@ -60,9 +69,14 @@ class PdlServiceTest : Spek({
             exception.message shouldEqual "Fant ikke navn på person i PDL"
         }
         it("Skal feile når navn ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(ResponseData(hentPerson = HentPerson(
-                navn = null
-            )), listOf(ResponseError("melding", null, null, null)))
+            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+                ResponseData(
+                    hentPerson = HentPerson(
+                        navn = null
+                    )
+                ),
+                listOf(ResponseError("melding", null, null, null))
+            )
             val exception = assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
                     pdlService.getPersonnavn("123", "Bearer token", "callId")

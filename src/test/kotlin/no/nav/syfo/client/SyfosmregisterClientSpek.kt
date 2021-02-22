@@ -18,17 +18,17 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import java.net.ServerSocket
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.net.ServerSocket
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertFailsWith
 
 class SyfosmregisterClientSpek : Spek({
 

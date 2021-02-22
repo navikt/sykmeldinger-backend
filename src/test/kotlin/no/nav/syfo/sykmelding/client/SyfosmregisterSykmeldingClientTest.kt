@@ -3,8 +3,6 @@ package no.nav.syfo.sykmelding.client
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.ServerResponseException
 import io.ktor.http.HttpStatusCode
-import java.time.LocalDate
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.ApiFilter
@@ -14,6 +12,8 @@ import no.nav.syfo.testutils.HttpClientTest
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
+import kotlin.test.assertFailsWith
 
 class SyfosmregisterSykmeldingClientTest : Spek({
 

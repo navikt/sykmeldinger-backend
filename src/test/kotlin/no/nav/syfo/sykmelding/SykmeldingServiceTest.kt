@@ -6,9 +6,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockkClass
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.pdl.error.PersonNotFoundInPdl
 import no.nav.syfo.pdl.model.Navn
@@ -29,6 +26,9 @@ import org.amshove.kluent.shouldEqual
 import org.amshove.kluent.shouldNotEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 @KtorExperimentalAPI
 class SykmeldingServiceTest : Spek({
@@ -53,11 +53,13 @@ class SykmeldingServiceTest : Spek({
             }
         }
         it("Get sykmeldinger with newest status from redis") {
-            val sykmelding = getSykmeldingModel(SykmeldingStatusDTO(
+            val sykmelding = getSykmeldingModel(
+                SykmeldingStatusDTO(
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1), statusEvent = StatusEventDTO.APEN.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
-            ))
+                )
+            )
             val statusFromRedis = getSykmeldingStatusRedisModel(
-                    StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
+                StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
             )
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
@@ -65,7 +67,7 @@ class SykmeldingServiceTest : Spek({
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
                 returndSykmelding shouldNotEqual listOf(sykmelding)
                 returndSykmelding[0].sykmeldingStatus shouldEqual SykmeldingStatusDTO(
-                        timestamp = statusFromRedis.timestamp, statusEvent = statusFromRedis.statusEvent.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
+                    timestamp = statusFromRedis.timestamp, statusEvent = statusFromRedis.statusEvent.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
                 )
             }
         }

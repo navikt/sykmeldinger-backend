@@ -12,9 +12,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import java.nio.file.Paths
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
@@ -26,6 +23,9 @@ import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.nio.file.Paths
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SykmeldingSendSyfoServiceApiSpek : Spek({
 
@@ -40,36 +40,42 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             it("Skal returnere Created hvis alt går bra") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } returns Unit
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("FNR", "fnr")
-                    addHeader("Authorization", "Bearer token")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("FNR", "fnr")
+                        addHeader("Authorization", "Bearer token")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Returnerer 500 hvis noe går galt") {
                 val sykmeldingId = "1235"
                 coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("FNR", "fnr")
-                    addHeader("Authorization", "Bearer token")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("FNR", "fnr")
+                        addHeader("Authorization", "Bearer token")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.InternalServerError
                 }
             }
             it("Returerer BadRequest når man ikke kan endre status") {
                 val sykmeldingId = "1234"
                 coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId")
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.BadRequest
                     response.content shouldEqual "Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId"
                 }
@@ -77,12 +83,14 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             it("Returerer NotFound når status ikke finnes for bruker") {
                 val sykmeldingId = "1234"
                 coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.NotFound
                     response.content shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
                 }
@@ -119,29 +127,42 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             it("Should authenticate") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } returns Unit
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                            "preprod.local",
-                            subject = "srvsyfoservice",
-                            issuer = env.stsOidcIssuer)}")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "preprod.local",
+                                subject = "srvsyfoservice",
+                                issuer = env.stsOidcIssuer
+                            )}"
+                        )
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Should not authenticate") {
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/123/send") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT(
-                            "client",
-                            "preprod.local",
-                            subject = "srvsyforegister",
-                            issuer = env.stsOidcIssuer)}")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/123/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "preprod.local",
+                                subject = "srvsyforegister",
+                                issuer = env.stsOidcIssuer
+                            )}"
+                        )
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }
@@ -150,9 +171,11 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
 })
 
 fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =
-        SykmeldingSendEventDTO(
-                OffsetDateTime.now(ZoneOffset.UTC),
-                ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-                listOf(SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
-                        SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI"))
+    SykmeldingSendEventDTO(
+        OffsetDateTime.now(ZoneOffset.UTC),
+        ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
+        listOf(
+            SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+            SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
         )
+    )

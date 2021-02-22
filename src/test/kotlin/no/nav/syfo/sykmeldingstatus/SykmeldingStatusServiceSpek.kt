@@ -8,10 +8,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.verify
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.RuntimeException
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
@@ -27,6 +23,10 @@ import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.RuntimeException
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingId = "id"

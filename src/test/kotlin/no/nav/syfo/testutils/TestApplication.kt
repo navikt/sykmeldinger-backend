@@ -15,12 +15,12 @@ import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.server.testing.TestApplicationEngine
 import io.mockk.mockkClass
-import java.nio.file.Paths
 import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
+import java.nio.file.Paths
 
 fun TestApplicationEngine.setUpTestApplication() {
     start(true)

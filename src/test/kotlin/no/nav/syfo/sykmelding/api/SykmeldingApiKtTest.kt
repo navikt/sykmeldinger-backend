@@ -37,25 +37,31 @@ class SykmeldingApiKtTest : Spek({
             setUpTestApplication()
             application.routing { registerSykmeldingApi(sykmeldingService) }
             it("Hent sykmeldinger") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
-                    addHeader("Authorization", "Bearer token")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                        addHeader("Authorization", "Bearer token")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
                 }
             }
             it("Hent sykmeldinger med fom og tom") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
-                    addHeader("Authorization", "Bearer token")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
+                        addHeader("Authorization", "Bearer token")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
                 }
             }
             it("Hent sykmeldinger med fom og tom og exclude") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
-                    addHeader("Authorization", "Bearer token")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
+                        addHeader("Authorization", "Bearer token")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
                 }
@@ -68,33 +74,54 @@ class SykmeldingApiKtTest : Spek({
             val env = setUpAuth()
             application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
             it("OK") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
-                    addHeader("Authorization", "Bearer ${generateJWT("client",
-                            "loginserviceId1",
-                            subject = "12345678901",
-                            issuer = env.jwtIssuer)}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId1",
+                                subject = "12345678901",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.OK
                 }
             }
             it("Unauthorized, incorrect audience") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
-                    addHeader("Authorization", "Bearer ${generateJWT("client",
-                            "loginservice2",
-                            subject = "12345678901",
-                            issuer = env.jwtIssuer)}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginservice2",
+                                subject = "12345678901",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }
             it("Unauthorized, nivå 3") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
-                    addHeader("Authorization", "Bearer ${generateJWT("client",
-                        "loginserviceId1",
-                        subject = "12345678901",
-                        issuer = env.jwtIssuer,
-                        level = "Level3")}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId1",
+                                subject = "12345678901",
+                                issuer = env.jwtIssuer,
+                                level = "Level3"
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }

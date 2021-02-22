@@ -1,7 +1,5 @@
 package no.nav.syfo.sykmeldingstatus.kafka
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
 import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
@@ -16,6 +14,8 @@ import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SykmeldingStatusKafkaMessageMapperSpek : Spek({
     val sykmeldingId = "id"
@@ -26,8 +26,10 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
             val sykmeldingSendEventDTO = SykmeldingSendEventDTO(
                 timestamp,
                 ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-                listOf(SporsmalOgSvarDTO("Arbeidssituasjon", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
-                    SporsmalOgSvarDTO("Nærmeste leder", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI"))
+                listOf(
+                    SporsmalOgSvarDTO("Arbeidssituasjon", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+                    SporsmalOgSvarDTO("Nærmeste leder", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+                )
             )
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
@@ -39,11 +41,13 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
                 no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                     "Arbeidssituasjon",
                     no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
-                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"
+                ),
                 no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                     "Nærmeste leder",
                     no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.NY_NARMESTE_LEDER,
-                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI, "NEI")
+                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI, "NEI"
+                )
             )
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn")
         }
@@ -65,22 +69,26 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
                 "Sykmeldt fra ",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON,
-                "Frilanser")
+                "Frilanser"
+            )
             sykmeldingStatusKafkaEventDTO.sporsmals!![1] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Har forsikring?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FORSIKRING,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
-                "Ja")
+                "Ja"
+            )
             sykmeldingStatusKafkaEventDTO.sporsmals!![2] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Hatt fravær?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FRAVAER,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
-                "Ja")
+                "Ja"
+            )
             sykmeldingStatusKafkaEventDTO.sporsmals!![3] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Når hadde du fravær?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.PERIODE,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.PERIODER,
-                "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}")
+                "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}"
+            )
         }
 
         it("Mapper SykmeldingBekreftEventDTO uten spørsmål riktig") {
@@ -140,8 +148,10 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 })
 
 fun lagSporsmalOgSvarDTOListe(): List<SporsmalOgSvarDTO> {
-    return listOf(SporsmalOgSvarDTO("Sykmeldt fra ", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "Frilanser"),
+    return listOf(
+        SporsmalOgSvarDTO("Sykmeldt fra ", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "Frilanser"),
         SporsmalOgSvarDTO("Har forsikring?", ShortNameDTO.FORSIKRING, SvartypeDTO.JA_NEI, "Ja"),
         SporsmalOgSvarDTO("Hatt fravær?", ShortNameDTO.FRAVAER, SvartypeDTO.JA_NEI, "Ja"),
-        SporsmalOgSvarDTO("Når hadde du fravær?", ShortNameDTO.PERIODE, SvartypeDTO.PERIODER, "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}"))
+        SporsmalOgSvarDTO("Når hadde du fravær?", ShortNameDTO.PERIODE, SvartypeDTO.PERIODER, "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}")
+    )
 }

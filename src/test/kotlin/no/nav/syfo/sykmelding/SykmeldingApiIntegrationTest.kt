@@ -12,8 +12,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.every
 import io.mockk.mockkClass
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -34,6 +32,8 @@ import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @KtorExperimentalAPI
 class SykmeldingApiIntegrationTest : Spek({
@@ -60,44 +60,52 @@ class SykmeldingApiIntegrationTest : Spek({
                 }
             }
             it("Should get sykmeldinger with updated status from redis") {
-                val sykmeldingDTO = getSykmeldingModel(getSykmeldingStatusDto(
+                val sykmeldingDTO = getSykmeldingModel(
+                    getSykmeldingStatusDto(
                         StatusEventDTO.APEN,
                         OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
-                ))
+                    )
+                )
                 httpClient.respond(listOf(sykmeldingDTO))
                 val newSykmeldingStatus = getSykmeldingStatusRedisModel(
-                        StatusEventDTO.SENDT, sykmeldingDTO.sykmeldingStatus.timestamp.plusSeconds(1)
+                    StatusEventDTO.SENDT, sykmeldingDTO.sykmeldingStatus.timestamp.plusSeconds(1)
                 )
                 every { redisService.getStatus(any()) } returns newSykmeldingStatus
 
                 withGetSykmeldinger(env) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldEqual
-                            listOf(sykmeldingDTO.copy(sykmeldingStatus = SykmeldingStatusDTO(
+                        listOf(
+                            sykmeldingDTO.copy(
+                                sykmeldingStatus = SykmeldingStatusDTO(
                                     timestamp = newSykmeldingStatus.timestamp,
                                     statusEvent = newSykmeldingStatus.statusEvent.name,
                                     arbeidsgiver = null,
-                                    sporsmalOgSvarListe = emptyList())
-                            ))
+                                    sporsmalOgSvarListe = emptyList()
+                                )
+                            )
+                        )
                 }
             }
 
             it("Should get sykmeldinger with newest status in registeret") {
-                val sykmeldingDTO = getSykmeldingModel(getSykmeldingStatusDto(
+                val sykmeldingDTO = getSykmeldingModel(
+                    getSykmeldingStatusDto(
                         StatusEventDTO.APEN,
                         OffsetDateTime.now(ZoneOffset.UTC)
-                ))
+                    )
+                )
                 httpClient.respond(listOf(sykmeldingDTO))
                 val redisSykmeldingStatus = getSykmeldingStatusRedisModel(
-                        StatusEventDTO.BEKREFTET,
-                        OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
+                    StatusEventDTO.BEKREFTET,
+                    OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
                 )
                 every { redisService.getStatus(any()) } returns redisSykmeldingStatus
 
                 withGetSykmeldinger(env) {
                     response.status() shouldEqual HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldEqual
-                            listOf(sykmeldingDTO)
+                        listOf(sykmeldingDTO)
                 }
             }
             it("Should get unauthorize when register returns unauthorized") {
@@ -126,16 +134,23 @@ class SykmeldingApiIntegrationTest : Spek({
 })
 
 private fun TestApplicationEngine.withGetSykmeldinger(env: Environment, block: TestApplicationCall.() -> Unit) {
-    with(handleRequest(HttpMethod.Get, "api/v1/sykmeldinger") {
-        setUpAuthHeader(env)
-    }) {
+    with(
+        handleRequest(HttpMethod.Get, "api/v1/sykmeldinger") {
+            setUpAuthHeader(env)
+        }
+    ) {
         block()
     }
 }
 
 fun TestApplicationRequest.setUpAuthHeader(env: Environment) {
-    addHeader("Authorization", "Bearer ${generateJWT("client",
+    addHeader(
+        "Authorization",
+        "Bearer ${generateJWT(
+            "client",
             "loginserviceId1",
             subject = "12345678901",
-            issuer = env.jwtIssuer)}")
+            issuer = env.jwtIssuer
+        )}"
+    )
 }

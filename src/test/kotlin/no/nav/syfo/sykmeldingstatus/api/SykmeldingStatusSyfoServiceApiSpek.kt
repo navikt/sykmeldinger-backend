@@ -13,9 +13,6 @@ import io.ktor.server.testing.setBody
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import java.nio.file.Paths
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
@@ -27,6 +24,9 @@ import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.nio.file.Paths
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SykmeldingStatusSyfoServiceApiSpek : Spek({
 
@@ -44,24 +44,28 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
             it("Should successfully post Status") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } returns Unit
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
-                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("FNR", "fnr")
-                    addHeader("Authorization", "Bearer token")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
+                        setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("FNR", "fnr")
+                        addHeader("Authorization", "Bearer token")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Returerer BadRequest når man ikke kan endre status") {
                 val sykmeldingId = "1234"
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId")
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
-                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
+                        setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.BadRequest
                     response.content shouldEqual "Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId"
                 }
@@ -69,12 +73,14 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
             it("Returerer NotFound når status ikke finnes for bruker") {
                 val sykmeldingId = "1234"
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
-                    setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
+                        setBody(objectMapper.writeValueAsString(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.NotFound
                     response.content shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
                 }
@@ -112,30 +118,43 @@ class SykmeldingStatusSyfoServiceApiSpek : Spek({
                 val sykmeldingId = "123"
                 val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } returns Unit
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
-                    setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                            "preprod.local",
-                            subject = "srvsyfoservice",
-                            issuer = env.stsOidcIssuer)}")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/status") {
+                        setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "preprod.local",
+                                subject = "srvsyfoservice",
+                                issuer = env.stsOidcIssuer
+                            )}"
+                        )
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Created
                 }
             }
             it("Should not authenticate") {
                 val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC))
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/123/status") {
-                    setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT(
-                            "client",
-                            "preprod.local",
-                            subject = "srvsyforegister",
-                            issuer = env.stsOidcIssuer)}")
-                    addHeader("FNR", "fnr")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/123/status") {
+                        setBody(objectMapper.writeValueAsString(sykmeldingStatusEventDTO))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "preprod.local",
+                                subject = "srvsyforegister",
+                                issuer = env.stsOidcIssuer
+                            )}"
+                        )
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }

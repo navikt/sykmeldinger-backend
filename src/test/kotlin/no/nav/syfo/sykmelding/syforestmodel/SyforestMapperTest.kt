@@ -1,9 +1,6 @@
 package no.nav.syfo.sykmelding.syforestmodel
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.model.GradertDTO
@@ -14,6 +11,9 @@ import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SyforestMapperTest : Spek({
 

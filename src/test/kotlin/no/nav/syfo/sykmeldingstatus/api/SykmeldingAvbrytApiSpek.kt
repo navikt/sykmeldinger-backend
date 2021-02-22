@@ -40,13 +40,20 @@ class SykmeldingAvbrytApiSpek : Spek({
 
             it("Bruker skal få avbryte sin egen sykmelding") {
                 val sykmeldingId = "123"
-                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/avbryt") {
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                            "loginserviceId2",
-                            subject = "12345678910",
-                            issuer = env.jwtIssuer)}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/avbryt") {
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Accepted
                 }
             }
@@ -54,40 +61,59 @@ class SykmeldingAvbrytApiSpek : Spek({
             it("Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
-                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/avbryt") {
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer ${generateJWT("client",
-                            "loginserviceId2",
-                            subject = "12345678910",
-                            issuer = env.jwtIssuer)}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/avbryt") {
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.BadRequest
                 }
             }
 
             it("Skal ikke kunne avbryte annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
-                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT(
-                            "client",
-                            "loginserviceId2",
-                            subject = "00000000000",
-                            issuer = env.jwtIssuer)}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "00000000000",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.NotFound
                 }
             }
 
             it("Skal ikke kunne bruke apiet med token med feil audience") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT(
-                            "client",
-                            "annenservice",
-                            subject = "12345678910",
-                            issuer = env.jwtIssuer)}")
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "annenservice",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
+                ) {
                     response.status() shouldEqual HttpStatusCode.Unauthorized
                 }
             }
