@@ -11,7 +11,7 @@ class SyfosoknadClient(private val endpointUrl: String, private val httpClient: 
 
     suspend fun getSoknader(token: String, sykmeldingId: String): List<RSSykepengesoknad> {
         try {
-            return httpClient.get("$endpointUrl/syfosoknad/api/soknader") {
+            return httpClient.get("$endpointUrl/api/soknader") {
                 accept(ContentType.Application.Json)
                 headers {
                     append("Authorization", token)
