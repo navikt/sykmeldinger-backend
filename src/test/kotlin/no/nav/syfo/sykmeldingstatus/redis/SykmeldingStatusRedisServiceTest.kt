@@ -30,7 +30,7 @@ class SykmeldingStatusRedisServiceTest : Spek({
 
     describe("SykmeldingStatusRedisService") {
         it("Should update status in redis") {
-            val status = SykmeldingStatusRedisModel(OffsetDateTime.now(ZoneOffset.UTC), StatusEventDTO.APEN, null, null)
+            val status = SykmeldingStatusRedisModel(OffsetDateTime.now(ZoneOffset.UTC), StatusEventDTO.APEN, null, null, erAvvist = false, erEgenmeldt = false)
             sykmeldingStatusRedisService.updateStatus(status, "123")
             val redisStatus = sykmeldingStatusRedisService.getStatus("123")
             redisStatus shouldEqual status

@@ -4,7 +4,9 @@ import java.time.OffsetDateTime
 
 data class SykmeldingStatusEventDTO(
     val statusEvent: StatusEventDTO,
-    val timestamp: OffsetDateTime
+    val timestamp: OffsetDateTime,
+    val erAvvist: Boolean? = null,
+    val erEgenmeldt: Boolean? = null
 )
 
 data class SykmeldingStatusDTO(
@@ -32,7 +34,9 @@ data class SvarDTO(
 data class SykmeldingSendEventDTO(
     val timestamp: OffsetDateTime,
     val arbeidsgiver: ArbeidsgiverStatusDTO,
-    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>
+    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>,
+    val erAvvist: Boolean? = null,
+    val erEgenmeldt: Boolean? = null
 )
 
 data class ArbeidsgiverStatusDTO(
@@ -43,7 +47,9 @@ data class ArbeidsgiverStatusDTO(
 
 data class SykmeldingBekreftEventDTO(
     val timestamp: OffsetDateTime,
-    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
+    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?,
+    val erAvvist: Boolean? = null,
+    val erEgenmeldt: Boolean? = null
 )
 
 data class SykmeldingBekreftEventUserDTO(
