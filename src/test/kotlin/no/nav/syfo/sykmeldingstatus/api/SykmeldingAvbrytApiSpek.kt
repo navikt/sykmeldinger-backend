@@ -18,7 +18,7 @@ import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -54,7 +54,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Accepted
+                    response.status() shouldBeEqualTo HttpStatusCode.Accepted
                 }
             }
 
@@ -75,7 +75,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.BadRequest
+                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                 }
             }
 
@@ -95,7 +95,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.NotFound
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
             }
 
@@ -114,7 +114,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
         }

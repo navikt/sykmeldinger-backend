@@ -22,8 +22,8 @@ import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.lagSyforestSykmelding
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
-import org.amshove.kluent.shouldEqual
-import org.amshove.kluent.shouldNotEqual
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
@@ -49,7 +49,7 @@ class SykmeldingServiceTest : Spek({
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
             runBlocking {
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
-                returndSykmelding shouldEqual listOf(sykmelding)
+                returndSykmelding shouldBeEqualTo listOf(sykmelding)
             }
         }
         it("Get sykmeldinger with newest status from redis") {
@@ -65,9 +65,12 @@ class SykmeldingServiceTest : Spek({
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
             runBlocking {
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("token", null)
-                returndSykmelding shouldNotEqual listOf(sykmelding)
-                returndSykmelding[0].sykmeldingStatus shouldEqual SykmeldingStatusDTO(
-                    timestamp = statusFromRedis.timestamp, statusEvent = statusFromRedis.statusEvent.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
+                returndSykmelding shouldNotBeEqualTo listOf(sykmelding)
+                returndSykmelding[0].sykmeldingStatus shouldBeEqualTo SykmeldingStatusDTO(
+                    timestamp = statusFromRedis.timestamp,
+                    statusEvent = statusFromRedis.statusEvent.name,
+                    arbeidsgiver = null,
+                    sporsmalOgSvarListe = emptyList()
                 )
             }
         }
@@ -83,7 +86,7 @@ class SykmeldingServiceTest : Spek({
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
-                syforestSykmeldinger shouldEqual listOf(lagSyforestSykmelding())
+                syforestSykmeldinger shouldBeEqualTo listOf(lagSyforestSykmelding())
             }
             coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
         }
@@ -97,7 +100,7 @@ class SykmeldingServiceTest : Spek({
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
-                syforestSykmeldinger shouldEqual listOf(lagSyforestSykmelding(merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", null))))
+                syforestSykmeldinger shouldBeEqualTo listOf(lagSyforestSykmelding(merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", null))))
             }
             coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
         }
@@ -111,7 +114,7 @@ class SykmeldingServiceTest : Spek({
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
-                syforestSykmeldinger shouldEqual emptyList()
+                syforestSykmeldinger shouldBeEqualTo emptyList()
             }
             coVerify(exactly = 0) { pdlPersonService.getPersonnavn(any(), any(), any()) }
         }
@@ -124,7 +127,7 @@ class SykmeldingServiceTest : Spek({
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
-                syforestSykmeldinger shouldEqual emptyList()
+                syforestSykmeldinger shouldBeEqualTo emptyList()
             }
 
             coVerify(exactly = 0) { pdlPersonService.getPersonnavn(any(), any(), any()) }

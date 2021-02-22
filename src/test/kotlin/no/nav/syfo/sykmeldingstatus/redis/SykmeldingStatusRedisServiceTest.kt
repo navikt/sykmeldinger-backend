@@ -2,7 +2,7 @@ package no.nav.syfo.sykmeldingstatus.redis
 
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import org.testcontainers.containers.BindMode
@@ -32,10 +32,17 @@ class SykmeldingStatusRedisServiceTest : Spek({
 
     describe("SykmeldingStatusRedisService") {
         it("Should update status in redis") {
-            val status = SykmeldingStatusRedisModel(OffsetDateTime.now(ZoneOffset.UTC), StatusEventDTO.APEN, null, null, erAvvist = false, erEgenmeldt = false)
+            val status = SykmeldingStatusRedisModel(
+                OffsetDateTime.now(ZoneOffset.UTC),
+                StatusEventDTO.APEN,
+                null,
+                null,
+                erAvvist = false,
+                erEgenmeldt = false
+            )
             sykmeldingStatusRedisService.updateStatus(status, "123")
             val redisStatus = sykmeldingStatusRedisService.getStatus("123")
-            redisStatus shouldEqual status
+            redisStatus shouldBeEqualTo status
         }
 
         it("Get sykmelding status empty") {

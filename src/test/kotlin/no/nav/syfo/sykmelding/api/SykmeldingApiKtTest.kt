@@ -18,7 +18,7 @@ import no.nav.syfo.sykmeldingstatus.redis.objectMapper
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -42,8 +42,8 @@ class SykmeldingApiKtTest : Spek({
                         addHeader("Authorization", "Bearer token")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             it("Hent sykmeldinger med fom og tom") {
@@ -52,8 +52,8 @@ class SykmeldingApiKtTest : Spek({
                         addHeader("Authorization", "Bearer token")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             it("Hent sykmeldinger med fom og tom og exclude") {
@@ -62,8 +62,8 @@ class SykmeldingApiKtTest : Spek({
                         addHeader("Authorization", "Bearer token")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldEqual 1
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
         }
@@ -87,7 +87,7 @@ class SykmeldingApiKtTest : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.OK
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
             it("Unauthorized, incorrect audience") {
@@ -104,7 +104,7 @@ class SykmeldingApiKtTest : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
             it("Unauthorized, nivå 3") {
@@ -122,12 +122,12 @@ class SykmeldingApiKtTest : Spek({
                         )
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
             it("Unauthorized, missing token") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {}) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
         }

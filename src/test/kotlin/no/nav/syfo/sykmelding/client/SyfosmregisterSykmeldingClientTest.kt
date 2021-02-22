@@ -9,7 +9,7 @@ import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.testutils.HttpClientTest
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
@@ -26,7 +26,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
             httpClient.respond(objectMapper.writeValueAsString(emptyList<SykmeldingDTO>()))
             runBlocking {
                 val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                result shouldEqual emptyList()
+                result shouldBeEqualTo emptyList()
             }
         }
 
@@ -34,7 +34,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
             httpClient.respond(objectMapper.writeValueAsString(listOf(getSykmeldingModel())))
             runBlocking {
                 val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                result.size shouldEqual 1
+                result.size shouldBeEqualTo 1
             }
         }
 
@@ -44,7 +44,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                 val exception = assertFailsWith<ServerResponseException> {
                     syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 }
-                exception.response.status shouldEqual HttpStatusCode.InternalServerError
+                exception.response.status shouldBeEqualTo HttpStatusCode.InternalServerError
             }
         }
         it("Should get Unauthorized") {
@@ -53,7 +53,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                 val exception = assertFailsWith<ClientRequestException> {
                     syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 }
-                exception.response.status shouldEqual HttpStatusCode.Unauthorized
+                exception.response.status shouldBeEqualTo HttpStatusCode.Unauthorized
             }
         }
         it("Should fail with forbidden") {
@@ -62,7 +62,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                 val exception = assertFailsWith<ClientRequestException> {
                     syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 }
-                exception.response.status shouldEqual HttpStatusCode.NotFound
+                exception.response.status shouldBeEqualTo HttpStatusCode.NotFound
             }
         }
     }
@@ -71,17 +71,31 @@ class SyfosmregisterSykmeldingClientTest : Spek({
         it("Får riktig url uten filter") {
             val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(null, null, null, null))
 
-            url shouldEqual "$endpointUrl/api/v2/sykmeldinger"
+            url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger"
         }
         it("Får riktig url med fom og tom") {
-            val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(LocalDate.of(2020, 4, 1), LocalDate.of(2020, 4, 5), null, null))
+            val url = syfosmregisterSykmeldingClient.getRequestUrl(
+                ApiFilter(
+                    LocalDate.of(2020, 4, 1),
+                    LocalDate.of(2020, 4, 5),
+                    null,
+                    null
+                )
+            )
 
-            url shouldEqual "$endpointUrl/api/v2/sykmeldinger?fom=2020-04-01&tom=2020-04-05"
+            url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?fom=2020-04-01&tom=2020-04-05"
         }
         it("Får riktig url med fom og tom og exclude") {
-            val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(LocalDate.of(2020, 4, 1), LocalDate.of(2020, 4, 5), listOf("AVBRUTT"), null))
+            val url = syfosmregisterSykmeldingClient.getRequestUrl(
+                ApiFilter(
+                    LocalDate.of(2020, 4, 1),
+                    LocalDate.of(2020, 4, 5),
+                    listOf("AVBRUTT"),
+                    null
+                )
+            )
 
-            url shouldEqual "$endpointUrl/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-04-01&tom=2020-04-05"
+            url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-04-01&tom=2020-04-05"
         }
     }
 })

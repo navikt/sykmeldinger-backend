@@ -20,7 +20,7 @@ import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpTestApplication
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
@@ -45,7 +45,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                         addHeader("FNR", "fnr")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Created
+                    response.status() shouldBeEqualTo HttpStatusCode.Created
                 }
             }
             it("Returnerer 500 hvis noe går galt") {
@@ -59,7 +59,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                         addHeader("FNR", "fnr")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.InternalServerError
+                    response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                 }
             }
 
@@ -74,8 +74,8 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                         addHeader("FNR", "fnr")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.BadRequest
-                    response.content shouldEqual "Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId"
+                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    response.content shouldBeEqualTo "Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId"
                 }
             }
             it("Returerer NotFound når status ikke finnes for bruker") {
@@ -89,8 +89,8 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                         addHeader("FNR", "fnr")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.NotFound
-                    response.content shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    response.content shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
                 }
             }
         }
@@ -143,7 +143,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                         addHeader("FNR", "fnr")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Created
+                    response.status() shouldBeEqualTo HttpStatusCode.Created
                 }
             }
             it("Should not authenticate") {
@@ -165,7 +165,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                         addHeader("FNR", "fnr")
                     }
                 ) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
         }

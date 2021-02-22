@@ -14,7 +14,7 @@ import no.nav.syfo.pdl.client.model.HentPerson
 import no.nav.syfo.pdl.client.model.ResponseData
 import no.nav.syfo.pdl.client.model.ResponseError
 import no.nav.syfo.pdl.error.PersonNotFoundInPdl
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
@@ -31,9 +31,9 @@ class PdlServiceTest : Spek({
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse()
             runBlocking {
                 val person = pdlService.getPersonnavn("01245678901", "Bearer token", "callId")
-                person.navn.fornavn shouldEqual "fornavn"
-                person.navn.mellomnavn shouldEqual null
-                person.navn.etternavn shouldEqual "etternavn"
+                person.navn.fornavn shouldBeEqualTo "fornavn"
+                person.navn.mellomnavn shouldBeEqualTo null
+                person.navn.etternavn shouldBeEqualTo "etternavn"
             }
         }
 
@@ -41,7 +41,12 @@ class PdlServiceTest : Spek({
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
                 ResponseData(null),
                 listOf(
-                    ResponseError("Ikke tilgang", null, null, ErrorExtension("unauthorized", ErrorDetails("abac-deny", "cause", "policy"), null))
+                    ResponseError(
+                        "Ikke tilgang",
+                        null,
+                        null,
+                        ErrorExtension("unauthorized", ErrorDetails("abac-deny", "cause", "policy"), null)
+                    )
                 )
             )
             val exception = assertFailsWith<PersonNotFoundInPdl> {
@@ -49,7 +54,7 @@ class PdlServiceTest : Spek({
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
                 }
             }
-            exception.message shouldEqual "Fant ikke person i PDL"
+            exception.message shouldBeEqualTo "Fant ikke person i PDL"
         }
 
         it("Skal feile når navn er tom liste") {
@@ -66,7 +71,7 @@ class PdlServiceTest : Spek({
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
                 }
             }
-            exception.message shouldEqual "Fant ikke navn på person i PDL"
+            exception.message shouldBeEqualTo "Fant ikke navn på person i PDL"
         }
         it("Skal feile når navn ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
@@ -82,7 +87,7 @@ class PdlServiceTest : Spek({
                     pdlService.getPersonnavn("123", "Bearer token", "callId")
                 }
             }
-            exception.message shouldEqual "Fant ikke navn på person i PDL"
+            exception.message shouldBeEqualTo "Fant ikke navn på person i PDL"
         }
     }
 })

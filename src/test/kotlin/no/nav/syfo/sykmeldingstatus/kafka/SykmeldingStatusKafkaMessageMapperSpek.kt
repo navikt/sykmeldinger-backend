@@ -11,7 +11,7 @@ import no.nav.syfo.sykmeldingstatus.api.SvartypeDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
@@ -27,17 +27,22 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
                 timestamp,
                 ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
                 listOf(
-                    SporsmalOgSvarDTO("Arbeidssituasjon", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+                    SporsmalOgSvarDTO(
+                        "Arbeidssituasjon",
+                        ShortNameDTO.ARBEIDSSITUASJON,
+                        SvartypeDTO.ARBEIDSSITUASJON,
+                        "ARBEIDSTAKER"
+                    ),
                     SporsmalOgSvarDTO("Nærmeste leder", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
                 )
             )
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_SENDT
-            sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual listOf(
+            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
+            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_SENDT
+            sykmeldingStatusKafkaEventDTO.sporsmals shouldBeEqualTo listOf(
                 no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                     "Arbeidssituasjon",
                     no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
@@ -49,7 +54,11 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
                     no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI, "NEI"
                 )
             )
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn")
+            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO(
+                orgnummer = "orgnummer",
+                juridiskOrgnummer = null,
+                orgNavn = "navn"
+            )
         }
     }
 
@@ -60,30 +69,30 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_BEKREFTET
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
-            sykmeldingStatusKafkaEventDTO.sporsmals?.size shouldEqual 4
-            sykmeldingStatusKafkaEventDTO.sporsmals!![0] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
+            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_BEKREFTET
+            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo null
+            sykmeldingStatusKafkaEventDTO.sporsmals?.size shouldBeEqualTo 4
+            sykmeldingStatusKafkaEventDTO.sporsmals!![0] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Sykmeldt fra ",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON,
                 "Frilanser"
             )
-            sykmeldingStatusKafkaEventDTO.sporsmals!![1] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+            sykmeldingStatusKafkaEventDTO.sporsmals!![1] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Har forsikring?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FORSIKRING,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
                 "Ja"
             )
-            sykmeldingStatusKafkaEventDTO.sporsmals!![2] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+            sykmeldingStatusKafkaEventDTO.sporsmals!![2] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Hatt fravær?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FRAVAER,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
                 "Ja"
             )
-            sykmeldingStatusKafkaEventDTO.sporsmals!![3] shouldEqual no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+            sykmeldingStatusKafkaEventDTO.sporsmals!![3] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Når hadde du fravær?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.PERIODE,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.PERIODER,
@@ -95,54 +104,58 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingBekreftEventDTOUtenSpm = SykmeldingBekreftEventDTO(timestamp, null)
 
-            val sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTOUtenSpm.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
+            val sykmeldingStatusKafkaEventDTO =
+                sykmeldingBekreftEventDTOUtenSpm.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_BEKREFTET
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
-            sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
+            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
+            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_BEKREFTET
+            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo null
+            sykmeldingStatusKafkaEventDTO.sporsmals shouldBeEqualTo null
         }
 
         it("Mapper sykmeldingBekreftEventDTO med tom spørsmålsliste riktig") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingBekreftEventDTOUtenSpm = SykmeldingBekreftEventDTO(timestamp, emptyList())
 
-            val sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTOUtenSpm.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
+            val sykmeldingStatusKafkaEventDTO =
+                sykmeldingBekreftEventDTOUtenSpm.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_BEKREFTET
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
-            sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
+            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
+            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_BEKREFTET
+            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo null
+            sykmeldingStatusKafkaEventDTO.sporsmals shouldBeEqualTo null
         }
     }
 
     describe("Test av tilSykmeldingStatusKafkaEventDTO for SykmeldingStatusEventDTO") {
         it("Mapper SykmeldingStatusEventDTO for AVBRUTT") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-            val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT, timestamp)
+            val sykmeldingStatusEventDTO =
+                SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_AVBRUTT
-            sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
+            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
+            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_AVBRUTT
+            sykmeldingStatusKafkaEventDTO.sporsmals shouldBeEqualTo null
+            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo null
         }
 
         it("Mapper SykmeldingStatusEventDTO for APEN riktig") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-            val sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN, timestamp)
+            val sykmeldingStatusEventDTO =
+                SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldEqual sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldEqual timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldEqual STATUS_APEN
-            sykmeldingStatusKafkaEventDTO.sporsmals shouldEqual null
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldEqual null
+            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
+            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_APEN
+            sykmeldingStatusKafkaEventDTO.sporsmals shouldBeEqualTo null
+            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo null
         }
     }
 })

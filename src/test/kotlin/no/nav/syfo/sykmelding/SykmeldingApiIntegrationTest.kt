@@ -29,7 +29,7 @@ import no.nav.syfo.testutils.ResponseData
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
@@ -56,7 +56,7 @@ class SykmeldingApiIntegrationTest : Spek({
             it("Should get list of sykmeldinger OK") {
                 httpClient.respond(emptyList<SykmeldingDTO>())
                 withGetSykmeldinger(env) {
-                    response.status() shouldEqual HttpStatusCode.OK
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
             it("Should get sykmeldinger with updated status from redis") {
@@ -73,8 +73,8 @@ class SykmeldingApiIntegrationTest : Spek({
                 every { redisService.getStatus(any()) } returns newSykmeldingStatus
 
                 withGetSykmeldinger(env) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldEqual
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldBeEqualTo
                         listOf(
                             sykmeldingDTO.copy(
                                 sykmeldingStatus = SykmeldingStatusDTO(
@@ -103,30 +103,30 @@ class SykmeldingApiIntegrationTest : Spek({
                 every { redisService.getStatus(any()) } returns redisSykmeldingStatus
 
                 withGetSykmeldinger(env) {
-                    response.status() shouldEqual HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldEqual
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldBeEqualTo
                         listOf(sykmeldingDTO)
                 }
             }
             it("Should get unauthorize when register returns unauthorized") {
                 httpClient.respond(HttpStatusCode.Unauthorized, "Unauthorized")
                 withGetSykmeldinger(env) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
-                    response.content shouldEqual "Unauthorized"
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    response.content shouldBeEqualTo "Unauthorized"
                 }
             }
             it("Should get forbidden when register returns forbidden") {
                 httpClient.respond(HttpStatusCode.Forbidden, "Forbidden")
                 withGetSykmeldinger(env) {
-                    response.status() shouldEqual HttpStatusCode.Forbidden
-                    response.content shouldEqual "Forbidden"
+                    response.status() shouldBeEqualTo HttpStatusCode.Forbidden
+                    response.content shouldBeEqualTo "Forbidden"
                 }
             }
             it("Should get 500 when register returns 500") {
                 httpClient.respond(HttpStatusCode.InternalServerError, "Feil i registeret")
                 withGetSykmeldinger(env) {
-                    response.status() shouldEqual HttpStatusCode.InternalServerError
-                    response.content shouldEqual "Feil i registeret"
+                    response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
+                    response.content shouldBeEqualTo "Feil i registeret"
                 }
             }
         }
