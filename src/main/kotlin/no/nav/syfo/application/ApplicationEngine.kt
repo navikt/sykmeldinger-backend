@@ -51,6 +51,8 @@ import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingStatusSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
+import no.nav.syfo.sykmeldingstatus.soknadstatus.client.SyfosoknadClient
 import redis.clients.jedis.JedisPool
 
 @KtorExperimentalAPI
@@ -107,6 +109,8 @@ fun createApplicationEngine(
         )
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
+        val syfosoknadClient = SyfosoknadClient(env.syfosoknadUrl, httpClient)
+        val soknadstatusService = SoknadstatusService(syfosoknadClient)
 
         val pdlClient = PdlClient(httpClient,
             env.pdlGraphqlPath,
@@ -115,7 +119,7 @@ fun createApplicationEngine(
         val pdlService = PdlPersonService(pdlClient, stsOidcClient)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, soknadstatusService)
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
