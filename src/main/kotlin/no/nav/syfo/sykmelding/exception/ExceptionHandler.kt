@@ -11,7 +11,6 @@ import no.nav.syfo.log
 
 fun StatusPages.Configuration.setUpSykmeldingExceptionHandler() {
     exception<ServerResponseException> { cause ->
-        println(cause.response.readText())
         call.respond(cause.response.status, cause.response.readText())
         when (cause.response.status) {
             HttpStatusCode.InternalServerError -> log.error(cause.message)
