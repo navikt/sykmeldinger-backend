@@ -1,7 +1,6 @@
 package no.nav.syfo.sykmelding
 
 import io.ktor.util.KtorExperimentalAPI
-import java.util.UUID
 import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
@@ -19,6 +18,7 @@ import no.nav.syfo.sykmelding.syforestmodel.tilSyforestSykmelding
 import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import java.util.UUID
 
 @KtorExperimentalAPI
 class SykmeldingService(
@@ -28,7 +28,7 @@ class SykmeldingService(
 ) {
     suspend fun hentSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
-                .map(this::getSykmeldingWithLatestStatus)
+            .map(this::getSykmeldingWithLatestStatus)
     }
 
     suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, apiFilter: ApiFilter?): List<SyforestSykmelding> {
@@ -59,10 +59,12 @@ class SykmeldingService(
 }
 
 private fun SykmeldingStatusRedisModel.toSykmeldingStatusDto(): SykmeldingStatusDTO {
-    return SykmeldingStatusDTO(timestamp = timestamp,
-            statusEvent = statusEvent.name,
-            arbeidsgiver = arbeidsgiver,
-            sporsmalOgSvarListe = sporsmals?.map { it.toSporsmalDTO() } ?: emptyList())
+    return SykmeldingStatusDTO(
+        timestamp = timestamp,
+        statusEvent = statusEvent.name,
+        arbeidsgiver = arbeidsgiver,
+        sporsmalOgSvarListe = sporsmals?.map { it.toSporsmalDTO() } ?: emptyList()
+    )
 }
 
 private fun SporsmalOgSvarDTO.toSporsmalDTO(): SporsmalDTO {

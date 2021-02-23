@@ -7,10 +7,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.metrics.GJENAPNET_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 fun Route.registerSykmeldingGjenapneApi(sykmeldingStatusService: SykmeldingStatusService) {
     post("/api/v1/sykmeldinger/{sykmeldingid}/gjenapne") {

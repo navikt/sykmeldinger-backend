@@ -9,9 +9,9 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
-import java.time.LocalDate
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
+import java.time.LocalDate
 
 @KtorExperimentalAPI
 fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {

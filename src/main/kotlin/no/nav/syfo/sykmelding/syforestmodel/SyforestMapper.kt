@@ -1,10 +1,6 @@
 package no.nav.syfo.sykmelding.syforestmodel
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.sykmelding.model.BehandlerDTO
@@ -21,6 +17,10 @@ import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 fun pdlPersonTilPasient(fnr: String, pdlPerson: PdlPerson): Pasient {
     return Pasient(

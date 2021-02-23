@@ -12,7 +12,6 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import java.nio.file.Paths
 import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
@@ -21,9 +20,10 @@ import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpTestApplication
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.nio.file.Paths
 
 class SykmeldingBekreftSyfoServiceApiSpek : Spek({
 
@@ -37,52 +37,60 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
             it("Skal returnere Created hvis alt går bra") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } returns Unit
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.Created
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.Created
                 }
             }
             it("Returnerer 500 hvis noe går galt") {
                 val sykmeldingId = "1235"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.InternalServerError
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                 }
             }
 
             it("Returerer BadRequest når man ikke kan endre status") {
                 val sykmeldingId = "1234"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId")
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.BadRequest
-                    response.content shouldEqual "Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId"
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    response.content shouldBeEqualTo "Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId"
                 }
             }
             it("Returerer NotFound når status ikke finnes for bruker") {
                 val sykmeldingId = "1234"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer token")
-                    addHeader("FNR", "fnr")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.NotFound
-                    response.content shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader("AUTHORIZATION", "Bearer token")
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    response.content shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
                 }
             }
         }
@@ -117,34 +125,47 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
             it("Should authenticate") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } returns Unit
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("AUTHORIZATION", "Bearer ${
-                        generateJWT("client",
-                            "preprod.local",
-                            subject = "srvsyfoservice",
-                            issuer = env.stsOidcIssuer)
-                    }")
-                    addHeader("FNR", "fnr")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.Created
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${
+                            generateJWT(
+                                "client",
+                                "preprod.local",
+                                subject = "srvsyfoservice",
+                                issuer = env.stsOidcIssuer
+                            )
+                            }"
+                        )
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.Created
                 }
             }
             it("Should not authenticate") {
-                with(handleRequest(HttpMethod.Post, "/sykmeldinger/123/bekreft") {
-                    setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                    addHeader("Content-Type", ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${
-                        generateJWT(
-                            "client",
-                            "preprod.local",
-                            subject = "srvsyforegister",
-                            issuer = env.stsOidcIssuer)
-                    }")
-                    addHeader("FNR", "fnr")
-                }) {
-                    response.status() shouldEqual HttpStatusCode.Unauthorized
+                with(
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/123/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${
+                            generateJWT(
+                                "client",
+                                "preprod.local",
+                                subject = "srvsyforegister",
+                                issuer = env.stsOidcIssuer
+                            )
+                            }"
+                        )
+                        addHeader("FNR", "fnr")
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
         }

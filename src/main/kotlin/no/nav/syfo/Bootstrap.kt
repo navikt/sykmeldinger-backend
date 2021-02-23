@@ -8,8 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import java.net.URL
-import java.util.concurrent.TimeUnit
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
@@ -23,6 +21,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
+import java.net.URL
+import java.util.concurrent.TimeUnit
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sykmeldinger-backend")
 

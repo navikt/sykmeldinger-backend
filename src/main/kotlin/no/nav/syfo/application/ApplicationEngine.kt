@@ -27,7 +27,6 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.KtorExperimentalAPI
-import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
@@ -55,6 +54,7 @@ import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.client.SyfosoknadClient
 import redis.clients.jedis.JedisPool
+import java.util.UUID
 
 @KtorExperimentalAPI
 fun createApplicationEngine(
@@ -100,7 +100,6 @@ fun createApplicationEngine(
                     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 }
             }
-            expectSuccess = false
         }
         val httpClient = HttpClient(Apache, config)
         val stsOidcClient = StsOidcClient(
@@ -113,9 +112,11 @@ fun createApplicationEngine(
         val syfosoknadClient = SyfosoknadClient(env.syfosoknadUrl, httpClient)
         val soknadstatusService = SoknadstatusService(syfosoknadClient)
 
-        val pdlClient = PdlClient(httpClient,
+        val pdlClient = PdlClient(
+            httpClient,
             env.pdlGraphqlPath,
-            PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), ""))
+            PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
+        )
 
         val pdlService = PdlPersonService(pdlClient, stsOidcClient)
 

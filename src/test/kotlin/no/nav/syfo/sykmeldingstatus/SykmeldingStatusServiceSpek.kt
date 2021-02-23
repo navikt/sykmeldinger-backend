@@ -8,10 +8,6 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.verify
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.RuntimeException
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
@@ -24,9 +20,13 @@ import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.RuntimeException
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingId = "id"
@@ -40,8 +40,13 @@ class SykmeldingStatusServiceSpek : Spek({
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
-            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
-            val expextedErrorMessage = "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
+                oldStatus,
+                erAvvist = erAvvist,
+                erEgenmeldt = erEgenmeldt
+            )
+            val expextedErrorMessage =
+                "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
             val error = assertFailsWith<InvalidSykmeldingStatusException> {
                 when (newStatus) {
                     StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(
@@ -52,11 +57,23 @@ class SykmeldingStatusServiceSpek : Spek({
                         token,
                         false
                     )
-                    StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "user", fnr, token)
-                    else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr, token)
+                    StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(
+                        opprettSykmeldingBekreftEventDTO(),
+                        sykmeldingId,
+                        "user",
+                        fnr,
+                        token
+                    )
+                    else -> sykmeldingStatusService.registrerStatus(
+                        getSykmeldingStatus(newStatus),
+                        sykmeldingId,
+                        "user",
+                        fnr,
+                        token
+                    )
                 }
             }
-            error.message shouldEqual expextedErrorMessage
+            error.message shouldBeEqualTo expextedErrorMessage
         }
     }
     fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
@@ -92,31 +109,62 @@ class SykmeldingStatusServiceSpek : Spek({
     describe("Hent nyeste status") {
         it("Skal hente sendt status fra Redis") {
             runBlocking {
-                val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC), erAvvist = true, erEgenmeldt = false)
+                val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(
+                    StatusEventDTO.SENDT,
+                    OffsetDateTime.now(ZoneOffset.UTC),
+                    erAvvist = true,
+                    erEgenmeldt = false
+                )
                 coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingSendEventDTO
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.APEN, redisSykmeldingSendEventDTO.timestamp.minusNanos(1), erAvvist = true, erEgenmeldt = false)
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
+                    StatusEventDTO.APEN,
+                    redisSykmeldingSendEventDTO.timestamp.minusNanos(1),
+                    erAvvist = true,
+                    erEgenmeldt = false
+                )
                 val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                sisteStatusEventDTO shouldEqual SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisSykmeldingSendEventDTO.timestamp, erAvvist = true, erEgenmeldt = false)
+                sisteStatusEventDTO shouldBeEqualTo SykmeldingStatusEventDTO(
+                    StatusEventDTO.SENDT,
+                    redisSykmeldingSendEventDTO.timestamp,
+                    erAvvist = true,
+                    erEgenmeldt = false
+                )
             }
         }
 
         it("Skal hente nyeste status fra registeret") {
             runBlocking {
-                val redisSykmeldingStatus = getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
+                val redisSykmeldingStatus =
+                    getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
                 coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingStatus
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.SENDT, redisSykmeldingStatus.timestamp.plusNanos(1), erAvvist = false, erEgenmeldt = true)
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
+                    StatusEventDTO.SENDT,
+                    redisSykmeldingStatus.timestamp.plusNanos(1),
+                    erAvvist = false,
+                    erEgenmeldt = true
+                )
                 val sisteStatus = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                sisteStatus shouldEqual SykmeldingStatusEventDTO(StatusEventDTO.SENDT, redisSykmeldingStatus.timestamp.plusNanos(1), erAvvist = false, erEgenmeldt = true)
+                sisteStatus shouldBeEqualTo SykmeldingStatusEventDTO(
+                    StatusEventDTO.SENDT,
+                    redisSykmeldingStatus.timestamp.plusNanos(1),
+                    erAvvist = false,
+                    erEgenmeldt = true
+                )
             }
         }
 
         it("Ikke tilgang til sykmeldingstatus") {
             runBlocking {
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } throws RuntimeException("Ingen tilgang")
+                coEvery {
+                    syfosmregisterClient.hentSykmeldingstatus(
+                        any(),
+                        any()
+                    )
+                } throws RuntimeException("Ingen tilgang")
                 val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
                     sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
                 }
-                exception.message shouldEqual "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+                exception.message shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
             }
         }
     }
@@ -245,13 +293,24 @@ class SykmeldingStatusServiceSpek : Spek({
         }
         it("Bruker skal ikke kunne gjenåpne en bekreftet sykmelding hvis det finnes sendt søknad") {
             runBlocking {
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(StatusEventDTO.BEKREFTET, erAvvist = false, erEgenmeldt = false)
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
+                    StatusEventDTO.BEKREFTET,
+                    erAvvist = false,
+                    erEgenmeldt = false
+                )
                 coEvery { soknadstatusService.finnesSendtSoknadForSykmelding(any(), any()) } returns true
-                val expextedErrorMessage = "Kan ikke gjenåpne sykmelding med id $sykmeldingId fordi det finnes en sendt søknad for sykmeldingen"
+                val expextedErrorMessage =
+                    "Kan ikke gjenåpne sykmelding med id $sykmeldingId fordi det finnes en sendt søknad for sykmeldingen"
                 val error = assertFailsWith<InvalidSykmeldingStatusException> {
-                    sykmeldingStatusService.registrerStatus(getSykmeldingStatus(StatusEventDTO.APEN), sykmeldingId, "user", fnr, token)
+                    sykmeldingStatusService.registrerStatus(
+                        getSykmeldingStatus(StatusEventDTO.APEN),
+                        sykmeldingId,
+                        "user",
+                        fnr,
+                        token
+                    )
                 }
-                error.message shouldEqual expextedErrorMessage
+                error.message shouldBeEqualTo expextedErrorMessage
             }
         }
     }

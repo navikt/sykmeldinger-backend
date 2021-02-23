@@ -24,11 +24,11 @@ class SykmeldingStatusService(
 ) {
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
-                Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT, StatusEventDTO.SENDT, StatusEventDTO.APEN, StatusEventDTO.UTGATT)),
-                Pair(StatusEventDTO.BEKREFTET, listOf(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT)),
-                Pair(StatusEventDTO.SENDT, emptyList()),
-                Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN)),
-                Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT))
+            Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT, StatusEventDTO.SENDT, StatusEventDTO.APEN, StatusEventDTO.UTGATT)),
+            Pair(StatusEventDTO.BEKREFTET, listOf(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT)),
+            Pair(StatusEventDTO.SENDT, emptyList()),
+            Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN)),
+            Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT))
         )
         private val statusStatesAvvistSykmelding: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
             Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET)),

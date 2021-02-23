@@ -18,17 +18,17 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import kotlinx.coroutines.runBlocking
+import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import org.amshove.kluent.shouldBeEqualTo
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import java.net.ServerSocket
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
-import kotlinx.coroutines.runBlocking
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
-import org.amshove.kluent.shouldEqual
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
 class SyfosmregisterClientSpek : Spek({
 
@@ -88,8 +88,8 @@ class SyfosmregisterClientSpek : Spek({
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("1", "token")
             }
 
-            sykmeldingStatusEventDTO?.statusEvent shouldEqual StatusEventDTO.APEN
-            sykmeldingStatusEventDTO?.timestamp shouldEqual timestamp
+            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.APEN
+            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
         }
 
         it("Kan hente status for egen sykmelding med status SENDT") {
@@ -98,8 +98,8 @@ class SyfosmregisterClientSpek : Spek({
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("2", "token")
             }
 
-            sykmeldingStatusEventDTO?.statusEvent shouldEqual StatusEventDTO.SENDT
-            sykmeldingStatusEventDTO?.timestamp shouldEqual timestamp
+            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.SENDT
+            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
         }
 
         it("Kan hente status for egen sykmelding med status BEKREFTET") {
@@ -108,8 +108,8 @@ class SyfosmregisterClientSpek : Spek({
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("3", "token")
             }
 
-            sykmeldingStatusEventDTO?.statusEvent shouldEqual StatusEventDTO.BEKREFTET
-            sykmeldingStatusEventDTO?.timestamp shouldEqual timestamp
+            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET
+            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
         }
 
         it("Kan hente status for egen sykmelding med status AVBRUTT") {
@@ -118,8 +118,8 @@ class SyfosmregisterClientSpek : Spek({
                 sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("4", "token")
             }
 
-            sykmeldingStatusEventDTO?.statusEvent shouldEqual StatusEventDTO.AVBRUTT
-            sykmeldingStatusEventDTO?.timestamp shouldEqual timestamp
+            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.AVBRUTT
+            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
         }
 
         it("Henting av status for annen brukers sykmelding gir feilmelding") {

@@ -1,8 +1,5 @@
 package no.nav.syfo.sykmeldingstatus
 
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.sykmelding.model.AdresseDTO
 import no.nav.syfo.sykmelding.model.AnnenFraversArsakDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
@@ -32,6 +29,9 @@ import no.nav.syfo.sykmelding.syforestmodel.UtdypendeOpplysninger
 import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 fun getSykmeldingStatus(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean? = null, erEgenmeldt: Boolean? = null): SykmeldingStatusEventDTO {
     return SykmeldingStatusEventDTO(statusEventDTO, dateTime, erAvvist, erEgenmeldt)
@@ -53,7 +53,8 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         behandler = BehandlerDTO(
             "fornavn", null, "etternavn",
             "123", "01234567891", null, null,
-            AdresseDTO(null, null, null, null, null), null),
+            AdresseDTO(null, null, null, null, null), null
+        ),
         behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
         mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
         skjermesForPasient = false,
@@ -70,7 +71,8 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         egenmeldt = false,
         harRedusertArbeidsgiverperiode = false,
         papirsykmelding = false,
-        merknader = merknader)
+        merknader = merknader
+    )
 }
 
 fun getMedisinskVurdering(): MedisinskVurderingDTO {
