@@ -100,7 +100,6 @@ fun createApplicationEngine(
                     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 }
             }
-            expectSuccess = false
         }
         val httpClient = HttpClient(Apache, config)
         val stsOidcClient = StsOidcClient(
