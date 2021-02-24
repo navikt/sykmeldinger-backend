@@ -27,11 +27,14 @@ class ArbeidsgiverServiceTest : Spek({
     describe("Test ArbeidsgiverService") {
         it("arbeidsgiverService should return list") {
             runBlocking {
-                coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns getArbeidsgiverforhold()
+                coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns getArbeidsgiverforhold(
+                    Gyldighetsperiode(fom = LocalDate.now(), tom = null)
+                )
 
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", LocalDate.now())
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
             }
         }
 

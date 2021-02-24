@@ -48,7 +48,7 @@ class ArbeidsgiverService(
                 juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
                 navn = getName(organisasjonsinfo.navn),
                 stilling = arbeidsavtale.stillingsprosent.toString(),
-                aktivtArbeidsforhold = arbeidsavtale.gyldighetsperiode.tom != null,
+                aktivtArbeidsforhold = arbeidsavtale.gyldighetsperiode.tom == null,
                 naermesteLeder = null
             )
         )
