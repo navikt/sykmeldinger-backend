@@ -31,6 +31,10 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
+import no.nav.syfo.arbeidsgivere.api.registrerArbeidsgiverApi
+import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
+import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
+import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
@@ -111,6 +115,10 @@ fun createApplicationEngine(
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
         val syfosoknadClient = SyfosoknadClient(env.syfosoknadUrl, httpClient)
         val soknadstatusService = SoknadstatusService(syfosoknadClient)
+        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath)
+        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath)
+
+        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, stsOidcClient)
 
         val pdlClient = PdlClient(
             httpClient,
@@ -133,6 +141,7 @@ fun createApplicationEngine(
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                registrerArbeidsgiverApi(arbeidsgiverService)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)

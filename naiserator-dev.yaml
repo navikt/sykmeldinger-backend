@@ -56,5 +56,7 @@ spec:
       value: https://security-token-service.nais.preprod.local
     - name: STS_OIDC_AUDIENCE
       value: preprod.local
+    - name: REGISTER_BASE_PATH
+      value: https://modapp-q1.adeo.no
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.preprod.local/graphql

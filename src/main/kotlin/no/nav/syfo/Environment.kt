@@ -21,6 +21,7 @@ data class Environment(
     val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
     val syfosoknadUrl: String = getEnvVar("SYFOSOKNAD_URL", "http://syfosoknad"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),

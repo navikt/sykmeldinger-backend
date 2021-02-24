@@ -106,6 +106,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
                 kafkaBootstrapServers = "",
                 stsOidcIssuer = "https://security-token-service.nais.preprod.local",
                 stsOidcAudience = "preprod.local",
+                registerBasePath = "https://register",
                 pdlGraphqlPath = "http://graphql",
                 cluster = "dev-fss",
                 loginserviceIdportenDiscoveryUrl = "url",
