@@ -6,6 +6,7 @@ import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Gyldighetsperiode
+import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
@@ -19,10 +20,12 @@ class ArbeidsgiverServiceTest : Spek({
 
     val arbeidsforholdClient = mockkClass(ArbeidsforholdClient::class)
     val organisasjonsinfoClient = mockkClass(OrganisasjonsinfoClient::class)
+    val narmestelederClient = mockkClass(NarmestelederClient::class)
     val stsOidcToken = mockkClass(StsOidcClient::class)
 
-    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, stsOidcToken)
+    val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, stsOidcToken)
     coEvery { organisasjonsinfoClient.getOrginfo(any()) } returns getOrganisasjonsinfo()
+    coEvery { narmestelederClient.getNarmesteledere(any()) } returns getNarmestelederRelasjoner()
     coEvery { stsOidcToken.oidcToken() } returns OidcToken("token", "jwt", 1L)
     describe("Test ArbeidsgiverService") {
         it("arbeidsgiverService should return list") {
@@ -35,6 +38,10 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+                arbeidsgiverinformasjon[0].naermesteLeder?.aktoerId shouldBeEqualTo "nlAktorId"
+                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
             }
         }
 

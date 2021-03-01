@@ -12,13 +12,13 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
+import no.nav.syfo.testutils.getTestEnvironment
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -103,19 +103,7 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
             setUpTestApplication()
 
             val audience = listOf("loginserviceId1", "loginserviceId2")
-            val env = Environment(
-                jwtIssuer = "issuer",
-                kafkaBootstrapServers = "",
-                stsOidcIssuer = "https://security-token-service.nais.preprod.local",
-                stsOidcAudience = "preprod.local",
-                registerBasePath = "https://register",
-                pdlGraphqlPath = "http://graphql",
-                cluster = "dev-fss",
-                loginserviceIdportenDiscoveryUrl = "url",
-                loginserviceIdportenAudience = audience,
-                truststore = "",
-                truststorePassword = ""
-            )
+            val env = getTestEnvironment(audience)
 
             val mockJwkProvider = mockkClass(JwkProvider::class)
             val path = "src/test/resources/jwkset.json"

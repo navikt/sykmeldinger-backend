@@ -60,3 +60,7 @@ spec:
       value: https://modapp.adeo.no
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
+    - name: AAD_ACCESS_TOKEN_URL
+      value: https://login.microsoftonline.com/navno.onmicrosoft.com/oauth2/token
+    - name: NARMESTELEDER_CLIENT_ID
+      value: ccf8c36f-27e6-4e76-8250-9a49939df7ef
