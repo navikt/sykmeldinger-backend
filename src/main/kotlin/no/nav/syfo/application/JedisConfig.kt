@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.redis
+package no.nav.syfo.application
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -22,7 +22,7 @@ class JedisConfig : JedisPoolConfig() {
     }
 }
 
-val objectMapper: ObjectMapper = ObjectMapper().apply {
+val jedisObjectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()
     registerModule(JavaTimeModule())
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)

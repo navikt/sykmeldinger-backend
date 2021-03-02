@@ -38,7 +38,7 @@ class SykmeldingService(
         if (sykmeldingsliste.isNotEmpty()) {
             val callId = UUID.randomUUID().toString()
             try {
-                val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPersonnavn(fnr = fnr, userToken = token, callId = callId))
+                val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = callId))
                 return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient) }
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved mapping av sykmeldinger med id: ${sykmeldingsliste.first().id}, callid: $callId")

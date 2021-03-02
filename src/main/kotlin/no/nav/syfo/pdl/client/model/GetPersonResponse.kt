@@ -6,11 +6,13 @@ data class GetPersonResponse(
 )
 
 data class ResponseData(
-    val hentPerson: HentPerson?
+    val person: PersonResponse?,
+    val identer: IdentResponse?
 )
 
-data class HentPerson(
-    val navn: List<Navn>?
+data class PersonResponse(
+    val navn: List<Navn>?,
+    val adressebeskyttelse: List<Adressebeskyttelse>?
 )
 
 data class Navn(
@@ -18,6 +20,26 @@ data class Navn(
     val mellomnavn: String?,
     val etternavn: String
 )
+
+data class Adressebeskyttelse(
+    val gradering: Gradering?
+)
+
+data class IdentResponse(
+    val identer: List<Ident>
+)
+
+data class Ident(
+    val ident: String,
+    val gruppe: String
+)
+
+enum class Gradering {
+    UGRADERT,
+    FORTROLIG,
+    STRENGT_FORTROLIG,
+    STRENGT_FORTROLIG_UTLAND
+}
 
 data class ResponseError(
     val message: String?,

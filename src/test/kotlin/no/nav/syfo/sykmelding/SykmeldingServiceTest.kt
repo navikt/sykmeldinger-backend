@@ -81,48 +81,48 @@ class SykmeldingServiceTest : Spek({
             val sykmelding = getSykmeldingModel()
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
-            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"))
+            coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
                 syforestSykmeldinger shouldBeEqualTo listOf(lagSyforestSykmelding())
             }
-            coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
+            coVerify(exactly = 1) { pdlPersonService.getPerson(any(), any(), any()) }
         }
 
         it("Hent sykmeldinger med merknad") {
             val sykmelding = getSykmeldingModel(merknader = listOf(MerknadDTO("UGYLDIG_TILBAKEDATERING", null)))
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
-            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"))
+            coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
                 syforestSykmeldinger shouldBeEqualTo listOf(lagSyforestSykmelding(merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", null))))
             }
-            coVerify(exactly = 1) { pdlPersonService.getPersonnavn(any(), any(), any()) }
+            coVerify(exactly = 1) { pdlPersonService.getPerson(any(), any(), any()) }
         }
 
         it("Avviste sykmeldinger hentes ikke med syforest-apiet") {
             val avvistSykmelding = getSykmeldingModel().copy(behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.INVALID, emptyList()))
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(avvistSykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
-            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"))
+            coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
 
                 syforestSykmeldinger shouldBeEqualTo emptyList()
             }
-            coVerify(exactly = 0) { pdlPersonService.getPersonnavn(any(), any(), any()) }
+            coVerify(exactly = 0) { pdlPersonService.getPerson(any(), any(), any()) }
         }
 
         it("Skal ikke hente person fra PDL hvis bruker ikke har sykmeldinger") {
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns emptyList()
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
-            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"))
+            coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
                 val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
@@ -130,14 +130,14 @@ class SykmeldingServiceTest : Spek({
                 syforestSykmeldinger shouldBeEqualTo emptyList()
             }
 
-            coVerify(exactly = 0) { pdlPersonService.getPersonnavn(any(), any(), any()) }
+            coVerify(exactly = 0) { pdlPersonService.getPerson(any(), any(), any()) }
         }
 
         it("Feiler hvis person ikke finnes i PDL") {
             val sykmelding = getSykmeldingModel()
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
-            coEvery { pdlPersonService.getPersonnavn(any(), "token", any()) } throws PersonNotFoundInPdl("Fant ikke person i PDL")
+            coEvery { pdlPersonService.getPerson(any(), "token", any()) } throws PersonNotFoundInPdl("Fant ikke person i PDL")
 
             assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {

@@ -1,6 +1,8 @@
 package no.nav.syfo.pdl.client
 
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.pdl.client.model.Adressebeskyttelse
+import no.nav.syfo.pdl.client.model.Gradering
 import no.nav.syfo.testutils.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
@@ -20,17 +22,20 @@ class PdlClientTest : Spek({
             httpClient.respond(getTestData())
             runBlocking {
                 val response = pdlClient.getPerson("12345678901", "Bearer token", "Bearer token")
-                response.data.hentPerson shouldNotBeEqualTo null
-                response.data.hentPerson?.navn?.size shouldBeEqualTo 1
-                response.data.hentPerson?.navn!![0].fornavn shouldBeEqualTo "RASK"
-                response.data.hentPerson?.navn!![0].etternavn shouldBeEqualTo "SAKS"
+                response.data.person shouldNotBeEqualTo null
+                response.data.person?.navn?.size shouldBeEqualTo 1
+                response.data.person?.navn!![0].fornavn shouldBeEqualTo "RASK"
+                response.data.person?.navn!![0].etternavn shouldBeEqualTo "SAKS"
+                response.data.person?.adressebeskyttelse!![0] shouldBeEqualTo Adressebeskyttelse(Gradering.UGRADERT)
+                val aktorId = response.data.identer?.identer?.find { it.gruppe == "AKTORID" }
+                aktorId?.ident shouldBeEqualTo "99999999999"
             }
         }
         it("Skal få hentPerson = null ved error") {
             httpClient.respond(getErrorResponse())
             runBlocking {
                 val response = pdlClient.getPerson("12345678901", "Bearer token", "Bearer token")
-                response.data.hentPerson shouldBeEqualTo null
+                response.data.person shouldBeEqualTo null
                 response.errors?.size shouldBeEqualTo 1
                 response.errors!![0].message shouldBeEqualTo "Ikke tilgang til å se person"
             }
