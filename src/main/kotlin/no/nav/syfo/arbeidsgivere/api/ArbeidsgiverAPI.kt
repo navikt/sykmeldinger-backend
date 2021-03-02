@@ -11,6 +11,7 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import java.time.LocalDate
+import java.util.UUID
 
 @KtorExperimentalAPI
 fun Route.registrerArbeidsgiverApi(arbeidsgiverService: ArbeidsgiverService) {
@@ -19,7 +20,14 @@ fun Route.registrerArbeidsgiverApi(arbeidsgiverService: ArbeidsgiverService) {
             val principal = call.principal<JWTPrincipal>()!!
             val fnr = principal.payload.subject
             val token = call.request.headers[HttpHeaders.Authorization]!!
-            call.respond(arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now()))
+            call.respond(
+                arbeidsgiverService.getArbeidsgivere(
+                    fnr = fnr,
+                    token = token,
+                    date = LocalDate.now(),
+                    sykmeldingId = call.request.queryParameters["sykmeldingId"] ?: UUID.randomUUID().toString()
+                )
+            )
         }
     }
 }

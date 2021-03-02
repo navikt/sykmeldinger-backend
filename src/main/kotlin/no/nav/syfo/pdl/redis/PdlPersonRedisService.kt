@@ -11,6 +11,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
     companion object {
         private val log: Logger = LoggerFactory.getLogger(PdlPersonRedisService::class.java)
         private const val redisTimeoutSeconds: Int = 60
+        private const val prefix = "PDL"
     }
 
     fun updatePerson(pdlPersonRedisModel: PdlPersonRedisModel, fnr: String) {
@@ -18,7 +19,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         try {
             jedis = jedisPool.resource
             jedis.auth(redisSecret)
-            jedis.setex(fnr, redisTimeoutSeconds, jedisObjectMapper.writeValueAsString(pdlPersonRedisModel))
+            jedis.setex("${prefix}$fnr", redisTimeoutSeconds, jedisObjectMapper.writeValueAsString(pdlPersonRedisModel))
         } catch (ex: Exception) {
             log.error("Could not update redis for person {}", ex.message)
         } finally {
@@ -31,7 +32,7 @@ class PdlPersonRedisService(private val jedisPool: JedisPool, private val redisS
         return try {
             jedis = jedisPool.resource
             jedis.auth(redisSecret)
-            when (val stringValue = jedis.get(fnr)) {
+            when (val stringValue = jedis.get("${prefix}$fnr")) {
                 null -> null
                 else -> jedisObjectMapper.readValue(stringValue, PdlPersonRedisModel::class.java)
             }

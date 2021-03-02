@@ -8,6 +8,9 @@ import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Opplysningspliktig
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Organisasjonsinfo
+import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverinfoRedisModel
+import no.nav.syfo.arbeidsgivere.redis.NarmesteLederRedisModel
+import no.nav.syfo.pdl.model.PdlPerson
 import java.time.LocalDate
 
 fun getArbeidsgiverforhold(
@@ -38,6 +41,14 @@ fun getOrganisasjonsinfo(): Organisasjonsinfo {
             null,
             null
         )
+    )
+}
+
+fun getPdlPerson(): PdlPerson {
+    return PdlPerson(
+        navn = no.nav.syfo.pdl.model.Navn("fornavn", null, "etternavn"),
+        aktorId = "aktorId",
+        diskresjonskode = false
     )
 }
 
@@ -81,6 +92,27 @@ fun getNarmestelederRelasjoner(): List<NarmesteLederRelasjon> {
             skrivetilgang = false,
             tilganger = emptyList(),
             navn = "Annen Ledersen"
+        )
+    )
+}
+
+fun getArbeidsgiverInfoRedisModel(): ArbeidsgiverinfoRedisModel {
+    return ArbeidsgiverinfoRedisModel(
+        orgnummer = "123456789",
+        juridiskOrgnummer = "123456789",
+        navn = "Navn 1",
+        stilling = "50",
+        aktivtArbeidsforhold = true,
+        naermesteLeder = NarmesteLederRedisModel(
+            id = 1L,
+            aktoerId = "aktorId",
+            navn = "Leder Ledersen",
+            epost = "epost@nav.no",
+            mobil = null,
+            orgnummer = "123456789",
+            organisasjonsnavn = "Navn 1",
+            aktivTom = null,
+            arbeidsgiverForskuttererLoenn = true
         )
     )
 }

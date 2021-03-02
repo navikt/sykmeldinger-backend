@@ -21,15 +21,15 @@ class PdlPersonService(
     private val pdlPersonRedisService: PdlPersonRedisService
 ) {
 
-    suspend fun getPerson(fnr: String, userToken: String, callId: String): PdlPerson {
+    suspend fun getPerson(fnr: String, userToken: String, callId: String, stsToken: String? = null): PdlPerson {
         val personFraRedis = getPersonFromRedis(fnr)
         if (personFraRedis != null) {
             log.info("Fant person i redis")
             return personFraRedis
         }
 
-        val stsToken = stsOidcClient.oidcToken().access_token
-        val pdlResponse = pdlClient.getPerson(fnr, userToken, stsToken)
+        val accessToken = stsToken ?: stsOidcClient.oidcToken().access_token
+        val pdlResponse = pdlClient.getPerson(fnr, userToken, accessToken)
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {

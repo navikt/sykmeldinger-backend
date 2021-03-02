@@ -36,6 +36,7 @@ import no.nav.syfo.arbeidsgivere.api.registrerArbeidsgiverApi
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
+import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
@@ -135,8 +136,6 @@ fun createApplicationEngine(
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath)
         val narmestelederClient = NarmestelederClient(httpClient, accessTokenClient, env.narmesteLederBasePath)
 
-        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, stsOidcClient)
-
         val pdlClient = PdlClient(
             httpClient,
             env.pdlGraphqlPath,
@@ -145,6 +144,9 @@ fun createApplicationEngine(
 
         val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
         val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+
+        val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
+        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, soknadstatusService)

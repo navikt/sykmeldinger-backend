@@ -11,7 +11,12 @@ import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Organisasjonsinfo
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
+import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
+import no.nav.syfo.arbeidsgivere.redis.toArbeidsgiverinfo
+import no.nav.syfo.arbeidsgivere.redis.toArbeidsgiverinfoRedisModel
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.log
+import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.LocalDate
 import kotlin.random.Random
 
@@ -20,13 +25,22 @@ class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val organisasjonsinfoClient: OrganisasjonsinfoClient,
     private val narmestelederClient: NarmestelederClient,
-    private val stsOidcClient: StsOidcClient
+    private val pdlPersonService: PdlPersonService,
+    private val stsOidcClient: StsOidcClient,
+    private val arbeidsgiverRedisService: ArbeidsgiverRedisService
 ) {
-    suspend fun getArbeidsgivere(fnr: String, token: String, date: LocalDate): List<Arbeidsgiverinfo> {
+    suspend fun getArbeidsgivere(fnr: String, token: String, date: LocalDate, sykmeldingId: String): List<Arbeidsgiverinfo> {
+        val arbeidsgivereFraRedis = getArbeidsgivereFromRedis(fnr)
+        if (arbeidsgivereFraRedis != null) {
+            log.info("Fant arbeidsgivere i redis")
+            return arbeidsgivereFraRedis
+        }
+
         val stsToken = stsOidcClient.oidcToken()
-        val ansettelsesperiodeFom = LocalDate.now().minusMonths(4) // må sjekkes
+        val person = pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = stsToken.access_token)
+        val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, token = token, stsToken = stsToken.access_token)
-        val aktiveNarmesteledere = narmestelederClient.getNarmesteledere("aktørid").filter { it.aktivTom == null } // bruk aktørid
+        val aktiveNarmesteledere = narmestelederClient.getNarmesteledere(person.aktorId).filter { it.aktivTom == null }
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {
             it.arbeidsgiver.type == "Organisasjon"
@@ -40,6 +54,7 @@ class ArbeidsgiverService(
                 addArbeidsinfo(arbeidsgiverList, organisasjonsinfo, arbeidsavtale, arbeidsforhold, narmesteLeder)
             }
         }
+        arbeidsgiverRedisService.updateArbeidsgivere(arbeidsgiverList.map { it.toArbeidsgiverinfoRedisModel() }, fnr)
         return arbeidsgiverList
     }
 
@@ -105,5 +120,9 @@ class ArbeidsgiverService(
             aktivTom = aktivTom,
             arbeidsgiverForskuttererLoenn = arbeidsgiverForskutterer
         )
+    }
+
+    private fun getArbeidsgivereFromRedis(fnr: String): List<Arbeidsgiverinfo>? {
+        return arbeidsgiverRedisService.getArbeidsgivere(fnr)?.map { it.toArbeidsgiverinfo() }
     }
 }

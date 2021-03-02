@@ -36,7 +36,7 @@ class ArbeidsgiverAPIKtTest : Spek({
             }
 
             it("should get list of arbeidsgivere") {
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", "", "50.0", aktivtArbeidsforhold = true, null))
+                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", "", "50.0", aktivtArbeidsforhold = true, null))
                 with(
                     handleRequest(HttpMethod.Get, "api/v1/syforest/arbeidsforhold") {
                         addHeader("Authorization", "Bearer token")
@@ -47,7 +47,7 @@ class ArbeidsgiverAPIKtTest : Spek({
                 }
             }
             it("Should get error if error happens") {
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } throws RuntimeException("Bad thing")
+                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } throws RuntimeException("Bad thing")
                 with(
                     handleRequest(HttpMethod.Get, "api/v1/syforest/arbeidsforhold") {
                         addHeader("Authorization", "Bearer token")
