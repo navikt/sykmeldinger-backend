@@ -38,8 +38,15 @@ class ArbeidsgiverService(
 
         val stsToken = stsOidcClient.oidcToken()
         val person = pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = stsToken.access_token)
+        if (person.diskresjonskode) {
+            return emptyList() // personer med diskresjonskode skal ikke få hentet arbeidsforhold
+        }
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, token = token, stsToken = stsToken.access_token)
+
+        if (arbeidsgivere.isEmpty()) {
+            return emptyList()
+        }
         val aktiveNarmesteledere = narmestelederClient.getNarmesteledere(person.aktorId).filter { it.aktivTom == null }
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {
