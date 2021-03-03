@@ -44,6 +44,23 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /api/v1/syforest/arbeidsforhold:
+    get:
+      summary: returnerer liste av alle arbeidsforhold for fnr i access_token
+      operationId: getSyforestArbeisforholdForBruker
+      tags:
+        - Sykmelding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/sykmeldingId'
+      responses:
+        '200':
+          $ref: '#/components/responses/SyforestArbeidsforholdResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
 
   /api/v1/sykmeldinger/{sykmeldingId}/bekreft:
     post:
@@ -158,6 +175,14 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SyforestSykmelding'
+    SyforestArbeidsforholdResponse:
+      description: "Arbeidsforhold response"
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Arbeidsgiverinfo'
   requestBodies:
     SyfoServiceLagreSykmeldingStatusEvent:
       description: "Lagre StatusEvent"
@@ -989,6 +1014,54 @@ components:
           type: string
         beskrivelse:
           type: string
+    Arbeidsgiverinfo:
+      type: object
+      required:
+        - orgnummer
+        - juridiskOrgnummer
+        - navn
+        - stilling
+        - aktivtArbeidsforhold
+      properties:
+        orgnummer:
+          type: string
+        juridiskOrgnummer:
+          type: string
+        navn:
+          type: string
+        stilling:
+          type: string
+        aktivtArbeidsforhold:
+          type: boolean
+        naermesteLeder:
+          $ref: '#/components/schemas/NarmesteLeder'
+    NarmesteLeder:
+      type: object
+      required:
+        - id
+        - aktoerId
+        - navn
+        - orgnummer
+        - organisasjonsnavn
+      properties:
+        id:
+          type: integer
+        aktoerId:
+          type: string
+        navn:
+          type: string
+        epost:
+          type: string
+        mobil:
+          type: string
+        orgnummer:
+          type: string
+        organisasjonsnavn:
+          type: string
+        aktivTom:
+          $ref: '#/components/schemas/Date'
+        arbeidsgiverForskuttererLoenn:
+          type: boolean
 
   securitySchemes:
     bearerAuth:
