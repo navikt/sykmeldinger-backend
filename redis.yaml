@@ -14,10 +14,10 @@ spec:
   resources:
     limits:
       cpu: 250m
-      memory: 256Mi
+      memory: 1Gi
     requests:
       cpu: 250m
-      memory: 256Mi
+      memory: 1Gi
   service:
     port: 6379
   vault:
