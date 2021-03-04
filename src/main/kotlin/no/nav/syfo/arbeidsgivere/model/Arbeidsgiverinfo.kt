@@ -6,13 +6,13 @@ data class Arbeidsgiverinfo(
     val orgnummer: String,
     val juridiskOrgnummer: String,
     val navn: String,
+    val stillingsprosent: String,
     val stilling: String,
     val aktivtArbeidsforhold: Boolean,
     val naermesteLeder: NarmesteLeder?
 )
 
 data class NarmesteLeder(
-    val id: Long,
     val aktoerId: String,
     val navn: String,
     val epost: String?,

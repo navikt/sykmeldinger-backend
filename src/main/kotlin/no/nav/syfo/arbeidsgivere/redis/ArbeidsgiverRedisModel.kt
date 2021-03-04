@@ -8,13 +8,13 @@ data class ArbeidsgiverinfoRedisModel(
     val orgnummer: String,
     val juridiskOrgnummer: String,
     val navn: String,
+    val stillingsprosent: String,
     val stilling: String,
     val aktivtArbeidsforhold: Boolean,
     val naermesteLeder: NarmesteLederRedisModel?
 )
 
 data class NarmesteLederRedisModel(
-    val id: Long,
     val aktoerId: String,
     val navn: String,
     val epost: String?,
@@ -31,6 +31,7 @@ fun Arbeidsgiverinfo.toArbeidsgiverinfoRedisModel(): ArbeidsgiverinfoRedisModel 
         juridiskOrgnummer = juridiskOrgnummer,
         navn = navn,
         stilling = stilling,
+        stillingsprosent = stillingsprosent,
         aktivtArbeidsforhold = aktivtArbeidsforhold,
         naermesteLeder = naermesteLeder?.toNarmesteLederRedisModel()
     )
@@ -38,7 +39,6 @@ fun Arbeidsgiverinfo.toArbeidsgiverinfoRedisModel(): ArbeidsgiverinfoRedisModel 
 
 fun NarmesteLeder.toNarmesteLederRedisModel(): NarmesteLederRedisModel {
     return NarmesteLederRedisModel(
-        id = id,
         aktoerId = aktoerId,
         navn = navn,
         epost = epost,
@@ -56,6 +56,7 @@ fun ArbeidsgiverinfoRedisModel.toArbeidsgiverinfo(): Arbeidsgiverinfo {
         juridiskOrgnummer = juridiskOrgnummer,
         navn = navn,
         stilling = stilling,
+        stillingsprosent = stillingsprosent,
         aktivtArbeidsforhold = aktivtArbeidsforhold,
         naermesteLeder = naermesteLeder?.toNarmesteLeder()
     )
@@ -63,7 +64,6 @@ fun ArbeidsgiverinfoRedisModel.toArbeidsgiverinfo(): Arbeidsgiverinfo {
 
 fun NarmesteLederRedisModel.toNarmesteLeder(): NarmesteLeder {
     return NarmesteLeder(
-        id = id,
         aktoerId = aktoerId,
         navn = navn,
         epost = epost,

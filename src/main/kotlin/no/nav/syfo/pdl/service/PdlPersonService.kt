@@ -24,7 +24,7 @@ class PdlPersonService(
     suspend fun getPerson(fnr: String, userToken: String, callId: String, stsToken: String? = null): PdlPerson {
         val personFraRedis = getPersonFromRedis(fnr)
         if (personFraRedis != null) {
-            log.info("Fant person i redis")
+            log.debug("Fant person i redis")
             return personFraRedis
         }
 

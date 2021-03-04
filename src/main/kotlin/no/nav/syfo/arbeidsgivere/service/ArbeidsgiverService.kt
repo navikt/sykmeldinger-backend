@@ -18,7 +18,6 @@ import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.LocalDate
-import kotlin.random.Random
 
 @KtorExperimentalAPI
 class ArbeidsgiverService(
@@ -32,7 +31,7 @@ class ArbeidsgiverService(
     suspend fun getArbeidsgivere(fnr: String, token: String, date: LocalDate, sykmeldingId: String): List<Arbeidsgiverinfo> {
         val arbeidsgivereFraRedis = getArbeidsgivereFromRedis(fnr)
         if (arbeidsgivereFraRedis != null) {
-            log.info("Fant arbeidsgivere i redis")
+            log.debug("Fant arbeidsgivere i redis")
             return arbeidsgivereFraRedis
         }
 
@@ -78,7 +77,8 @@ class ArbeidsgiverService(
                 orgnummer = organisasjonsinfo.organisasjonsnummer,
                 juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
                 navn = orgnavn,
-                stilling = arbeidsavtale.stillingsprosent.toString(),
+                stilling = "", // denne brukes ikke, men er påkrevd i formatet
+                stillingsprosent = arbeidsavtale.stillingsprosent.toString(),
                 aktivtArbeidsforhold = arbeidsavtale.gyldighetsperiode.tom == null,
                 naermesteLeder = narmesteLederRelasjon?.tilNarmesteLeder(orgnavn)
             )
@@ -117,7 +117,6 @@ class ArbeidsgiverService(
 
     private fun NarmesteLederRelasjon.tilNarmesteLeder(orgnavn: String): NarmesteLeder {
         return NarmesteLeder(
-            id = Random.nextLong(), // denne er ikke i bruk, men står som påkrevd i formatet
             aktoerId = narmesteLederAktorId,
             navn = navn ?: "",
             epost = narmesteLederEpost,

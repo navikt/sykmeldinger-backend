@@ -1020,6 +1020,7 @@ components:
         - orgnummer
         - juridiskOrgnummer
         - navn
+        - stillingsprosent
         - stilling
         - aktivtArbeidsforhold
       properties:
@@ -1028,6 +1029,8 @@ components:
         juridiskOrgnummer:
           type: string
         navn:
+          type: string
+        stillingsprosent:
           type: string
         stilling:
           type: string

@@ -101,10 +101,10 @@ fun getArbeidsgiverInfoRedisModel(): ArbeidsgiverinfoRedisModel {
         orgnummer = "123456789",
         juridiskOrgnummer = "123456789",
         navn = "Navn 1",
-        stilling = "50",
+        stillingsprosent = "50",
+        stilling = "",
         aktivtArbeidsforhold = true,
         naermesteLeder = NarmesteLederRedisModel(
-            id = 1L,
             aktoerId = "aktorId",
             navn = "Leder Ledersen",
             epost = "epost@nav.no",
