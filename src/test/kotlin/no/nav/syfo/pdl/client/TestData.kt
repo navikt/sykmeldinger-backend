@@ -3,12 +3,29 @@ package no.nav.syfo.pdl.client
 fun getTestData(): String {
     return "{\n" +
         "  \"data\": {\n" +
-        "    \"hentPerson\": {\n" +
+        "    \"person\": {\n" +
         "      \"navn\": [\n" +
         "        {\n" +
         "          \"fornavn\": \"RASK\",\n" +
         "          \"mellomnavn\": null,\n" +
         "          \"etternavn\": \"SAKS\"\n" +
+        "        }\n" +
+        "      ],\n" +
+        "     \"adressebeskyttelse\": [\n" +
+        "        {\n" +
+        "          \"gradering\": \"UGRADERT\"\n" +
+        "        }\n" +
+        "      ]\n" +
+        "    },\n" +
+        "    \"identer\": {\n" +
+        "      \"identer\": [\n" +
+        "        {\n" +
+        "          \"ident\": \"99999999999\",\n" +
+        "          \"gruppe\": \"AKTORID\"\n" +
+        "        },\n" +
+        "        {\n" +
+        "          \"ident\": \"12345678901\",\n" +
+        "          \"gruppe\": \"FOLKEREGISTERIDENT\"\n" +
         "        }\n" +
         "      ]\n" +
         "    }\n" +

@@ -31,11 +31,19 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
+import no.nav.syfo.application.azuread.AccessTokenClient
+import no.nav.syfo.arbeidsgivere.api.registrerArbeidsgiverApi
+import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
+import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
+import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
+import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
+import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.pdl.client.PdlClient
+import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
@@ -53,7 +61,9 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.client.SyfosoknadClient
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import redis.clients.jedis.JedisPool
+import java.net.ProxySelector
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -101,16 +111,30 @@ fun createApplicationEngine(
                 }
             }
         }
+        val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+            config()
+            engine {
+                customizeClient {
+                    setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+                }
+            }
+        }
         val httpClient = HttpClient(Apache, config)
+        val httpClientWithProxy = HttpClient(Apache, proxyConfig)
+
         val stsOidcClient = StsOidcClient(
             username = vaultSecrets.serviceuserUsername,
             password = vaultSecrets.serviceuserPassword,
             stsUrl = env.stsUrl
         )
+        val accessTokenClient = AccessTokenClient(aadAccessTokenUrl = env.aadAccessTokenUrl, clientId = vaultSecrets.clientId, clientSecret = vaultSecrets.clientSecret, resource = env.narmestelederClientId, httpClient = httpClientWithProxy)
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
         val syfosoknadClient = SyfosoknadClient(env.syfosoknadUrl, httpClient)
         val soknadstatusService = SoknadstatusService(syfosoknadClient)
+        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath)
+        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath)
+        val narmestelederClient = NarmestelederClient(httpClient, accessTokenClient, env.narmesteLederBasePath)
 
         val pdlClient = PdlClient(
             httpClient,
@@ -118,7 +142,11 @@ fun createApplicationEngine(
             PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
         )
 
-        val pdlService = PdlPersonService(pdlClient, stsOidcClient)
+        val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
+        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+
+        val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
+        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, soknadstatusService)
@@ -133,6 +161,7 @@ fun createApplicationEngine(
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                registrerArbeidsgiverApi(arbeidsgiverService)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)

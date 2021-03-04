@@ -21,8 +21,12 @@ data class Environment(
     val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
     val syfosoknadUrl: String = getEnvVar("SYFOSOKNAD_URL", "http://syfosoknad"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
+    val aadAccessTokenUrl: String = getEnvVar("AAD_ACCESS_TOKEN_URL"),
+    val narmestelederClientId: String = getEnvVar("NARMESTELEDER_CLIENT_ID"),
+    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL", "http://syfonarmesteleder"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD")
@@ -32,6 +36,7 @@ data class VaultSecrets(
     val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
     val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password"),
     val clientId: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_id"),
+    val clientSecret: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_secret"),
     val stsOidcWellKnownUri: String = getEnvVar("STS_OIDC_WELLKNOWN_URI"),
     val redisSecret: String = getEnvVar("REDIS_SECRET")
 ) : KafkaCredentials {

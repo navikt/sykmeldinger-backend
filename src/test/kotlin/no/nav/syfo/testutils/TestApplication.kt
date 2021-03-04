@@ -22,6 +22,25 @@ import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import java.nio.file.Paths
 
+val testAudience = listOf("loginserviceId1", "loginserviceId2")
+
+fun getTestEnvironment(audience: List<String> = testAudience): Environment =
+    Environment(
+        jwtIssuer = "issuer",
+        kafkaBootstrapServers = "",
+        stsOidcIssuer = "https://security-token-service.nais.preprod.local",
+        stsOidcAudience = "preprod.local",
+        registerBasePath = "https://register",
+        pdlGraphqlPath = "http://graphql",
+        cluster = "dev-fss",
+        loginserviceIdportenDiscoveryUrl = "url",
+        loginserviceIdportenAudience = audience,
+        truststorePassword = "",
+        truststore = "",
+        aadAccessTokenUrl = "url",
+        narmestelederClientId = "clientid"
+    )
+
 fun TestApplicationEngine.setUpTestApplication() {
     start(true)
     application.install(StatusPages) {
@@ -43,25 +62,12 @@ fun TestApplicationEngine.setUpTestApplication() {
 }
 
 fun TestApplicationEngine.setUpAuth(): Environment {
-    val audience = listOf("loginserviceId1", "loginserviceId2")
-    val env = Environment(
-        jwtIssuer = "issuer",
-        kafkaBootstrapServers = "",
-        stsOidcIssuer = "https://security-token-service.nais.preprod.local",
-        stsOidcAudience = "preprod.local",
-        pdlGraphqlPath = "http://graphql",
-        cluster = "dev-fss",
-        loginserviceIdportenDiscoveryUrl = "url",
-        loginserviceIdportenAudience = audience,
-        truststorePassword = "",
-        truststore = ""
-    )
-
     val mockJwkProvider = mockkClass(JwkProvider::class)
     val path = "src/test/resources/jwkset.json"
     val uri = Paths.get(path).toUri().toURL()
     val jwkProvider = JwkProviderBuilder(uri).build()
+    val testEnvironment = getTestEnvironment()
 
-    application.setupAuth(audience, jwkProvider, env.jwtIssuer, env, mockJwkProvider)
-    return env
+    application.setupAuth(testAudience, jwkProvider, testEnvironment.jwtIssuer, testEnvironment, mockJwkProvider)
+    return testEnvironment
 }

@@ -1,9 +1,18 @@
 query($ident: ID!){
-  hentPerson(ident: $ident) {
+  person: hentPerson(ident: $ident) {
   	navn(historikk: false) {
   	  fornavn
   	  mellomnavn
   	  etternavn
+    },
+    adressebeskyttelse(historikk: false) {
+      gradering
+    }
+  },
+  identer: hentIdenter(ident: $ident, historikk: false) {
+    identer {
+      ident,
+      gruppe
     }
   }
 }

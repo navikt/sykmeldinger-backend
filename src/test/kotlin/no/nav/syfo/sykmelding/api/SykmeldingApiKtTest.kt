@@ -11,10 +11,10 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
+import no.nav.syfo.application.jedisObjectMapper
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
-import no.nav.syfo.sykmeldingstatus.redis.objectMapper
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
@@ -43,7 +43,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
+                    jedisObjectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             it("Hent sykmeldinger med fom og tom") {
@@ -53,7 +53,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
+                    jedisObjectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             it("Hent sykmeldinger med fom og tom og exclude") {
@@ -63,7 +63,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
+                    jedisObjectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
         }
