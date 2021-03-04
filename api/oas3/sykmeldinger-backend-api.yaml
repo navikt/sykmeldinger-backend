@@ -177,12 +177,12 @@ components:
               $ref: '#/components/schemas/SyforestSykmelding'
     SyforestArbeidsforholdResponse:
       description: "Arbeidsforhold response"
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Arbeidsgiverinfo'
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Arbeidsgiverinfo'
   requestBodies:
     SyfoServiceLagreSykmeldingStatusEvent:
       description: "Lagre StatusEvent"
