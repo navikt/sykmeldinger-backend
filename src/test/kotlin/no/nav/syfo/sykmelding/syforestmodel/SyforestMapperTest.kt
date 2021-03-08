@@ -29,7 +29,7 @@ class SyforestMapperTest : Spek({
             )
             val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient)
+            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient, false)
 
             syforestSykmelding.id shouldBeEqualTo syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldBeEqualTo syforestSykmeldingFasit.startLegemeldtFravaer
@@ -70,7 +70,48 @@ class SyforestMapperTest : Spek({
             )
             val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient)
+            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient, false)
+
+            syforestSykmelding.id shouldBeEqualTo syforestSykmeldingFasit.id
+            syforestSykmelding.startLegemeldtFravaer shouldBeEqualTo syforestSykmeldingFasit.startLegemeldtFravaer
+            syforestSykmelding.skalViseSkravertFelt shouldBeEqualTo syforestSykmeldingFasit.skalViseSkravertFelt
+            syforestSykmelding.identdato shouldBeEqualTo syforestSykmeldingFasit.identdato
+            syforestSykmelding.status shouldBeEqualTo syforestSykmeldingFasit.status
+            syforestSykmelding.naermesteLederStatus shouldBeEqualTo syforestSykmeldingFasit.naermesteLederStatus
+            syforestSykmelding.erEgenmeldt shouldBeEqualTo syforestSykmeldingFasit.erEgenmeldt
+            syforestSykmelding.erPapirsykmelding shouldBeEqualTo syforestSykmeldingFasit.erPapirsykmelding
+            syforestSykmelding.innsendtArbeidsgivernavn shouldBeEqualTo syforestSykmeldingFasit.innsendtArbeidsgivernavn
+            syforestSykmelding.valgtArbeidssituasjon shouldBeEqualTo syforestSykmeldingFasit.valgtArbeidssituasjon
+            syforestSykmelding.mottakendeArbeidsgiver shouldBeEqualTo syforestSykmeldingFasit.mottakendeArbeidsgiver
+            syforestSykmelding.orgnummer shouldBeEqualTo syforestSykmeldingFasit.orgnummer
+            syforestSykmelding.sendtdato shouldBeEqualTo syforestSykmeldingFasit.sendtdato
+            syforestSykmelding.sporsmal shouldBeEqualTo syforestSykmeldingFasit.sporsmal
+            syforestSykmelding.pasient shouldBeEqualTo syforestSykmeldingFasit.pasient
+            syforestSykmelding.arbeidsgiver shouldBeEqualTo syforestSykmeldingFasit.arbeidsgiver
+            syforestSykmelding.stillingsprosent shouldBeEqualTo syforestSykmeldingFasit.stillingsprosent
+            syforestSykmelding.diagnose shouldBeEqualTo syforestSykmeldingFasit.diagnose
+            syforestSykmelding.mulighetForArbeid shouldBeEqualTo syforestSykmeldingFasit.mulighetForArbeid
+            syforestSykmelding.friskmelding shouldBeEqualTo syforestSykmeldingFasit.friskmelding
+            syforestSykmelding.utdypendeOpplysninger shouldBeEqualTo syforestSykmeldingFasit.utdypendeOpplysninger
+            syforestSykmelding.arbeidsevne shouldBeEqualTo syforestSykmeldingFasit.arbeidsevne
+            syforestSykmelding.meldingTilNav shouldBeEqualTo syforestSykmeldingFasit.meldingTilNav
+            syforestSykmelding.innspillTilArbeidsgiver shouldBeEqualTo syforestSykmeldingFasit.innspillTilArbeidsgiver
+            syforestSykmelding.tilbakedatering shouldBeEqualTo syforestSykmeldingFasit.tilbakedatering
+            syforestSykmelding.bekreftelse shouldBeEqualTo syforestSykmeldingFasit.bekreftelse
+        }
+
+        it("Test av arbeidsgivervisning for fullstendig, ny sykmelding") {
+            val sykmeldingDTO: SykmeldingDTO = objectMapper.readValue(
+                SyforestMapperTest::class.java.getResourceAsStream("/smFraRegister.json").readBytes()
+                    .toString(Charsets.UTF_8)
+            )
+            val syforestSykmeldingFasit: SyforestSykmelding = objectMapper.readValue(
+                SyforestMapperTest::class.java.getResourceAsStream("/arbeidsgiverSyforestSM.json").readBytes()
+                    .toString(Charsets.UTF_8)
+            )
+            val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
+
+            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient, true)
 
             syforestSykmelding.id shouldBeEqualTo syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldBeEqualTo syforestSykmeldingFasit.startLegemeldtFravaer
