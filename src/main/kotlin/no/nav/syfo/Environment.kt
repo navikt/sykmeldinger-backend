@@ -19,7 +19,7 @@ data class Environment(
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.default.svc.nais.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
     val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
-    val syfosoknadUrl: String = getEnvVar("SYFOSOKNAD_URL", "http://syfosoknad"),
+    val syfosoknadUrl: String = getEnvVar("SYFOSOKNAD_URL", "http://syfosoknad.flex"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
