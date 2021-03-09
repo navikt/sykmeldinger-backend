@@ -31,7 +31,7 @@ class SykmeldingService(
             .map(this::getSykmeldingWithLatestStatus)
     }
 
-    suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, apiFilter: ApiFilter?): List<SyforestSykmelding> {
+    suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, arbeidsgivervisning: Boolean, apiFilter: ApiFilter?): List<SyforestSykmelding> {
         val sykmeldingsliste = syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
             .filter { it.behandlingsutfall.status != RegelStatusDTO.INVALID }
             .map(this::getSykmeldingWithLatestStatus)
@@ -39,7 +39,7 @@ class SykmeldingService(
             val callId = UUID.randomUUID().toString()
             try {
                 val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = callId))
-                return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient) }
+                return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient, arbeidsgivervisning) }
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved mapping av sykmeldinger med id: ${sykmeldingsliste.first().id}, callid: $callId")
                 throw e

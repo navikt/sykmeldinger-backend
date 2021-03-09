@@ -35,7 +35,8 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
             val token = call.request.headers["Authorization"]!!
             val principal: JWTPrincipal = call.authentication.principal()!!
             val fnr = principal.payload.subject
-            call.respond(sykmeldingService.hentSykmeldingerSyforestFormat(token = token, fnr = fnr, apiFilter = null))
+            val arbeidsgivervisning = call.parameters["type"] == "arbeidsgiver"
+            call.respond(sykmeldingService.hentSykmeldingerSyforestFormat(token = token, fnr = fnr, arbeidsgivervisning = arbeidsgivervisning, apiFilter = null))
         }
     }
 }

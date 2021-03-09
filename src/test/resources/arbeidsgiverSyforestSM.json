@@ -1,0 +1,89 @@
+{
+  "id": "455b3f08-decc-4116-8abd-511749ba2543",
+  "startLegemeldtFravaer": "2020-05-26",
+  "skalViseSkravertFelt": true,
+  "identdato": "2020-05-26",
+  "status": "BEKREFTET",
+  "naermesteLederStatus": null,
+  "erEgenmeldt": false,
+  "erPapirsykmelding": false,
+  "innsendtArbeidsgivernavn": null,
+  "valgtArbeidssituasjon": null,
+  "mottakendeArbeidsgiver": null,
+  "orgnummer": null,
+  "sendtdato": "2020-06-02T12:25:42",
+  "sporsmal": null,
+  "pasient": {
+    "fnr": "10987654321",
+    "fornavn": "Frida",
+    "mellomnavn": "Perma",
+    "etternavn": "Frost"
+  },
+  "arbeidsgiver": "LOMMEN BARNEHAVE",
+  "stillingsprosent": 100,
+  "diagnose": {
+    "hoveddiagnose": null,
+    "bidiagnoser": [],
+    "fravaersgrunnLovfestet": null,
+    "fravaerBeskrivelse": null,
+    "svangerskap": null,
+    "yrkesskade": null,
+    "yrkesskadeDato": null
+  },
+  "mulighetForArbeid": {
+    "perioder": [
+      {
+        "fom": "2020-05-26",
+        "tom": "2020-06-01",
+        "grad": 100,
+        "behandlingsdager": null,
+        "reisetilskudd": null,
+        "avventende": null,
+        "redusertVenteperiode": null
+      }
+    ],
+    "aktivitetIkkeMulig433": [],
+    "aktivitetIkkeMulig434": [
+      "Annet"
+    ],
+    "aarsakAktivitetIkkeMulig433": null,
+    "aarsakAktivitetIkkeMulig434": "andre årsaker til sykefravær"
+  },
+  "friskmelding": {
+    "arbeidsfoerEtterPerioden": true,
+    "hensynPaaArbeidsplassen": "Må ta det pent",
+    "antarReturSammeArbeidsgiver": true,
+    "antattDatoReturSammeArbeidsgiver": "2020-05-26",
+    "antarReturAnnenArbeidsgiver": true,
+    "tilbakemeldingReturArbeid": null,
+    "utenArbeidsgiverAntarTilbakeIArbeid": false,
+    "utenArbeidsgiverAntarTilbakeIArbeidDato": null,
+    "utenArbeidsgiverTilbakemelding": null
+  },
+  "utdypendeOpplysninger": {
+    "sykehistorie": null,
+    "paavirkningArbeidsevne": null,
+    "resultatAvBehandling": null,
+    "henvisningUtredningBehandling": null,
+    "grupper": []
+  },
+  "arbeidsevne": {
+    "tilretteleggingArbeidsplass": "Fortsett som sist.",
+    "tiltakNAV": null,
+    "tiltakAndre": null
+  },
+  "meldingTilNav": {
+    "navBoerTaTakISaken": false,
+    "navBoerTaTakISakenBegrunnelse": null
+  },
+  "innspillTilArbeidsgiver": null,
+  "tilbakedatering": {
+    "dokumenterbarPasientkontakt": null,
+    "tilbakedatertBegrunnelse": null
+  },
+  "bekreftelse": {
+    "utstedelsesdato": "2020-05-25",
+    "sykmelder": "Frida Perma Frost",
+    "sykmelderTlf": "94431152"
+  }
+}

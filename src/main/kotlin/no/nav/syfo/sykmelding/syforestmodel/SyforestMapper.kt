@@ -31,7 +31,7 @@ fun pdlPersonTilPasient(fnr: String, pdlPerson: PdlPerson): Pasient {
     )
 }
 
-fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient): SyforestSykmelding {
+fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient, arbeidsgivervisning: Boolean): SyforestSykmelding {
     val arbeidsgiverNavnHvisSendt = sykmeldingDTO.sykmeldingStatus.arbeidsgiver?.orgNavn
 
     return SyforestSykmelding(
@@ -44,22 +44,22 @@ fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient): Syfor
         erEgenmeldt = sykmeldingDTO.egenmeldt ?: false,
         erPapirsykmelding = sykmeldingDTO.papirsykmelding ?: false,
         innsendtArbeidsgivernavn = arbeidsgiverNavnHvisSendt,
-        valgtArbeidssituasjon = finnArbeidssituasjon(sykmeldingDTO.sykmeldingStatus),
+        valgtArbeidssituasjon = finnArbeidssituasjon(sykmeldingDTO.sykmeldingStatus, arbeidsgivervisning),
         mottakendeArbeidsgiver = tilMottakendeArbeidsgiver(sykmeldingDTO.sykmeldingStatus.arbeidsgiver),
         orgnummer = sykmeldingDTO.sykmeldingStatus.arbeidsgiver?.orgnummer,
         sendtdato = finnSendtDato(sykmeldingDTO.sykmeldingStatus),
-        sporsmal = tilSporsmal(sykmeldingDTO.sykmeldingStatus),
+        sporsmal = tilSporsmal(sykmeldingDTO.sykmeldingStatus, arbeidsgivervisning),
         pasient = pasient,
         arbeidsgiver = sykmeldingDTO.arbeidsgiver?.navn,
         stillingsprosent = sykmeldingDTO.arbeidsgiver?.stillingsprosent,
-        diagnose = tilDiagnoseinfo(sykmeldingDTO.skjermesForPasient, sykmeldingDTO.medisinskVurdering),
-        mulighetForArbeid = tilMulighetForArbeid(sykmeldingDTO.sykmeldingsperioder, sykmeldingDTO.harRedusertArbeidsgiverperiode),
-        friskmelding = if (sykmeldingDTO.prognose != null) { tilFriskmelding(sykmeldingDTO.prognose) } else { Friskmelding() },
-        utdypendeOpplysninger = tilUtdypendeOpplysninger(sykmeldingDTO.utdypendeOpplysninger),
-        arbeidsevne = Arbeidsevne(tilretteleggingArbeidsplass = sykmeldingDTO.tiltakArbeidsplassen, tiltakNAV = sykmeldingDTO.tiltakNAV, tiltakAndre = sykmeldingDTO.andreTiltak),
-        meldingTilNav = if (sykmeldingDTO.meldingTilNAV != null) { tilMeldingTilNav((sykmeldingDTO.meldingTilNAV)) } else { MeldingTilNav() },
+        diagnose = tilDiagnoseinfo(sykmeldingDTO.skjermesForPasient, sykmeldingDTO.medisinskVurdering, arbeidsgivervisning),
+        mulighetForArbeid = tilMulighetForArbeid(sykmeldingDTO.sykmeldingsperioder, sykmeldingDTO.harRedusertArbeidsgiverperiode, arbeidsgivervisning),
+        friskmelding = if (sykmeldingDTO.prognose != null) { tilFriskmelding(sykmeldingDTO.prognose, arbeidsgivervisning) } else { Friskmelding() },
+        utdypendeOpplysninger = tilUtdypendeOpplysninger(sykmeldingDTO.utdypendeOpplysninger, arbeidsgivervisning),
+        arbeidsevne = tilArbeidsevne(sykmeldingDTO, arbeidsgivervisning),
+        meldingTilNav = if (sykmeldingDTO.meldingTilNAV != null && !arbeidsgivervisning) { tilMeldingTilNav((sykmeldingDTO.meldingTilNAV)) } else { MeldingTilNav() },
         innspillTilArbeidsgiver = sykmeldingDTO.meldingTilArbeidsgiver,
-        tilbakedatering = tilTilbakedatering(sykmeldingDTO.kontaktMedPasient),
+        tilbakedatering = tilTilbakedatering(sykmeldingDTO.kontaktMedPasient, arbeidsgivervisning),
         bekreftelse = tilBekreftelse(sykmeldingDTO.behandler, sykmeldingDTO.behandletTidspunkt),
         merknader = sykmeldingDTO.merknader?.map { Merknad(type = it.type, beskrivelse = it.beskrivelse) }
     )
@@ -74,9 +74,9 @@ fun tilStatus(sykmeldingStatusDTO: SykmeldingStatusDTO, mottattDato: LocalDate):
         sykmeldingStatusDTO.statusEvent
     }
 
-fun finnArbeidssituasjon(sykmeldingStatusDTO: SykmeldingStatusDTO): String? {
+fun finnArbeidssituasjon(sykmeldingStatusDTO: SykmeldingStatusDTO, arbeidsgivervisning: Boolean): String? {
     // for sendte sykmeldinger skal denne være null
-    if (sykmeldingStatusDTO.statusEvent == "BEKREFTET") {
+    if (!arbeidsgivervisning && sykmeldingStatusDTO.statusEvent == "BEKREFTET") {
         return sykmeldingStatusDTO.sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.ARBEIDSSITUASJON }?.svar?.svar
     }
     return null
@@ -100,7 +100,10 @@ fun tilMottakendeArbeidsgiver(arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO?): Mo
     return null
 }
 
-fun tilSporsmal(sykmeldingStatusDTO: SykmeldingStatusDTO): Skjemasporsmal? {
+fun tilSporsmal(sykmeldingStatusDTO: SykmeldingStatusDTO, arbeidsgivervisning: Boolean): Skjemasporsmal? {
+    if (arbeidsgivervisning) {
+        return null
+    }
     if (sykmeldingStatusDTO.statusEvent == "SENDT" || sykmeldingStatusDTO.statusEvent == "BEKREFTET") {
         val arbeidssituasjon = sykmeldingStatusDTO.sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.ARBEIDSSITUASJON }?.svar?.svar
         val harForsikring = jaNeiTilBoolean(sykmeldingStatusDTO.sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.FORSIKRING }?.svar?.svar)
@@ -131,9 +134,9 @@ fun tilFravaersperioder(perioder: String?): List<Datospenn> {
     return objectMapper.readValue<List<Datospenn>>(perioder)
 }
 
-fun tilDiagnoseinfo(skalSkjermesForPasient: Boolean, medisinskVurdering: MedisinskVurderingDTO?): Diagnoseinfo {
-    if (skalSkjermesForPasient) {
-        return Diagnoseinfo()
+fun tilDiagnoseinfo(skalSkjermesForPasient: Boolean, medisinskVurdering: MedisinskVurderingDTO?, arbeidsgivervisning: Boolean): Diagnoseinfo {
+    if (skalSkjermesForPasient || arbeidsgivervisning) {
+        return Diagnoseinfo(bidiagnoser = emptyList())
     }
     return Diagnoseinfo(
         hoveddiagnose = if (medisinskVurdering?.hovedDiagnose != null) tilDiagnose(medisinskVurdering.hovedDiagnose) else null,
@@ -150,12 +153,12 @@ fun tilDiagnose(diagnoseDTO: DiagnoseDTO): Diagnose {
     return Diagnose(diagnose = diagnoseDTO.tekst, diagnosekode = diagnoseDTO.kode, diagnosesystem = diagnoseDTO.system)
 }
 
-fun tilMulighetForArbeid(periodeliste: List<SykmeldingsperiodeDTO>, harRedusertArbeidsgiverperiode: Boolean?): MulighetForArbeid {
+fun tilMulighetForArbeid(periodeliste: List<SykmeldingsperiodeDTO>, harRedusertArbeidsgiverperiode: Boolean?, arbeidsgivervisning: Boolean): MulighetForArbeid {
     return MulighetForArbeid(
         perioder = periodeliste.map { tilPeriode(it, harRedusertArbeidsgiverperiode) },
-        aktivitetIkkeMulig433 = tilAktivitetIkkeMulig433(periodeliste),
+        aktivitetIkkeMulig433 = tilAktivitetIkkeMulig433(periodeliste, arbeidsgivervisning),
         aktivitetIkkeMulig434 = tilAktivitetIkkeMulig434(periodeliste),
-        aarsakAktivitetIkkeMulig433 = tilAarsakAktivitetIkkeMulig433(periodeliste),
+        aarsakAktivitetIkkeMulig433 = tilAarsakAktivitetIkkeMulig433(periodeliste, arbeidsgivervisning),
         aarsakAktivitetIkkeMulig434 = tilAarsakAktivitetIkkeMulig434(periodeliste)
     )
 }
@@ -172,7 +175,10 @@ fun tilPeriode(sykmeldingsperiodeDTO: SykmeldingsperiodeDTO, harRedusertArbeidsg
     )
 }
 
-fun tilAktivitetIkkeMulig433(periodeliste: List<SykmeldingsperiodeDTO>): List<String> {
+fun tilAktivitetIkkeMulig433(periodeliste: List<SykmeldingsperiodeDTO>, arbeidsgivervisning: Boolean): List<String> {
+    if (arbeidsgivervisning) {
+        return emptyList()
+    }
     return periodeliste.flatMap { sykmeldingsperiodeDTO -> sykmeldingsperiodeDTO.aktivitetIkkeMulig?.medisinskArsak?.arsak?.map { it.text }.orEmpty() }
 }
 
@@ -180,7 +186,10 @@ fun tilAktivitetIkkeMulig434(periodeliste: List<SykmeldingsperiodeDTO>): List<St
     return periodeliste.flatMap { sykmeldingsperiodeDTO -> sykmeldingsperiodeDTO.aktivitetIkkeMulig?.arbeidsrelatertArsak?.arsak?.map { it.text }.orEmpty() }
 }
 
-fun tilAarsakAktivitetIkkeMulig433(periodeliste: List<SykmeldingsperiodeDTO>): String? {
+fun tilAarsakAktivitetIkkeMulig433(periodeliste: List<SykmeldingsperiodeDTO>, arbeidsgivervisning: Boolean): String? {
+    if (arbeidsgivervisning) {
+        return null
+    }
     return periodeliste.mapNotNull { sykmeldingsperiodeDTO -> sykmeldingsperiodeDTO.aktivitetIkkeMulig?.medisinskArsak?.beskrivelse }.firstOrNull()
 }
 
@@ -188,21 +197,24 @@ fun tilAarsakAktivitetIkkeMulig434(periodeliste: List<SykmeldingsperiodeDTO>): S
     return periodeliste.mapNotNull { sykmeldingsperiodeDTO -> sykmeldingsperiodeDTO.aktivitetIkkeMulig?.arbeidsrelatertArsak?.beskrivelse }.firstOrNull()
 }
 
-fun tilFriskmelding(prognoseDTO: PrognoseDTO): Friskmelding {
+fun tilFriskmelding(prognoseDTO: PrognoseDTO, arbeidsgivervisning: Boolean): Friskmelding {
     return Friskmelding(
         arbeidsfoerEtterPerioden = prognoseDTO.arbeidsforEtterPeriode,
         hensynPaaArbeidsplassen = prognoseDTO.hensynArbeidsplassen,
         antarReturSammeArbeidsgiver = prognoseDTO.erIArbeid?.egetArbeidPaSikt ?: false,
         antattDatoReturSammeArbeidsgiver = prognoseDTO.erIArbeid?.arbeidFOM,
         antarReturAnnenArbeidsgiver = prognoseDTO.erIArbeid?.annetArbeidPaSikt ?: false,
-        tilbakemeldingReturArbeid = prognoseDTO.erIArbeid?.vurderingsdato,
+        tilbakemeldingReturArbeid = if (arbeidsgivervisning) { null } else { prognoseDTO.erIArbeid?.vurderingsdato },
         utenArbeidsgiverAntarTilbakeIArbeid = prognoseDTO.erIkkeIArbeid?.arbeidsforPaSikt ?: false,
         utenArbeidsgiverAntarTilbakeIArbeidDato = prognoseDTO.erIkkeIArbeid?.arbeidsforFOM,
         utenArbeidsgiverTilbakemelding = prognoseDTO.erIkkeIArbeid?.vurderingsdato
     )
 }
 
-fun tilUtdypendeOpplysninger(utdypendeOpplysningerMap: Map<String, Map<String, SporsmalSvarDTO>>): UtdypendeOpplysninger {
+fun tilUtdypendeOpplysninger(utdypendeOpplysningerMap: Map<String, Map<String, SporsmalSvarDTO>>, arbeidsgivervisning: Boolean): UtdypendeOpplysninger {
+    if (arbeidsgivervisning) {
+        return UtdypendeOpplysninger()
+    }
     val filtrerteUtdypendeOpplysninger: Map<String, Map<String, SporsmalSvarDTO>> = utdypendeOpplysningerMap.mapValues {
         it.value.filterValues { sporsmalSvar -> !sporsmalSvar.restriksjoner.contains(SvarRestriksjonDTO.SKJERMET_FOR_PASIENT) }
     }
@@ -229,6 +241,21 @@ fun tilSporsmal(sporsmalSvarDTOMapEntry: Map.Entry<String, SporsmalSvarDTO>): Sp
     )
 }
 
+private fun tilArbeidsevne(sykmeldingDTO: SykmeldingDTO, arbeidsgivervisning: Boolean): Arbeidsevne {
+    if (arbeidsgivervisning) {
+        return Arbeidsevne(
+            tilretteleggingArbeidsplass = sykmeldingDTO.tiltakArbeidsplassen,
+            tiltakNAV = null,
+            tiltakAndre = null
+        )
+    }
+    return Arbeidsevne(
+        tilretteleggingArbeidsplass = sykmeldingDTO.tiltakArbeidsplassen,
+        tiltakNAV = sykmeldingDTO.tiltakNAV,
+        tiltakAndre = sykmeldingDTO.andreTiltak
+    )
+}
+
 fun tilMeldingTilNav(meldingTilNavDTO: MeldingTilNavDTO): MeldingTilNav {
     return MeldingTilNav(
         navBoerTaTakISaken = meldingTilNavDTO.bistandUmiddelbart,
@@ -236,11 +263,15 @@ fun tilMeldingTilNav(meldingTilNavDTO: MeldingTilNavDTO): MeldingTilNav {
     )
 }
 
-fun tilTilbakedatering(kontaktMedPasientDTO: KontaktMedPasientDTO): Tilbakedatering {
-    return Tilbakedatering(
-        dokumenterbarPasientkontakt = kontaktMedPasientDTO.kontaktDato,
-        tilbakedatertBegrunnelse = kontaktMedPasientDTO.begrunnelseIkkeKontakt
-    )
+fun tilTilbakedatering(kontaktMedPasientDTO: KontaktMedPasientDTO, arbeidsgivervisning: Boolean): Tilbakedatering {
+    return if (arbeidsgivervisning) {
+        Tilbakedatering()
+    } else {
+        Tilbakedatering(
+            dokumenterbarPasientkontakt = kontaktMedPasientDTO.kontaktDato,
+            tilbakedatertBegrunnelse = kontaktMedPasientDTO.begrunnelseIkkeKontakt
+        )
+    }
 }
 
 fun tilBekreftelse(behandlerDTO: BehandlerDTO, behandletTidspunkt: OffsetDateTime): Bekreftelse {

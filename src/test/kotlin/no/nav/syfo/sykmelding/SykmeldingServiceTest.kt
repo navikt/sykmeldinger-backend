@@ -84,7 +84,7 @@ class SykmeldingServiceTest : Spek({
             coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
-                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", false, null)
 
                 syforestSykmeldinger shouldBeEqualTo listOf(lagSyforestSykmelding())
             }
@@ -98,7 +98,7 @@ class SykmeldingServiceTest : Spek({
             coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
-                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", false, null)
 
                 syforestSykmeldinger shouldBeEqualTo listOf(lagSyforestSykmelding(merknader = listOf(Merknad("UGYLDIG_TILBAKEDATERING", null))))
             }
@@ -112,7 +112,7 @@ class SykmeldingServiceTest : Spek({
             coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
-                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", false, null)
 
                 syforestSykmeldinger shouldBeEqualTo emptyList()
             }
@@ -125,7 +125,7 @@ class SykmeldingServiceTest : Spek({
             coEvery { pdlPersonService.getPerson(any(), "token", any()) } returns PdlPerson(Navn("Fornavn", "Mellomnavn", "Etternavn"), "aktorid", false)
 
             runBlocking {
-                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+                val syforestSykmeldinger = sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", false, null)
 
                 syforestSykmeldinger shouldBeEqualTo emptyList()
             }
@@ -141,7 +141,7 @@ class SykmeldingServiceTest : Spek({
 
             assertFailsWith<PersonNotFoundInPdl> {
                 runBlocking {
-                    sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", null)
+                    sykmeldingService.hentSykmeldingerSyforestFormat("token", "fnr", false, null)
                 }
             }
         }
