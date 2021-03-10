@@ -20,22 +20,26 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
         val token = call.request.headers["Authorization"]!!
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
-        val sykmeldingBekreftEventDTO = call.safeReceiveOrNull<SykmeldingBekreftEventUserDTO>()
 
+        try {
+            val sykmeldingBekreftEventDTO = call.safeReceiveOrNull<SykmeldingBekreftEventUserDTO>()
 
-        sykmeldingStatusService.registrerBekreftet(
-            sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
-                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.toSporsmalSvarListe()
-            ),
-            sykmeldingId = sykmeldingId,
-            source = "user",
-            fnr = fnr,
-            token = token
-        )
+            sykmeldingStatusService.registrerBekreftet(
+                sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.toSporsmalSvarListe()
+                ),
+                sykmeldingId = sykmeldingId,
+                source = "user",
+                fnr = fnr,
+                token = token
+            )
 
-        BEKREFTET_AV_BRUKER_COUNTER.inc()
-        call.respond(HttpStatusCode.Accepted)
+            BEKREFTET_AV_BRUKER_COUNTER.inc()
+            call.respond(HttpStatusCode.Accepted)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest)
+        }
     }
 }
 
