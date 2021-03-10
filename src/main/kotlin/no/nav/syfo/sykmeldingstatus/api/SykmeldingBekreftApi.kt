@@ -22,10 +22,11 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
         val fnr = principal.payload.subject
         val sykmeldingBekreftEventDTO = call.safeReceiveOrNull<SykmeldingBekreftEventUserDTO>()
 
+
         sykmeldingStatusService.registrerBekreftet(
             sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.sporsmalOgSvarListe
+                sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.toSporsmalSvarListe()
             ),
             sykmeldingId = sykmeldingId,
             source = "user",
