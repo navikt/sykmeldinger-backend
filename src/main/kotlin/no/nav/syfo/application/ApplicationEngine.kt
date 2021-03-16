@@ -54,6 +54,7 @@ import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingAvbrytApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingGjenapneApi
+import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingStatusSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
@@ -161,6 +162,7 @@ fun createApplicationEngine(
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
                 registrerArbeidsgiverApi(arbeidsgiverService)
             }
             authenticate("oidc") {
