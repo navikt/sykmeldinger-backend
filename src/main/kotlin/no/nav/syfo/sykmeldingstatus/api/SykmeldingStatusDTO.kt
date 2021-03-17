@@ -56,6 +56,12 @@ data class SykmeldingBekreftEventUserDTO(
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 
+data class SykmeldingSendEventUserDTO(
+    val orgnummer: String,
+    val beOmNyNaermesteLeder: Boolean?,
+    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
+)
+
 data class SporsmalOgSvarDTO(
     val tekst: String,
     val shortName: ShortNameDTO,
