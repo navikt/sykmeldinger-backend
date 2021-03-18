@@ -13,7 +13,6 @@ import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
 class SyfosmregisterStatusClient(private val endpointUrl: String, private val httpClient: HttpClient) {
 
     suspend fun hentSykmeldingstatus(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
-        log.info("Henter status for sykmeldingId {}", sykmeldingId)
         try {
             val statusliste = httpClient.get<List<SykmeldingStatusEventDTO>>("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
                 accept(ContentType.Application.Json)
