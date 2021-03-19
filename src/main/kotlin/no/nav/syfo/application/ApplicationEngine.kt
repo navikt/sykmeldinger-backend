@@ -38,6 +38,7 @@ import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
+import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
@@ -164,6 +165,7 @@ fun createApplicationEngine(
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
                 registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
                 registrerArbeidsgiverApi(arbeidsgiverService)
+                registrerBrukerinformasjonApi(pdlService, stsOidcClient)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)
