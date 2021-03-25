@@ -28,7 +28,7 @@ class SykmeldingService(
 ) {
     suspend fun hentSykmelding(token: String, sykmeldingid: String): SykmeldingDTO? {
         return syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
-            .run(this::getSykmeldingWithLatestStatus)
+            ?.run(this::getSykmeldingWithLatestStatus)
     }
 
     suspend fun hentSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
