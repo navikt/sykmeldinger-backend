@@ -9,7 +9,7 @@ import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 
 class SyfosmregisterSykmeldingClient(private val endpointUrl: String, private val httpClient: HttpClient) {
-    suspend fun getSykmelding(token: String, sykmeldingid: String): SykmeldingDTO {
+    suspend fun getSykmelding(token: String, sykmeldingid: String): SykmeldingDTO? {
         return httpClient.get("$endpointUrl/api/v2/sykmeldinger/${sykmeldingid}") {
             accept(ContentType.Application.Json)
             headers {

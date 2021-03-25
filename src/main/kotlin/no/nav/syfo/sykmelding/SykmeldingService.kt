@@ -26,7 +26,7 @@ class SykmeldingService(
     private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
     private val pdlPersonService: PdlPersonService
 ) {
-    suspend fun hentSykmelding(token: String, sykmeldingid: String): SykmeldingDTO {
+    suspend fun hentSykmelding(token: String, sykmeldingid: String): SykmeldingDTO? {
         return syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
             .run(this::getSykmeldingWithLatestStatus)
     }
