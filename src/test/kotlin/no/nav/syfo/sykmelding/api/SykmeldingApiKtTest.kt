@@ -29,6 +29,7 @@ class SykmeldingApiKtTest : Spek({
 
     beforeEachTest {
         clearAllMocks()
+        coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns getSykmeldingModel()
         coEvery { sykmeldingService.hentSykmeldinger(any(), any()) } returns listOf(getSykmeldingModel())
     }
 
@@ -73,7 +74,24 @@ class SykmeldingApiKtTest : Spek({
             setUpTestApplication()
             val env = setUpAuth()
             application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
-            it("OK") {
+            it("Sykmelding by id OK") {
+                with(
+                        handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger/sykmeldingid") {
+                            addHeader(
+                                    "Authorization",
+                                    "Bearer ${generateJWT(
+                                            "client",
+                                            "loginserviceId1",
+                                            subject = "12345678901",
+                                            issuer = env.jwtIssuer
+                                    )}"
+                            )
+                        }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                }
+            }
+            it("Sykmeldinger OK") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
                         addHeader(

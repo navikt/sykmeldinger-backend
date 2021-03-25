@@ -31,6 +31,18 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
             }
         }
 
+        get("/sykmeldinger/{sykmeldingid}") {
+            val sykmeldingId = call.parameters["sykmeldingid"]!!
+            val token = call.request.headers["Authorization"]!!
+
+            val sykmelding = sykmeldingService.hentSykmelding(token, sykmeldingId)
+
+            when (sykmelding) {
+                null -> call.respond(HttpStatusCode.NotFound)
+                else -> call.respond(sykmelding)
+            }
+        }
+
         get("/syforest/sykmeldinger") {
             val token = call.request.headers["Authorization"]!!
             val principal: JWTPrincipal = call.authentication.principal()!!
