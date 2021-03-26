@@ -50,25 +50,25 @@ class BrukerinformasjonApiKtTest : Spek({
 
             it("Får hentet riktig informasjon for innlogget bruker uten diskresjonskode") {
                 with(
-                        handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
-                            addHeader(
-                                    "AUTHORIZATION",
-                                    "Bearer ${
-                                    generateJWT(
-                                            "client",
-                                            "loginserviceId2",
-                                            subject = "12345678910",
-                                            issuer = env.jwtIssuer
-                                    )
-                                    }"
+                    handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${
+                            generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
                             )
-                        }
+                            }"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    coVerify (exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+                    coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
                     objectMapper.readValue<Brukerinformasjon>(response.content!!) shouldBeEqualTo Brukerinformasjon(
-                            arbeidsgivere = listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null)),
-                            strengtFortroligAdresse = false
+                        arbeidsgivere = listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null)),
+                        strengtFortroligAdresse = false
                     )
                 }
             }
@@ -76,44 +76,44 @@ class BrukerinformasjonApiKtTest : Spek({
             it("Får hentet riktig informasjon for innlogget bruker med diskresjonskode") {
                 coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", true)
                 with(
-                        handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
-                            addHeader(
-                                    "AUTHORIZATION",
-                                    "Bearer ${
-                                    generateJWT(
-                                            "client",
-                                            "loginserviceId2",
-                                            subject = "12345678910",
-                                            issuer = env.jwtIssuer
-                                    )
-                                    }"
+                    handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${
+                            generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
                             )
-                        }
+                            }"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    coVerify (exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+                    coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
                     objectMapper.readValue<Brukerinformasjon>(response.content!!) shouldBeEqualTo Brukerinformasjon(
-                            arbeidsgivere = emptyList(),
-                            strengtFortroligAdresse = true
+                        arbeidsgivere = emptyList(),
+                        strengtFortroligAdresse = true
                     )
                 }
             }
 
             it("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                        handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
-                            addHeader(
-                                    "Authorization",
-                                    "Bearer ${
-                                    generateJWT(
-                                            "client",
-                                            "annenservice",
-                                            subject = "12345678910",
-                                            issuer = env.jwtIssuer
-                                    )
-                                    }"
+                    handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${
+                            generateJWT(
+                                "client",
+                                "annenservice",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
                             )
-                        }
+                            }"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -122,19 +122,19 @@ class BrukerinformasjonApiKtTest : Spek({
             describe("Syforest") {
                 it("Får hentet riktig informasjon for innlogget bruker uten diskresjonskode") {
                     with(
-                            handleRequest(HttpMethod.Get, "/api/v1/syforest/brukerinformasjon") {
-                                addHeader(
-                                        "AUTHORIZATION",
-                                        "Bearer ${
-                                        generateJWT(
-                                                "client",
-                                                "loginserviceId2",
-                                                subject = "12345678910",
-                                                issuer = env.jwtIssuer
-                                        )
-                                        }"
+                        handleRequest(HttpMethod.Get, "/api/v1/syforest/brukerinformasjon") {
+                            addHeader(
+                                "AUTHORIZATION",
+                                "Bearer ${
+                                generateJWT(
+                                    "client",
+                                    "loginserviceId2",
+                                    subject = "12345678910",
+                                    issuer = env.jwtIssuer
                                 )
-                            }
+                                }"
+                            )
+                        }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         objectMapper.readValue<BrukerinformasjonSyforest>(response.content!!) shouldBeEqualTo BrukerinformasjonSyforest(strengtFortroligAdresse = false)
@@ -144,19 +144,19 @@ class BrukerinformasjonApiKtTest : Spek({
                 it("Får hentet riktig informasjon for innlogget bruker med diskresjonskode") {
                     coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", true)
                     with(
-                            handleRequest(HttpMethod.Get, "/api/v1/syforest/brukerinformasjon") {
-                                addHeader(
-                                        "AUTHORIZATION",
-                                        "Bearer ${
-                                        generateJWT(
-                                                "client",
-                                                "loginserviceId2",
-                                                subject = "12345678910",
-                                                issuer = env.jwtIssuer
-                                        )
-                                        }"
+                        handleRequest(HttpMethod.Get, "/api/v1/syforest/brukerinformasjon") {
+                            addHeader(
+                                "AUTHORIZATION",
+                                "Bearer ${
+                                generateJWT(
+                                    "client",
+                                    "loginserviceId2",
+                                    subject = "12345678910",
+                                    issuer = env.jwtIssuer
                                 )
-                            }
+                                }"
+                            )
+                        }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         objectMapper.readValue<BrukerinformasjonSyforest>(response.content!!) shouldBeEqualTo BrukerinformasjonSyforest(strengtFortroligAdresse = true)
@@ -165,19 +165,19 @@ class BrukerinformasjonApiKtTest : Spek({
 
                 it("Skal ikke kunne bruke apiet med token med feil audience") {
                     with(
-                            handleRequest(HttpMethod.Get, "/api/v1/syforest/brukerinformasjon") {
-                                addHeader(
-                                        "Authorization",
-                                        "Bearer ${
-                                        generateJWT(
-                                                "client",
-                                                "annenservice",
-                                                subject = "12345678910",
-                                                issuer = env.jwtIssuer
-                                        )
-                                        }"
+                        handleRequest(HttpMethod.Get, "/api/v1/syforest/brukerinformasjon") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
+                                generateJWT(
+                                    "client",
+                                    "annenservice",
+                                    subject = "12345678910",
+                                    issuer = env.jwtIssuer
                                 )
-                            }
+                                }"
+                            )
+                        }
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                     }
