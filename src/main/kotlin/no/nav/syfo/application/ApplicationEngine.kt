@@ -165,7 +165,7 @@ fun createApplicationEngine(
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
                 registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
                 registrerArbeidsgiverApi(arbeidsgiverService)
-                registrerBrukerinformasjonApi(pdlService, stsOidcClient)
+                registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)
