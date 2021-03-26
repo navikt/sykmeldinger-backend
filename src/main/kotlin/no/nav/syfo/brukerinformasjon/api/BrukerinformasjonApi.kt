@@ -9,8 +9,6 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
-import no.nav.helse.sm2013.HelseOpplysningerArbeidsuforhet
-import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsgiver
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.StsOidcClient
@@ -34,7 +32,7 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
                     stsToken = stsToken.access_token
             )
 
-            val arbeidsgivere = arbeidsgiverService.getArbeidsgivere(
+            val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
                     fnr = fnr,
                     token = token,
                     date = LocalDate.now(),
@@ -42,9 +40,9 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
             )
 
             call.respond(
-                    BrukerinformasjonV2(
-                            arbeidsgivere = arbeidsgivere,
-                            strengtFortroligAdresse = person.diskresjonskode
+                    Brukerinformasjon(
+                            strengtFortroligAdresse = person.diskresjonskode,
+                            arbeidsgivere = arbeidsgivere
                     )
             )
         }
@@ -62,17 +60,17 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
             )
 
             call.respond(
-                    Brukerinformasjon(strengtFortroligAdresse = person.diskresjonskode)
+                    BrukerinformasjonSyforest(strengtFortroligAdresse = person.diskresjonskode)
             )
         }
     }
 }
 
-data class Brukerinformasjon(
+data class BrukerinformasjonSyforest(
         val strengtFortroligAdresse: Boolean
 )
 
-data class BrukerinformasjonV2(
+data class Brukerinformasjon(
         val arbeidsgivere: List<Arbeidsgiverinfo>,
         val strengtFortroligAdresse: Boolean
 )
