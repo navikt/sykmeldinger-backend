@@ -11,6 +11,7 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
+import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.objectMapper
@@ -28,6 +29,7 @@ import org.spekframework.spek2.style.specification.describe
 class BrukerinformasjonApiKtTest : Spek({
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val stsOidcClient = mockkClass(StsOidcClient::class)
+    val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
 
     beforeEachTest {
         clearMocks(pdlPersonService)
@@ -40,7 +42,7 @@ class BrukerinformasjonApiKtTest : Spek({
             setUpTestApplication()
             val env = setUpAuth()
 
-            application.routing { authenticate("jwt") { registrerBrukerinformasjonApi(pdlPersonService, stsOidcClient) } }
+            application.routing { authenticate("jwt") { registrerBrukerinformasjonApi(arbeidsgiverService, pdlPersonService, stsOidcClient) } }
 
             it("Får hentet riktig informasjon for innlogget bruker uten diskresjonskode") {
                 with(
