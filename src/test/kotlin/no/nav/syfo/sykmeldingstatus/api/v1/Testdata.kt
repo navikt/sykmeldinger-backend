@@ -1,10 +1,5 @@
-package no.nav.syfo.sykmeldingstatus.api
+package no.nav.syfo.sykmeldingstatus.api.v1
 
-import no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventUserDTO
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 

@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api
+package no.nav.syfo.sykmeldingstatus.api.v1
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
@@ -15,7 +15,6 @@ import io.mockk.mockkClass
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
@@ -25,25 +24,28 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
-class SykmeldingBekreftSyfoServiceApiSpek : Spek({
+class SykmeldingSendSyfoServiceApiSpek : Spek({
 
     val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-    describe("Test SykmeldingBekreftAPI") {
+    describe("Test SykmeldingSendAPI") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
-            application.routing { registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService) }
+
+            application.routing { registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService) }
 
             it("Skal returnere Created hvis alt går bra") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } returns Unit
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } returns Unit
                 with(
-                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader("AUTHORIZATION", "Bearer token")
                         addHeader("FNR", "fnr")
+                        addHeader("Authorization", "Bearer token")
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Created
@@ -51,40 +53,39 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
             }
             it("Returnerer 500 hvis noe går galt") {
                 val sykmeldingId = "1235"
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws RuntimeException("Noe gikk galt")
                 with(
-                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader("AUTHORIZATION", "Bearer token")
                         addHeader("FNR", "fnr")
+                        addHeader("Authorization", "Bearer token")
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                 }
             }
-
             it("Returerer BadRequest når man ikke kan endre status") {
                 val sykmeldingId = "1234"
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId")
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId")
                 with(
-                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader("AUTHORIZATION", "Bearer token")
                         addHeader("FNR", "fnr")
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                    response.content shouldBeEqualTo "Kan ikke endre status fra SENDT til BEKREFT for sykmeldingID $sykmeldingId"
+                    response.content shouldBeEqualTo "Kan ikke endre status fra BEKREFTET til SEND for sykmeldingID $sykmeldingId"
                 }
             }
             it("Returerer NotFound når status ikke finnes for bruker") {
                 val sykmeldingId = "1234"
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId", RuntimeException("error"))
                 with(
-                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader("AUTHORIZATION", "Bearer token")
                         addHeader("FNR", "fnr")
@@ -97,7 +98,7 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
         }
     }
 
-    describe("Test SykmeldingBekreftAPI med tilgangskontroll") {
+    describe("Test SykmeldingSendAPI med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
 
@@ -110,25 +111,23 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
             val jwkProvider = JwkProviderBuilder(uri).build()
 
             application.setupAuth(audience, mockJwkProvider, "issuer1", env, jwkProvider)
-            application.routing { authenticate("oidc") { registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService) } }
+            application.routing { authenticate("oidc") { registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService) } }
 
             it("Should authenticate") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } returns Unit
+                coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } returns Unit
                 with(
-                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/$sykmeldingId/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "AUTHORIZATION",
-                            "Bearer ${
-                            generateJWT(
+                            "Bearer ${generateJWT(
                                 "client",
                                 "preprod.local",
                                 subject = "srvsyfoservice",
                                 issuer = env.stsOidcIssuer
-                            )
-                            }"
+                            )}"
                         )
                         addHeader("FNR", "fnr")
                     }
@@ -138,19 +137,17 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
             }
             it("Should not authenticate") {
                 with(
-                    handleRequest(HttpMethod.Post, "/sykmeldinger/123/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                    handleRequest(HttpMethod.Post, "/sykmeldinger/123/send") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventDTO()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "Authorization",
-                            "Bearer ${
-                            generateJWT(
+                            "Bearer ${generateJWT(
                                 "client",
                                 "preprod.local",
                                 subject = "srvsyforegister",
                                 issuer = env.stsOidcIssuer
-                            )
-                            }"
+                            )}"
                         )
                         addHeader("FNR", "fnr")
                     }
@@ -161,3 +158,13 @@ class SykmeldingBekreftSyfoServiceApiSpek : Spek({
         }
     }
 })
+
+fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =
+    SykmeldingSendEventDTO(
+        OffsetDateTime.now(ZoneOffset.UTC),
+        ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
+        listOf(
+            SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+            SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+        )
+    )

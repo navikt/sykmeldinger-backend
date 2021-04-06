@@ -9,12 +9,13 @@ import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
-import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.opprettSykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.opprettSykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
@@ -36,7 +37,8 @@ class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingStatusJedisService = mockkClass(SykmeldingStatusRedisService::class)
     val syfosmregisterClient = mockkClass(SyfosmregisterStatusClient::class)
     val soknadstatusService = mockkClass(SoknadstatusService::class)
-    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient, soknadstatusService)
+    val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
+    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient, soknadstatusService, arbeidsgiverService)
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
