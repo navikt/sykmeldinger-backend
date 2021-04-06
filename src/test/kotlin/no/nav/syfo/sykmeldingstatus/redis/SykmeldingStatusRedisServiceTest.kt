@@ -1,7 +1,7 @@
 package no.nav.syfo.sykmeldingstatus.redis
 
 import no.nav.syfo.application.JedisConfig
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek

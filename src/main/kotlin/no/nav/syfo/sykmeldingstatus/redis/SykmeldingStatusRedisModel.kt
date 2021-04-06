@@ -1,20 +1,20 @@
 package no.nav.syfo.sykmeldingstatus.redis
 
-import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
-import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import java.time.OffsetDateTime
 
 data class SykmeldingStatusRedisModel(
-    val timestamp: OffsetDateTime,
-    val statusEvent: StatusEventDTO,
-    val arbeidsgiver: ArbeidsgiverStatusDTO?,
-    val sporsmals: List<SporsmalOgSvarDTO>?,
-    val erAvvist: Boolean? = null,
-    val erEgenmeldt: Boolean? = null
+        val timestamp: OffsetDateTime,
+        val statusEvent: StatusEventDTO,
+        val arbeidsgiver: ArbeidsgiverStatusDTO?,
+        val sporsmals: List<SporsmalOgSvarDTO>?,
+        val erAvvist: Boolean? = null,
+        val erEgenmeldt: Boolean? = null
 )
 
 fun SykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(): SykmeldingStatusRedisModel {

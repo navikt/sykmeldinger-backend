@@ -13,6 +13,7 @@ import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockkClass
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT

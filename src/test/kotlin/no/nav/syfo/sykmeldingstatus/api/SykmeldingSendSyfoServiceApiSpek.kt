@@ -15,6 +15,12 @@ import io.mockk.mockkClass
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
@@ -160,11 +166,11 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
 })
 
 fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =
-    SykmeldingSendEventDTO(
-        OffsetDateTime.now(ZoneOffset.UTC),
-        ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-        listOf(
-            SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
-            SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+        SykmeldingSendEventDTO(
+                OffsetDateTime.now(ZoneOffset.UTC),
+                ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
+                listOf(
+                        SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+                        SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+                )
         )
-    )

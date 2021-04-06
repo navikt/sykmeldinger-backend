@@ -2,10 +2,10 @@ package no.nav.syfo.sykmeldingstatus
 
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
@@ -55,12 +55,12 @@ class SykmeldingStatusService(
     }
 
     suspend fun registrerSendt(
-        sykmeldingSendEventDTO: SykmeldingSendEventDTO,
-        sykmeldingId: String,
-        source: String,
-        fnr: String,
-        token: String,
-        fromSyfoservice: Boolean
+            sykmeldingSendEventDTO: SykmeldingSendEventDTO,
+            sykmeldingId: String,
+            source: String,
+            fnr: String,
+            token: String,
+            fromSyfoservice: Boolean
     ) {
         if (fromSyfoservice) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
@@ -130,9 +130,9 @@ class SykmeldingStatusService(
 
 private fun SykmeldingStatusRedisModel.toSykmeldingStatusDTO(): SykmeldingStatusEventDTO {
     return SykmeldingStatusEventDTO(
-        timestamp = timestamp,
-        statusEvent = statusEvent,
-        erAvvist = erAvvist,
-        erEgenmeldt = erEgenmeldt
+            timestamp = timestamp,
+            statusEvent = statusEvent,
+            erAvvist = erAvvist,
+            erEgenmeldt = erEgenmeldt
     )
 }

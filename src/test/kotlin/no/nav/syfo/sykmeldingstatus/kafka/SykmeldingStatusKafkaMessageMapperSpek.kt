@@ -4,13 +4,14 @@ import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
 import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
 import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
-import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
-import no.nav.syfo.sykmeldingstatus.api.ShortNameDTO
-import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
-import no.nav.syfo.sykmeldingstatus.api.SvartypeDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -24,17 +25,17 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         it("Mapper SykmeldingSendEventDTO riktig") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingSendEventDTO = SykmeldingSendEventDTO(
-                timestamp,
-                ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-                listOf(
-                    SporsmalOgSvarDTO(
-                        "Arbeidssituasjon",
-                        ShortNameDTO.ARBEIDSSITUASJON,
-                        SvartypeDTO.ARBEIDSSITUASJON,
-                        "ARBEIDSTAKER"
-                    ),
-                    SporsmalOgSvarDTO("Nærmeste leder", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
-                )
+                    timestamp,
+                    ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
+                    listOf(
+                            SporsmalOgSvarDTO(
+                                    "Arbeidssituasjon",
+                                    ShortNameDTO.ARBEIDSSITUASJON,
+                                    SvartypeDTO.ARBEIDSSITUASJON,
+                                    "ARBEIDSTAKER"
+                            ),
+                            SporsmalOgSvarDTO("Nærmeste leder", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+                    )
             )
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
@@ -133,7 +134,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         it("Mapper SykmeldingStatusEventDTO for AVBRUTT") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingStatusEventDTO =
-                SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT, timestamp)
+                    SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
@@ -147,7 +148,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         it("Mapper SykmeldingStatusEventDTO for APEN riktig") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingStatusEventDTO =
-                SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN, timestamp)
+                    SykmeldingStatusEventDTO(StatusEventDTO.APEN, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
@@ -162,9 +163,9 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
 
 fun lagSporsmalOgSvarDTOListe(): List<SporsmalOgSvarDTO> {
     return listOf(
-        SporsmalOgSvarDTO("Sykmeldt fra ", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "Frilanser"),
-        SporsmalOgSvarDTO("Har forsikring?", ShortNameDTO.FORSIKRING, SvartypeDTO.JA_NEI, "Ja"),
-        SporsmalOgSvarDTO("Hatt fravær?", ShortNameDTO.FRAVAER, SvartypeDTO.JA_NEI, "Ja"),
-        SporsmalOgSvarDTO("Når hadde du fravær?", ShortNameDTO.PERIODE, SvartypeDTO.PERIODER, "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}")
+            SporsmalOgSvarDTO("Sykmeldt fra ", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "Frilanser"),
+            SporsmalOgSvarDTO("Har forsikring?", ShortNameDTO.FORSIKRING, SvartypeDTO.JA_NEI, "Ja"),
+            SporsmalOgSvarDTO("Hatt fravær?", ShortNameDTO.FRAVAER, SvartypeDTO.JA_NEI, "Ja"),
+            SporsmalOgSvarDTO("Når hadde du fravær?", ShortNameDTO.PERIODE, SvartypeDTO.PERIODER, "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}")
     )
 }

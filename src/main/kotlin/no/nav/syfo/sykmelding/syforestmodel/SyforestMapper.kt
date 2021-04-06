@@ -16,7 +16,7 @@ import no.nav.syfo.sykmelding.model.SvarRestriksjonDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
-import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime

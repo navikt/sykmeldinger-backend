@@ -26,8 +26,8 @@ import no.nav.syfo.sykmelding.syforestmodel.Periode
 import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
 import no.nav.syfo.sykmelding.syforestmodel.Tilbakedatering
 import no.nav.syfo.sykmelding.syforestmodel.UtdypendeOpplysninger
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import java.time.LocalDate
 import java.time.OffsetDateTime

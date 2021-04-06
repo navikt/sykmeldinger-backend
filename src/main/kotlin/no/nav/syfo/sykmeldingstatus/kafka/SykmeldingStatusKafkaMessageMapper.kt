@@ -10,9 +10,10 @@ import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 
 fun SykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, this.statusEvent.tilStatusEventDTO(), null, null)
@@ -26,21 +27,21 @@ fun SykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: Str
     return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, STATUS_BEKREFTET, null, tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.tilStatusEventDTO(): String {
+fun StatusEventDTO.tilStatusEventDTO(): String {
     return when (this) {
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.BEKREFTET -> STATUS_BEKREFTET
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN -> STATUS_APEN
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.SENDT -> STATUS_SENDT
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT -> STATUS_AVBRUTT
-        no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.UTGATT -> STATUS_UTGATT
+        StatusEventDTO.BEKREFTET -> STATUS_BEKREFTET
+        StatusEventDTO.APEN -> STATUS_APEN
+        StatusEventDTO.SENDT -> STATUS_SENDT
+        StatusEventDTO.AVBRUTT -> STATUS_AVBRUTT
+        StatusEventDTO.UTGATT -> STATUS_UTGATT
     }
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO.tilArbeidsgiverStatusDTO(): ArbeidsgiverStatusDTO {
+fun no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO.tilArbeidsgiverStatusDTO(): ArbeidsgiverStatusDTO {
     return ArbeidsgiverStatusDTO(orgnummer = this.orgnummer, juridiskOrgnummer = this.juridiskOrgnummer, orgNavn = this.orgNavn)
 }
 
-fun tilSporsmalOgSvarDTOListe(sporsmalListe: List<no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO>?): List<SporsmalOgSvarDTO>? {
+fun tilSporsmalOgSvarDTOListe(sporsmalListe: List<no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO>?): List<SporsmalOgSvarDTO>? {
     return if (sporsmalListe.isNullOrEmpty()) {
         null
     } else {
@@ -48,23 +49,23 @@ fun tilSporsmalOgSvarDTOListe(sporsmalListe: List<no.nav.syfo.sykmeldingstatus.a
     }
 }
 
-fun tilSporsmalOgSvarDTO(sporsmalOgSvar: no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO): SporsmalOgSvarDTO =
+fun tilSporsmalOgSvarDTO(sporsmalOgSvar: no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO): SporsmalOgSvarDTO =
     SporsmalOgSvarDTO(tekst = sporsmalOgSvar.tekst, shortName = sporsmalOgSvar.shortName.tilShortNameDTO(), svartype = sporsmalOgSvar.svartype.tilSvartypeDTO(), svar = sporsmalOgSvar.svar)
 
-fun no.nav.syfo.sykmeldingstatus.api.ShortNameDTO.tilShortNameDTO(): ShortNameDTO {
+fun no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.tilShortNameDTO(): ShortNameDTO {
     return when (this) {
-        no.nav.syfo.sykmeldingstatus.api.ShortNameDTO.ARBEIDSSITUASJON -> ShortNameDTO.ARBEIDSSITUASJON
-        no.nav.syfo.sykmeldingstatus.api.ShortNameDTO.PERIODE -> ShortNameDTO.PERIODE
-        no.nav.syfo.sykmeldingstatus.api.ShortNameDTO.FRAVAER -> ShortNameDTO.FRAVAER
-        no.nav.syfo.sykmeldingstatus.api.ShortNameDTO.FORSIKRING -> ShortNameDTO.FORSIKRING
-        no.nav.syfo.sykmeldingstatus.api.ShortNameDTO.NY_NARMESTE_LEDER -> ShortNameDTO.NY_NARMESTE_LEDER
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.ARBEIDSSITUASJON -> ShortNameDTO.ARBEIDSSITUASJON
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.PERIODE -> ShortNameDTO.PERIODE
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FRAVAER -> ShortNameDTO.FRAVAER
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FORSIKRING -> ShortNameDTO.FORSIKRING
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.NY_NARMESTE_LEDER -> ShortNameDTO.NY_NARMESTE_LEDER
     }
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.SvartypeDTO.tilSvartypeDTO(): SvartypeDTO {
+fun no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.tilSvartypeDTO(): SvartypeDTO {
     return when (this) {
-        no.nav.syfo.sykmeldingstatus.api.SvartypeDTO.ARBEIDSSITUASJON -> SvartypeDTO.ARBEIDSSITUASJON
-        no.nav.syfo.sykmeldingstatus.api.SvartypeDTO.PERIODER -> SvartypeDTO.PERIODER
-        no.nav.syfo.sykmeldingstatus.api.SvartypeDTO.JA_NEI -> SvartypeDTO.JA_NEI
+        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.ARBEIDSSITUASJON -> SvartypeDTO.ARBEIDSSITUASJON
+        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.PERIODER -> SvartypeDTO.PERIODER
+        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.JA_NEI -> SvartypeDTO.JA_NEI
     }
 }

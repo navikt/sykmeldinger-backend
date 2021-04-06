@@ -15,6 +15,8 @@ import io.mockk.just
 import io.mockk.mockkClass
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventUserDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT

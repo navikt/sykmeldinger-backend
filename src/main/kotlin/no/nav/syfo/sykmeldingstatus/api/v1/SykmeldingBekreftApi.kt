@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api
+package no.nav.syfo.sykmeldingstatus.api.v1
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -25,8 +25,8 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
 
         sykmeldingStatusService.registrerBekreftet(
             sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
-                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.sporsmalOgSvarListe
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                    sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.sporsmalOgSvarListe
             ),
             sykmeldingId = sykmeldingId,
             source = "user",
@@ -36,32 +36,6 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
 
         BEKREFTET_AV_BRUKER_COUNTER.inc()
         call.respond(HttpStatusCode.Accepted)
-    }
-    post("/api/v2/sykmeldinger/{sykmeldingid}/bekreft") {
-        val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
-
-        try {
-            val sykmeldingBekreftEventDTO = call.safeReceiveOrNull<SykmeldingBekreftEventUserDTOv2>()
-
-            sykmeldingStatusService.registrerBekreftet(
-                sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    sporsmalOgSvarListe = sykmeldingBekreftEventDTO?.toSporsmalSvarListe()
-                ),
-                sykmeldingId = sykmeldingId,
-                source = "user",
-                fnr = fnr,
-                token = token
-            )
-
-            BEKREFTET_AV_BRUKER_COUNTER.inc()
-            call.respond(HttpStatusCode.Accepted)
-        } catch (e: Exception) {
-            call.respond(HttpStatusCode.BadRequest)
-        }
     }
 }
 
