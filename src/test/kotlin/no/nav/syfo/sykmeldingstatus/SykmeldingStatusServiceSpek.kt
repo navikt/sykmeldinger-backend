@@ -10,11 +10,11 @@ import io.mockk.mockkClass
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.SyfosmregisterStatusClient
+import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.opprettSykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
@@ -124,10 +124,10 @@ class SykmeldingStatusServiceSpek : Spek({
                 )
                 val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
                 sisteStatusEventDTO shouldBeEqualTo SykmeldingStatusEventDTO(
-                        StatusEventDTO.SENDT,
-                        redisSykmeldingSendEventDTO.timestamp,
-                        erAvvist = true,
-                        erEgenmeldt = false
+                    StatusEventDTO.SENDT,
+                    redisSykmeldingSendEventDTO.timestamp,
+                    erAvvist = true,
+                    erEgenmeldt = false
                 )
             }
         }
@@ -145,10 +145,10 @@ class SykmeldingStatusServiceSpek : Spek({
                 )
                 val sisteStatus = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
                 sisteStatus shouldBeEqualTo SykmeldingStatusEventDTO(
-                        StatusEventDTO.SENDT,
-                        redisSykmeldingStatus.timestamp.plusNanos(1),
-                        erAvvist = false,
-                        erEgenmeldt = true
+                    StatusEventDTO.SENDT,
+                    redisSykmeldingStatus.timestamp.plusNanos(1),
+                    erAvvist = false,
+                    erEgenmeldt = true
                 )
             }
         }

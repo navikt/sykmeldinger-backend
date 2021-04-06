@@ -11,7 +11,7 @@ import java.time.ZoneOffset
 
 class SykmeldingStatusKafkaProducer(private val kafkaProducer: KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>, private val topicName: String) {
     fun send(sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO, source: String, fnr: String) {
-        log.info("Skriver statusendring for sykmelding med id {} til topic", sykmeldingStatusKafkaEventDTO.sykmeldingId)
+        log.info("Skriver statusendring {} for sykmelding med id {} til topic", sykmeldingStatusKafkaEventDTO.statusEvent, sykmeldingStatusKafkaEventDTO.sykmeldingId)
         val metadataDTO = KafkaMetadataDTO(sykmeldingId = sykmeldingStatusKafkaEventDTO.sykmeldingId, timestamp = OffsetDateTime.now(ZoneOffset.UTC), fnr = fnr, source = source)
         val sykmeldingStatusKafkaMessageDTO = SykmeldingStatusKafkaMessageDTO(metadataDTO, sykmeldingStatusKafkaEventDTO)
         try {

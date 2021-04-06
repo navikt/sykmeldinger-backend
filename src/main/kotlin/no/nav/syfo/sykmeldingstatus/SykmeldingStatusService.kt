@@ -55,12 +55,12 @@ class SykmeldingStatusService(
     }
 
     suspend fun registrerSendt(
-            sykmeldingSendEventDTO: SykmeldingSendEventDTO,
-            sykmeldingId: String,
-            source: String,
-            fnr: String,
-            token: String,
-            fromSyfoservice: Boolean
+        sykmeldingSendEventDTO: SykmeldingSendEventDTO,
+        sykmeldingId: String,
+        source: String,
+        fnr: String,
+        token: String,
+        fromSyfoservice: Boolean
     ) {
         if (fromSyfoservice) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
@@ -109,6 +109,7 @@ class SykmeldingStatusService(
             }
             return true
         }
+        log.warn("Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId")
         throw InvalidSykmeldingStatusException("Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId")
     }
 
@@ -130,9 +131,9 @@ class SykmeldingStatusService(
 
 private fun SykmeldingStatusRedisModel.toSykmeldingStatusDTO(): SykmeldingStatusEventDTO {
     return SykmeldingStatusEventDTO(
-            timestamp = timestamp,
-            statusEvent = statusEvent,
-            erAvvist = erAvvist,
-            erEgenmeldt = erEgenmeldt
+        timestamp = timestamp,
+        statusEvent = statusEvent,
+        erAvvist = erAvvist,
+        erEgenmeldt = erEgenmeldt
     )
 }

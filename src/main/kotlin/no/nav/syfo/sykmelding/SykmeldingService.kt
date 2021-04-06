@@ -26,6 +26,11 @@ class SykmeldingService(
     private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
     private val pdlPersonService: PdlPersonService
 ) {
+    suspend fun hentSykmelding(token: String, sykmeldingid: String): SykmeldingDTO? {
+        return syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
+            ?.run(this::getSykmeldingWithLatestStatus)
+    }
+
     suspend fun hentSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
             .map(this::getSykmeldingWithLatestStatus)

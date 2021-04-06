@@ -166,11 +166,11 @@ class SykmeldingSendSyfoServiceApiSpek : Spek({
 })
 
 fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =
-        SykmeldingSendEventDTO(
-                OffsetDateTime.now(ZoneOffset.UTC),
-                ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-                listOf(
-                        SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
-                        SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
-                )
+    SykmeldingSendEventDTO(
+        OffsetDateTime.now(ZoneOffset.UTC),
+        ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
+        listOf(
+            SporsmalOgSvarDTO("", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+            SporsmalOgSvarDTO("", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
         )
+    )

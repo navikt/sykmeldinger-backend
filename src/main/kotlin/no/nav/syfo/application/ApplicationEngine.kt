@@ -38,6 +38,7 @@ import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
+import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
@@ -54,6 +55,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingStatusSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
@@ -161,7 +163,9 @@ fun createApplicationEngine(
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
                 registrerArbeidsgiverApi(arbeidsgiverService)
+                registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
             }
             authenticate("oidc") {
                 registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)

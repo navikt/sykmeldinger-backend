@@ -9,12 +9,12 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import java.time.OffsetDateTime
 
 data class SykmeldingStatusRedisModel(
-        val timestamp: OffsetDateTime,
-        val statusEvent: StatusEventDTO,
-        val arbeidsgiver: ArbeidsgiverStatusDTO?,
-        val sporsmals: List<SporsmalOgSvarDTO>?,
-        val erAvvist: Boolean? = null,
-        val erEgenmeldt: Boolean? = null
+    val timestamp: OffsetDateTime,
+    val statusEvent: StatusEventDTO,
+    val arbeidsgiver: ArbeidsgiverStatusDTO?,
+    val sporsmals: List<SporsmalOgSvarDTO>?,
+    val erAvvist: Boolean? = null,
+    val erEgenmeldt: Boolean? = null
 )
 
 fun SykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(): SykmeldingStatusRedisModel {

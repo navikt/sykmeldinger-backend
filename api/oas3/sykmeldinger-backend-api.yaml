@@ -47,7 +47,7 @@ paths:
   /api/v1/syforest/arbeidsforhold:
     get:
       summary: returnerer liste av alle arbeidsforhold for fnr i access_token
-      operationId: getSyforestArbeisforholdForBruker
+      operationId: getSyforestArbeidsforholdForBruker
       tags:
         - Sykmelding
       security:
@@ -61,7 +61,41 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /api/v1/syforest/brukerinformasjon:
+    get:
+      summary: returnerer hvorvidt bruker har kode 6 for fnr i access_token
+      operationId: getSyforestBrukerinformasjon
+      tags:
+        - Sykmelding
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          $ref: '#/components/responses/SyforestBrukerinformasjonResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
 
+  /api/v1/sykmeldinger/{sykmeldingId}/send:
+    post:
+      operationId: sendSykmelding
+      tags:
+        - Sykmeldingstatus
+      security:
+        - bearerAuth: []
+      summary: Send sykmeldinger for sluttbruker
+      parameters:
+        - $ref: '#/components/parameters/sykmeldingId'
+      requestBody:
+        $ref: '#/components/requestBodies/UserSendSykmeldingEvent'
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
   /api/v1/sykmeldinger/{sykmeldingId}/bekreft:
     post:
       operationId: bekreftSykmelding
@@ -89,6 +123,23 @@ paths:
       security:
         - bearerAuth: [ ]
       summary: Avbryt sykmeldinger for sluttbruker
+      parameters:
+        - $ref: '#/components/parameters/sykmeldingId'
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /api/v1/sykmeldinger/{sykmeldingId}/gjenapne:
+    post:
+      operationId: gjenapneSykmelding
+      tags:
+        - Sykmeldingstatus
+      security:
+        - bearerAuth: [ ]
+      summary: Gjenåpne sykmeldinger for sluttbruker
       parameters:
         - $ref: '#/components/parameters/sykmeldingId'
       responses:
@@ -183,6 +234,14 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Arbeidsgiverinfo'
+    SyforestBrukerinformasjonResponse:
+      description: "Brukerinformasjonresponse"
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Brukerinformasjon'
   requestBodies:
     SyfoServiceLagreSykmeldingStatusEvent:
       description: "Lagre StatusEvent"
@@ -208,6 +267,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SykmeldingBekreftEventUserDTO'
+    UserSendSykmeldingEvent:
+      description: "SendEvent sluttbruker"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SykmeldingSendEventUserDTO'
 
   parameters:
     sykmeldingId:
@@ -295,6 +360,17 @@ components:
     SykmeldingBekreftEventUserDTO:
       type: object
       properties:
+        sporsmalOgSvarListe:
+          $ref: '#/components/schemas/SporsmalOgSvarListe'
+    SykmeldingSendEventUserDTO:
+      type: object
+      required: 
+        - orgnummer
+      properties:
+        orgnummer:
+          type: string
+        beOmNyNaermesteLeder:
+          type: boolean
         sporsmalOgSvarListe:
           $ref: '#/components/schemas/SporsmalOgSvarListe'
     SykmeldingSendEventDTO:
@@ -1064,6 +1140,13 @@ components:
         aktivTom:
           $ref: '#/components/schemas/Date'
         arbeidsgiverForskuttererLoenn:
+          type: boolean
+    Brukerinformasjon:
+      type: object
+      required:
+        - strengtFortroligAdresse
+      properties:
+        strengtFortroligAdresse:
           type: boolean
 
   securitySchemes:
