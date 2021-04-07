@@ -4,7 +4,6 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
@@ -82,7 +81,10 @@ class SykmeldingStatusService(
                 token = token,
             )
         ) {
-            val arbeidsgiver = getArbeidsgivere(fnr, token, sykmeldingId, sykmeldingUserEvent.arbeidsgiverOrgnummer?.svar)
+            val arbeidsgiver = when (nesteStatus) {
+                StatusEventDTO.SENDT -> getArbeidsgiver(fnr, token, sykmeldingId, sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar)
+                else -> null
+            }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
 
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp, sykmeldingId, arbeidsgiver), source = "user", fnr = fnr)
@@ -90,12 +92,11 @@ class SykmeldingStatusService(
         }
     }
 
-    private suspend fun getArbeidsgivere(fnr: String, token: String, sykmeldingId: String, orgnummer: String?): Arbeidsgiverinfo? {
-        return orgnummer?.let {
-            val arbeidsgivere = arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now(), sykmeldingId)
-            arbeidsgivere.find { it.orgnummer == orgnummer }
+    private suspend fun getArbeidsgiver(fnr: String, token: String, sykmeldingId: String, orgnummer: String): Arbeidsgiverinfo {
+        return  arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now(), sykmeldingId)
+            .find { it.orgnummer == orgnummer }
                 ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
-        }
+
     }
 
     suspend fun registrerSendt(
