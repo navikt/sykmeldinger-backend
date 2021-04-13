@@ -133,36 +133,45 @@ class ArbeidsgiverServiceTest : Spek({
 
         it("arbeidsgiverService should filter out duplicates") {
             coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
-                    Arbeidsforhold(
-                            Arbeidsgiver("Organisasjon", "123456789"),
-                            Opplysningspliktig("Organisasjon", "987654321"),
-                            listOf(
-                                    Arbeidsavtale(gyldighetsperiode = Gyldighetsperiode(
-                                            fom = LocalDate.now(),
-                                            tom = null
-                                    ), stillingsprosent = 100.0)
-                            )
-                    ),
-                    Arbeidsforhold(
-                            Arbeidsgiver("Organisasjon", "123456789"),
-                            Opplysningspliktig("Organisasjon", "987654321"),
-                            listOf(
-                                    Arbeidsavtale(gyldighetsperiode = Gyldighetsperiode(
-                                            fom = LocalDate.now(),
-                                            tom = null
-                                    ), stillingsprosent = 100.0)
-                            )
-                    ),
-                    Arbeidsforhold(
-                            Arbeidsgiver("Organisasjon", "234567891"),
-                            Opplysningspliktig("Organisasjon", "987654321"),
-                            listOf(
-                                    Arbeidsavtale(gyldighetsperiode = Gyldighetsperiode(
-                                            fom = LocalDate.now(),
-                                            tom = null
-                                    ), stillingsprosent = 100.0)
-                            )
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = null
+                            ),
+                            stillingsprosent = 100.0
+                        )
                     )
+                ),
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = null
+                            ),
+                            stillingsprosent = 100.0
+                        )
+                    )
+                ),
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "234567891"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = null
+                            ),
+                            stillingsprosent = 100.0
+                        )
+                    )
+                )
             )
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", LocalDate.now(), sykmeldingId)
