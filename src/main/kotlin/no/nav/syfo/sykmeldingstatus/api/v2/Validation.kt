@@ -1,6 +1,6 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
-class ValidationException(message: String): Exception(message)
+class ValidationException(message: String) : Exception(message)
 
 fun SykmeldingUserEvent.validate() {
     if (erOpplysnigeneRiktige.svar == JaEllerNei.NEI) {
@@ -11,7 +11,7 @@ fun SykmeldingUserEvent.validate() {
         requireNotNull(nyNarmesteLeder, "Spørsmål om ny nærmeste leder må være besvart når arbeidssituasjon er arbeidstaker")
     } else {
         require(arbeidsgiverOrgnummer == null, "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker")
-        require(nyNarmesteLeder == null,"Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
+        require(nyNarmesteLeder == null, "Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
     }
     if (arbeidssituasjon.svar == ArbeidssituasjonDTO.FRILANSER || arbeidssituasjon.svar == ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE) {
         if (harBruktEgenmelding != null) {
@@ -26,7 +26,7 @@ fun SykmeldingUserEvent.validate() {
     } else {
         require(harBruktEgenmelding == null, "Spørsmål om egenmelding kan ikke være besvart hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
         require(egenmeldingsperioder == null, "Egenmeldingsperioder må være null hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
-        require(harForsikring == null,"Spørsmål om forsikring kan ikke være besvart hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
+        require(harForsikring == null, "Spørsmål om forsikring kan ikke være besvart hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
     }
 }
 

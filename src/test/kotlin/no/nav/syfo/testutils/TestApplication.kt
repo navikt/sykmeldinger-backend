@@ -19,6 +19,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
+import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import java.nio.file.Paths
 
@@ -50,6 +51,7 @@ fun TestApplicationEngine.setUpTestApplication() {
         }
         setUpSykmeldingStatusExeptionHandler()
         setUpSykmeldingExceptionHandler()
+        setUpSykmeldingSendApiV2ExeptionHandler()
     }
     application.install(ContentNegotiation) {
         jackson {

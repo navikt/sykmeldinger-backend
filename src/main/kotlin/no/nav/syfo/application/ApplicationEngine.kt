@@ -58,7 +58,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingStatusSyfoServiceApi
-import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingSendApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
@@ -163,7 +163,7 @@ fun createApplicationEngine(
             }
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
-                registerSykmeldingSendApiV2(sykmeldingStatusService)
+                registrerSykmeldingSendApiV2(sykmeldingStatusService)
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)

@@ -19,7 +19,6 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp: OffsetDateTime, sykmeldingId: String, arbeidsgiver: Arbeidsgiverinfo?): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(
@@ -50,7 +49,7 @@ private fun SykmeldingUserEvent.arbeidssituasjonSporsmalBuilder(): SporsmalOgSva
         tekst = arbeidssituasjon.sporsmaltekst,
         shortName = ShortNameDTO.ARBEIDSSITUASJON,
         svartype = SvartypeDTO.ARBEIDSSITUASJON,
-        svar = objectMapper.writeValueAsString(arbeidssituasjon.svar),
+        svar = arbeidssituasjon.svar.name,
     )
 }
 
@@ -60,7 +59,7 @@ private fun SykmeldingUserEvent.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
             tekst = harBruktEgenmelding.sporsmaltekst,
             shortName = ShortNameDTO.FRAVAER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = objectMapper.writeValueAsString(harBruktEgenmelding.svar),
+            svar = harBruktEgenmelding.svar.name,
         )
     }
     return null
@@ -84,7 +83,7 @@ private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(): SporsmalOgSvar
             tekst = nyNarmesteLeder.sporsmaltekst,
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = objectMapper.writeValueAsString(nyNarmesteLeder.svar),
+            svar = nyNarmesteLeder.svar.name,
         )
     }
     return null
@@ -96,7 +95,7 @@ private fun SykmeldingUserEvent.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? 
             tekst = harForsikring.sporsmaltekst,
             shortName = ShortNameDTO.FORSIKRING,
             svartype = SvartypeDTO.JA_NEI,
-            svar = objectMapper.writeValueAsString(harForsikring.svar),
+            svar = harForsikring.svar.name,
         )
     }
     return null

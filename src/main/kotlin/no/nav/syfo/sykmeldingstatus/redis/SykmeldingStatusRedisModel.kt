@@ -29,30 +29,30 @@ fun SykmeldingUserEvent.tilSykmeldingStatusRedisModel(timestamp: OffsetDateTime,
 
 fun SykmeldingUserEvent.toSporsmalSvarListe(): List<SporsmalOgSvarDTO> {
     return listOfNotNull(
-            arbeidssituasjonSporsmalBuilder(),
-            fravarSporsmalBuilder(),
-            periodeSporsmalBuilder(),
-            nyNarmesteLederSporsmalBuilder(),
-            forsikringSporsmalBuilder(),
+        arbeidssituasjonSporsmalBuilder(),
+        fravarSporsmalBuilder(),
+        periodeSporsmalBuilder(),
+        nyNarmesteLederSporsmalBuilder(),
+        forsikringSporsmalBuilder(),
     )
 }
 
 private fun SykmeldingUserEvent.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarDTO {
     return SporsmalOgSvarDTO(
-            tekst = arbeidssituasjon.sporsmaltekst,
-            shortName = ShortNameDTO.ARBEIDSSITUASJON,
-            svartype = SvartypeDTO.ARBEIDSSITUASJON,
-            svar = objectMapper.writeValueAsString(arbeidssituasjon.svar),
+        tekst = arbeidssituasjon.sporsmaltekst,
+        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+        svar = objectMapper.writeValueAsString(arbeidssituasjon.svar),
     )
 }
 
 private fun SykmeldingUserEvent.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (harBruktEgenmelding != null) {
         return SporsmalOgSvarDTO(
-                tekst = harBruktEgenmelding.sporsmaltekst,
-                shortName = ShortNameDTO.FRAVAER,
-                svartype = SvartypeDTO.JA_NEI,
-                svar = objectMapper.writeValueAsString(harBruktEgenmelding.svar),
+            tekst = harBruktEgenmelding.sporsmaltekst,
+            shortName = ShortNameDTO.FRAVAER,
+            svartype = SvartypeDTO.JA_NEI,
+            svar = objectMapper.writeValueAsString(harBruktEgenmelding.svar),
         )
     }
     return null
@@ -61,10 +61,10 @@ private fun SykmeldingUserEvent.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
 private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (egenmeldingsperioder != null) {
         return SporsmalOgSvarDTO(
-                tekst = egenmeldingsperioder.sporsmaltekst,
-                shortName = ShortNameDTO.PERIODE,
-                svartype = SvartypeDTO.PERIODER,
-                svar = objectMapper.writeValueAsString(egenmeldingsperioder.svar),
+            tekst = egenmeldingsperioder.sporsmaltekst,
+            shortName = ShortNameDTO.PERIODE,
+            svartype = SvartypeDTO.PERIODER,
+            svar = objectMapper.writeValueAsString(egenmeldingsperioder.svar),
         )
     }
     return null
@@ -73,10 +73,10 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
 private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (nyNarmesteLeder != null) {
         return SporsmalOgSvarDTO(
-                tekst = nyNarmesteLeder.sporsmaltekst,
-                shortName = ShortNameDTO.NY_NARMESTE_LEDER,
-                svartype = SvartypeDTO.JA_NEI,
-                svar = objectMapper.writeValueAsString(nyNarmesteLeder.svar),
+            tekst = nyNarmesteLeder.sporsmaltekst,
+            shortName = ShortNameDTO.NY_NARMESTE_LEDER,
+            svartype = SvartypeDTO.JA_NEI,
+            svar = objectMapper.writeValueAsString(nyNarmesteLeder.svar),
         )
     }
     return null
@@ -85,10 +85,10 @@ private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(): SporsmalOgSvar
 private fun SykmeldingUserEvent.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (harForsikring != null) {
         return SporsmalOgSvarDTO(
-                tekst = harForsikring.sporsmaltekst,
-                shortName = ShortNameDTO.FORSIKRING,
-                svartype = SvartypeDTO.JA_NEI,
-                svar = objectMapper.writeValueAsString(harForsikring.svar),
+            tekst = harForsikring.sporsmaltekst,
+            shortName = ShortNameDTO.FORSIKRING,
+            svartype = SvartypeDTO.JA_NEI,
+            svar = objectMapper.writeValueAsString(harForsikring.svar),
         )
     }
     return null

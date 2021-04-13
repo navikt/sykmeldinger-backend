@@ -11,7 +11,7 @@ import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.safeReceiveOrNull
 
-fun Route.registerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatusService) {
+fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatusService) {
     post("/api/v2/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!
@@ -32,4 +32,3 @@ fun Route.registerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatusS
         }
     }
 }
-

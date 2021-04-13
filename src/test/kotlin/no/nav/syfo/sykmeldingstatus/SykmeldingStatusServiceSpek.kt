@@ -14,7 +14,6 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmelding.syforestmodel.Sporsmal
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -249,90 +248,90 @@ class SykmeldingStatusServiceSpek : Spek({
     describe("Test user event") {
         it("Test SEND user event") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
-                    Arbeidsgiverinfo(
-                            orgnummer = "123456789",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = true,
-                            naermesteLeder = null
-                    )
+                Arbeidsgiverinfo(
+                    orgnummer = "123456789",
+                    juridiskOrgnummer = "",
+                    navn = "",
+                    stillingsprosent = "",
+                    stilling = "",
+                    aktivtArbeidsforhold = true,
+                    naermesteLeder = null
+                )
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                    erOpplysnigeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                    ),
-                    uriktigeOpplysninger = null,
-                    arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
-                    ),
-                    arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = "123456789",
-                    ),
-                    nyNarmesteLeder = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.NEI,
-                    ),
-                    harBruktEgenmelding = null,
-                    egenmeldingsperioder = null,
-                    harForsikring = null,
+                erOpplysnigeneRiktige = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.JA,
+                ),
+                uriktigeOpplysninger = null,
+                arbeidssituasjon = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                ),
+                arbeidsgiverOrgnummer = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = "123456789",
+                ),
+                nyNarmesteLeder = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.NEI,
+                ),
+                harBruktEgenmelding = null,
+                egenmeldingsperioder = null,
+                harForsikring = null,
             )
 
             runBlocking {
                 sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
             }
 
-            coVerify (exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
-            coVerify (exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
-            verify (exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify (exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         it("Test SEND user event - finner ikke riktig arbeidsgiver") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
-                    Arbeidsgiverinfo(
-                            orgnummer = "123456789",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = true,
-                            naermesteLeder = null
-                    )
+                Arbeidsgiverinfo(
+                    orgnummer = "123456789",
+                    juridiskOrgnummer = "",
+                    navn = "",
+                    stillingsprosent = "",
+                    stilling = "",
+                    aktivtArbeidsforhold = true,
+                    naermesteLeder = null
+                )
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                    erOpplysnigeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                    ),
-                    uriktigeOpplysninger = null,
-                    arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
-                    ),
-                    arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = "feilOrnummer",
-                    ),
-                    nyNarmesteLeder = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.NEI,
-                    ),
-                    harBruktEgenmelding = null,
-                    egenmeldingsperioder = null,
-                    harForsikring = null,
+                erOpplysnigeneRiktige = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.JA,
+                ),
+                uriktigeOpplysninger = null,
+                arbeidssituasjon = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                ),
+                arbeidsgiverOrgnummer = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = "feilOrnummer",
+                ),
+                nyNarmesteLeder = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.NEI,
+                ),
+                harBruktEgenmelding = null,
+                egenmeldingsperioder = null,
+                harForsikring = null,
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -341,40 +340,40 @@ class SykmeldingStatusServiceSpek : Spek({
                 }
             }
 
-            coVerify (exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
-            coVerify (exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
-            verify (exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify (exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         it("Test BEKREFT user event") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                    erOpplysnigeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                    ),
-                    uriktigeOpplysninger = null,
-                    arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.FRILANSER,
-                    ),
-                    arbeidsgiverOrgnummer = null,
-                    nyNarmesteLeder = null,
-                    harBruktEgenmelding = null,
-                    egenmeldingsperioder = null,
-                    harForsikring = null,
+                erOpplysnigeneRiktige = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.JA,
+                ),
+                uriktigeOpplysninger = null,
+                arbeidssituasjon = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = ArbeidssituasjonDTO.FRILANSER,
+                ),
+                arbeidsgiverOrgnummer = null,
+                nyNarmesteLeder = null,
+                harBruktEgenmelding = null,
+                egenmeldingsperioder = null,
+                harForsikring = null,
             )
 
             runBlocking {
                 sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
             }
 
-            coVerify (exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
-            coVerify (exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
-            verify (exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify (exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
     }
 

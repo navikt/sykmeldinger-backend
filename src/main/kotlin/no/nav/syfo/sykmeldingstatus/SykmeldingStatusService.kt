@@ -93,10 +93,9 @@ class SykmeldingStatusService(
     }
 
     private suspend fun getArbeidsgiver(fnr: String, token: String, sykmeldingId: String, orgnummer: String): Arbeidsgiverinfo {
-        return  arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now(), sykmeldingId)
+        return arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now(), sykmeldingId)
             .find { it.orgnummer == orgnummer }
-                ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
-
+            ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
     }
 
     suspend fun registrerSendt(
