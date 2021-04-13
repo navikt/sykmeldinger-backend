@@ -41,7 +41,7 @@ fun Route.registerSykmeldingSendApi(
         sykmeldingStatusService.registrerSendt(
             sykmeldingSendEventDTO = SykmeldingSendEventDTO(
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                sporsmalOgSvarListe = tilSporsmalOgSvarListe(sykmeldingSendEventUserDTO),
+                sporsmalOgSvarListe = tilSporsmalOgSvarListe(sykmeldingSendEventUserDTO, arbeidsgiver.aktivtArbeidsforhold),
                 arbeidsgiver = ArbeidsgiverStatusDTO(
                     orgnummer = arbeidsgiver.orgnummer,
                     juridiskOrgnummer = arbeidsgiver.juridiskOrgnummer,
@@ -60,7 +60,7 @@ fun Route.registerSykmeldingSendApi(
     }
 }
 
-fun tilSporsmalOgSvarListe(sykmeldingSendEventUserDTO: SykmeldingSendEventUserDTO): List<SporsmalOgSvarDTO> {
+fun tilSporsmalOgSvarListe(sykmeldingSendEventUserDTO: SykmeldingSendEventUserDTO, aktivtArbeidsforhold: Boolean): List<SporsmalOgSvarDTO> {
     val komplettSporsmalOgSvarListe = mutableListOf(
         SporsmalOgSvarDTO(
             tekst = "Jeg er sykmeldt fra",
@@ -69,7 +69,16 @@ fun tilSporsmalOgSvarListe(sykmeldingSendEventUserDTO: SykmeldingSendEventUserDT
             svar = "ARBEIDSTAKER"
         )
     )
-    if (sykmeldingSendEventUserDTO.beOmNyNaermesteLeder == true) {
+    if (!aktivtArbeidsforhold) {
+        komplettSporsmalOgSvarListe.add(
+            SporsmalOgSvarDTO(
+                tekst = "Skal finne ny nærmeste leder",
+                shortName = ShortNameDTO.NY_NARMESTE_LEDER,
+                svartype = SvartypeDTO.JA_NEI,
+                svar = "NEI"
+            )
+        )
+    } else if (sykmeldingSendEventUserDTO.beOmNyNaermesteLeder == true) {
         komplettSporsmalOgSvarListe.add(
             SporsmalOgSvarDTO(
                 tekst = "Skal finne ny nærmeste leder",

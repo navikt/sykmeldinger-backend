@@ -76,17 +76,17 @@ class SykmeldingApiKtTest : Spek({
             application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
             it("Sykmelding by id OK") {
                 with(
-                        handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger/sykmeldingid") {
-                            addHeader(
-                                    "Authorization",
-                                    "Bearer ${generateJWT(
-                                            "client",
-                                            "loginserviceId1",
-                                            subject = "12345678901",
-                                            issuer = env.jwtIssuer
-                                    )}"
-                            )
-                        }
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger/sykmeldingid") {
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId1",
+                                subject = "12345678901",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
