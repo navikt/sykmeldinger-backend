@@ -8,11 +8,13 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
@@ -34,6 +36,7 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.RuntimeException
+import kotlin.math.exp
 import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek : Spek({
@@ -374,6 +377,59 @@ class SykmeldingStatusServiceSpek : Spek({
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
             verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+        }
+
+        it("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+                    Arbeidsgiverinfo(
+                            orgnummer = "123456789",
+                            juridiskOrgnummer = "",
+                            navn = "",
+                            stillingsprosent = "",
+                            stilling = "",
+                            aktivtArbeidsforhold = false,
+                            naermesteLeder = null
+                    )
+            )
+
+            val sykmeldingUserEvent = SykmeldingUserEvent(
+                    erOpplysnigeneRiktige = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svartekster = "",
+                            svar = JaEllerNei.JA,
+                    ),
+                    uriktigeOpplysninger = null,
+                    arbeidssituasjon = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svartekster = "",
+                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    ),
+                    arbeidsgiverOrgnummer = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svartekster = "",
+                            svar = "123456789"
+                    ),
+                    nyNarmesteLeder = null,
+                    harBruktEgenmelding = null,
+                    egenmeldingsperioder = null,
+                    harForsikring = null,
+            )
+
+            val expected = slot<SykmeldingStatusKafkaEventDTO>()
+
+            runBlocking {
+                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
+            }
+
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+
+            val nlSvar = expected.captured.sporsmals?.filter { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER }
+
+            nlSvar?.size shouldBeEqualTo 1
+            nlSvar?.first()?.svar shouldBeEqualTo "NEI"
         }
     }
 
