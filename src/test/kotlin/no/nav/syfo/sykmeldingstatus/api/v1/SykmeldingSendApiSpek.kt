@@ -190,6 +190,62 @@ class SykmeldingSendApiSpek : Spek({
             }
         }
     }
+
+    describe("Be om ny nærmeste leder") {
+        it("Skal ha spørsmål med svar JA for nærmeste leder hvis bruker ba om ny NL for aktivt arbeidsforhold") {
+            val sporsmalOgSvarListe = tilSporsmalOgSvarListe(
+                SykmeldingSendEventUserDTO(
+                    orgnummer = "orgnummer",
+                    beOmNyNaermesteLeder = true,
+                    sporsmalOgSvarListe = null
+                ),
+                aktivtArbeidsforhold = true
+            )
+
+            sporsmalOgSvarListe.size shouldBeEqualTo 2
+            sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER } shouldBeEqualTo SporsmalOgSvarDTO(
+                tekst = "Skal finne ny nærmeste leder",
+                shortName = ShortNameDTO.NY_NARMESTE_LEDER,
+                svartype = SvartypeDTO.JA_NEI,
+                svar = "JA"
+            )
+        }
+        it("Skal ha spørsmål med svar NEI for nærmeste leder hvis arbeidsforhold ikke er aktivt") {
+            val sporsmalOgSvarListe = tilSporsmalOgSvarListe(opprettSykmeldingSendEventUserDTO(), aktivtArbeidsforhold = false)
+
+            sporsmalOgSvarListe.size shouldBeEqualTo 2
+            sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER } shouldBeEqualTo SporsmalOgSvarDTO(
+                tekst = "Skal finne ny nærmeste leder",
+                shortName = ShortNameDTO.NY_NARMESTE_LEDER,
+                svartype = SvartypeDTO.JA_NEI,
+                svar = "NEI"
+            )
+        }
+        it("Skal ha spørsmål med svar NEI for nærmeste leder hvis arbeidsforhold ikke er aktivt selv om bruker ber om ny NL") {
+            val sporsmalOgSvarListe = tilSporsmalOgSvarListe(
+                SykmeldingSendEventUserDTO(
+                    orgnummer = "orgnummer",
+                    beOmNyNaermesteLeder = true,
+                    sporsmalOgSvarListe = null
+                ),
+                aktivtArbeidsforhold = false
+            )
+
+            sporsmalOgSvarListe.size shouldBeEqualTo 2
+            sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER } shouldBeEqualTo SporsmalOgSvarDTO(
+                tekst = "Skal finne ny nærmeste leder",
+                shortName = ShortNameDTO.NY_NARMESTE_LEDER,
+                svartype = SvartypeDTO.JA_NEI,
+                svar = "NEI"
+            )
+        }
+        it("Skal ikke ha spørsmål om nærmeste leder hvis arbeidsforhold er aktivt og bruker ikke ba om ny NL") {
+            val sporsmalOgSvarListe = tilSporsmalOgSvarListe(opprettSykmeldingSendEventUserDTO(), aktivtArbeidsforhold = true)
+
+            sporsmalOgSvarListe.size shouldBeEqualTo 1
+            sporsmalOgSvarListe.find { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER } shouldBeEqualTo null
+        }
+    }
 })
 
 fun opprettSykmeldingSendEventUserDTO(): SykmeldingSendEventUserDTO {

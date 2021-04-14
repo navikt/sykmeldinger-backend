@@ -50,6 +50,8 @@ class ArbeidsgiverService(
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {
             it.arbeidsgiver.type == "Organisasjon"
+        }.distinctBy {
+            it.arbeidsgiver.organisasjonsnummer
         }.forEach { arbeidsforhold ->
             val organisasjonsinfo =
                 organisasjonsinfoClient.getOrginfo(arbeidsforhold.arbeidsgiver.organisasjonsnummer!!)
