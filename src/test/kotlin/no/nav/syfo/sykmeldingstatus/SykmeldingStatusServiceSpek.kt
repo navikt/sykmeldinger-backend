@@ -36,7 +36,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.RuntimeException
-import kotlin.math.exp
 import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek : Spek({
@@ -381,38 +380,38 @@ class SykmeldingStatusServiceSpek : Spek({
 
         it("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
-                    Arbeidsgiverinfo(
-                            orgnummer = "123456789",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = false,
-                            naermesteLeder = null
-                    )
+                Arbeidsgiverinfo(
+                    orgnummer = "123456789",
+                    juridiskOrgnummer = "",
+                    navn = "",
+                    stillingsprosent = "",
+                    stilling = "",
+                    aktivtArbeidsforhold = false,
+                    naermesteLeder = null
+                )
             )
 
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                    erOpplysnigeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                    ),
-                    uriktigeOpplysninger = null,
-                    arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
-                    ),
-                    arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = "123456789"
-                    ),
-                    nyNarmesteLeder = null,
-                    harBruktEgenmelding = null,
-                    egenmeldingsperioder = null,
-                    harForsikring = null,
+                erOpplysnigeneRiktige = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.JA,
+                ),
+                uriktigeOpplysninger = null,
+                arbeidssituasjon = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                ),
+                arbeidsgiverOrgnummer = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = "123456789"
+                ),
+                nyNarmesteLeder = null,
+                harBruktEgenmelding = null,
+                egenmeldingsperioder = null,
+                harForsikring = null,
             )
 
             val expected = slot<SykmeldingStatusKafkaEventDTO>()

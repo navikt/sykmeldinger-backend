@@ -436,13 +436,13 @@ class ValidationKtTest : Spek({
             )
 
             val arbeidsgiver = Arbeidsgiverinfo(
-                    orgnummer = "132456789",
-                    juridiskOrgnummer = "",
-                    stillingsprosent = "",
-                    stilling = "",
-                    navn = "",
-                    aktivtArbeidsforhold = true,
-                    naermesteLeder = null
+                orgnummer = "132456789",
+                juridiskOrgnummer = "",
+                stillingsprosent = "",
+                stilling = "",
+                navn = "",
+                aktivtArbeidsforhold = true,
+                naermesteLeder = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver)
@@ -467,57 +467,57 @@ class ValidationKtTest : Spek({
 
         it("Skal lage SporsmalOgSvarDTO for nyNarmesteLeder med inaktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                    erOpplysnigeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                    ),
-                    uriktigeOpplysninger = null,
-                    arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
-                    ),
-                    arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = "123456789",
-                    ),
-                    nyNarmesteLeder = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                    ),
-                    harBruktEgenmelding = null,
-                    egenmeldingsperioder = null,
-                    harForsikring = null,
+                erOpplysnigeneRiktige = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.JA,
+                ),
+                uriktigeOpplysninger = null,
+                arbeidssituasjon = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                ),
+                arbeidsgiverOrgnummer = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = "123456789",
+                ),
+                nyNarmesteLeder = SporsmalSvar(
+                    sporsmaltekst = "",
+                    svartekster = "",
+                    svar = JaEllerNei.JA,
+                ),
+                harBruktEgenmelding = null,
+                egenmeldingsperioder = null,
+                harForsikring = null,
             )
 
             val arbeidsgiver = Arbeidsgiverinfo(
-                    orgnummer = "132456789",
-                    juridiskOrgnummer = "",
-                    stillingsprosent = "",
-                    stilling = "",
-                    navn = "",
-                    aktivtArbeidsforhold = false,
-                    naermesteLeder = null
+                orgnummer = "132456789",
+                juridiskOrgnummer = "",
+                stillingsprosent = "",
+                stilling = "",
+                navn = "",
+                aktivtArbeidsforhold = false,
+                naermesteLeder = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver)
 
             val expected = listOf(
-                    SporsmalOgSvarDTO(
-                            "",
-                            ShortNameDTO.ARBEIDSSITUASJON,
-                            SvartypeDTO.ARBEIDSSITUASJON,
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name,
-                    ),
-                    SporsmalOgSvarDTO(
-                            "Skal finne ny nærmeste leder",
-                            ShortNameDTO.NY_NARMESTE_LEDER,
-                            SvartypeDTO.JA_NEI,
-                            svar = JaEllerNei.NEI.name,
-                    )
+                SporsmalOgSvarDTO(
+                    "",
+                    ShortNameDTO.ARBEIDSSITUASJON,
+                    SvartypeDTO.ARBEIDSSITUASJON,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name,
+                ),
+                SporsmalOgSvarDTO(
+                    "Skal finne ny nærmeste leder",
+                    ShortNameDTO.NY_NARMESTE_LEDER,
+                    SvartypeDTO.JA_NEI,
+                    svar = JaEllerNei.NEI.name,
+                )
             )
 
             sporsmalOgSvarListe shouldBeEqualTo expected

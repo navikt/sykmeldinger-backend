@@ -80,10 +80,10 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
 private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(arbeidsgiver: Arbeidsgiverinfo?): SporsmalOgSvarDTO? {
     if (arbeidsgiver?.aktivtArbeidsforhold == false) {
         return SporsmalOgSvarDTO(
-                tekst = "Skal finne ny nærmeste leder",
-                shortName = ShortNameDTO.NY_NARMESTE_LEDER,
-                svartype = SvartypeDTO.JA_NEI,
-                svar = "NEI",
+            tekst = "Skal finne ny nærmeste leder",
+            shortName = ShortNameDTO.NY_NARMESTE_LEDER,
+            svartype = SvartypeDTO.JA_NEI,
+            svar = "NEI",
         )
     }
 
