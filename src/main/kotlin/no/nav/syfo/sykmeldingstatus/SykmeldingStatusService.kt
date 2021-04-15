@@ -4,6 +4,8 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
+import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
@@ -89,6 +91,12 @@ class SykmeldingStatusService(
 
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp, sykmeldingId, arbeidsgiver), source = "user", fnr = fnr)
             sykmeldingStatusJedisService.updateStatus(sykmeldingUserEvent.tilSykmeldingStatusRedisModel(timestamp, arbeidsgiver), sykmeldingId)
+
+            when (nesteStatus) {
+                StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
+                StatusEventDTO.BEKREFTET -> BEKREFTET_AV_BRUKER_COUNTER.inc()
+                else -> Unit
+            }
         }
     }
 
