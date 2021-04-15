@@ -261,7 +261,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 )
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -310,7 +310,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 )
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -350,7 +350,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
         it("Test BEKREFT user event") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -392,7 +392,7 @@ class SykmeldingStatusServiceSpek : Spek({
             )
 
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,

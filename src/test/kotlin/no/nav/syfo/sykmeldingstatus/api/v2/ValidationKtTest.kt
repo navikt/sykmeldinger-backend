@@ -17,7 +17,7 @@ class ValidationKtTest : Spek({
         describe("erOpplysnigeneRiktige") {
             it("Skal kaste exception hvis opplysningene ikke stemmer, men uriktige opplysninger er tom") {
                 val sykmeldingUserEvent = SykmeldingUserEvent(
-                    erOpplysnigeneRiktige = SporsmalSvar(
+                    erOpplysningeneRiktige = SporsmalSvar(
                         sporsmaltekst = "",
                         svartekster = "",
                         svar = JaEllerNei.NEI,
@@ -46,7 +46,7 @@ class ValidationKtTest : Spek({
                 it("Skal kaste exception hvis arbeidssituasjon == ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
 
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -71,7 +71,7 @@ class ValidationKtTest : Spek({
 
                 it("Skal kaste exception hvis arbeidssituasjon != ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -104,7 +104,7 @@ class ValidationKtTest : Spek({
 
                 it("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -131,7 +131,7 @@ class ValidationKtTest : Spek({
             describe("frilanser") {
                 it("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -162,7 +162,7 @@ class ValidationKtTest : Spek({
             describe("selvstendig naringsdrivende") {
                 it("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -193,7 +193,7 @@ class ValidationKtTest : Spek({
             describe("arbeidsledig") {
                 it("Skal kaste exception hvis egenmeldingsperioder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -222,7 +222,7 @@ class ValidationKtTest : Spek({
 
                 it("Skal kaste exception hvis harForsikring er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -253,7 +253,7 @@ class ValidationKtTest : Spek({
             describe("permittert") {
                 it("Skal kaste exception hvis egenmeldingsperioder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -282,7 +282,7 @@ class ValidationKtTest : Spek({
 
                 it("Skal kaste exception hvis harForsikring er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -313,7 +313,7 @@ class ValidationKtTest : Spek({
             describe("annet") {
                 it("Skal kaste exception hvis egenmeldingsperioder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -342,7 +342,7 @@ class ValidationKtTest : Spek({
 
                 it("Skal kaste exception hvis harForsikring er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysnigeneRiktige = SporsmalSvar(
+                        erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -375,7 +375,7 @@ class ValidationKtTest : Spek({
     describe("SporsmalOgSvar builders") {
         it("Skal lage SporsmalOgSvarDTO for arbeidssituasjon") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -409,7 +409,7 @@ class ValidationKtTest : Spek({
 
         it("Skal lage SporsmalOgSvarDTO for nyNarmesteLeder med aktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -467,7 +467,7 @@ class ValidationKtTest : Spek({
 
         it("Skal lage SporsmalOgSvarDTO for nyNarmesteLeder med inaktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -525,7 +525,7 @@ class ValidationKtTest : Spek({
 
         it("Skal lage SporsmalOgSvarDTO for fravarSporsmal") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -579,7 +579,7 @@ class ValidationKtTest : Spek({
 
         it("Skal lage SporsmalOgSvarDTO for egenmeldingsperioder") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
-                erOpplysnigeneRiktige = SporsmalSvar(
+                erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,

@@ -3,7 +3,7 @@ package no.nav.syfo.sykmeldingstatus.api.v2
 class ValidationException(message: String) : Exception(message)
 
 fun SykmeldingUserEvent.validate() {
-    if (erOpplysnigeneRiktige.svar == JaEllerNei.NEI) {
+    if (erOpplysningeneRiktige.svar == JaEllerNei.NEI) {
         requireNotNull(uriktigeOpplysninger, "Uriktige opplysninger må være definer når opplysningene ikke stemmer.")
     }
     if (arbeidssituasjon.svar == ArbeidssituasjonDTO.ARBEIDSTAKER) {

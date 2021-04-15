@@ -91,7 +91,7 @@ class SykmeldingSendApiKtTest : Spek({
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent().copy(erOpplysnigeneRiktige = SporsmalSvar(sporsmaltekst = "", svartekster = "", svar = JaEllerNei.NEI))))
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent().copy(erOpplysningeneRiktige = SporsmalSvar(sporsmaltekst = "", svartekster = "", svar = JaEllerNei.NEI))))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "AUTHORIZATION",
@@ -167,7 +167,7 @@ class SykmeldingSendApiKtTest : Spek({
 
 fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
     return SykmeldingUserEvent(
-        erOpplysnigeneRiktige = SporsmalSvar(
+        erOpplysningeneRiktige = SporsmalSvar(
             sporsmaltekst = "",
             svartekster = "",
             svar = JaEllerNei.JA,
