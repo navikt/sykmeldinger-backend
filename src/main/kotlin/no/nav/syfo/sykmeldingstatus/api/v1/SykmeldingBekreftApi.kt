@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api
+package no.nav.syfo.sykmeldingstatus.api.v1
 
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -20,6 +20,7 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
         val token = call.request.headers["Authorization"]!!
         val principal: JWTPrincipal = call.authentication.principal()!!
         val fnr = principal.payload.subject
+
         val sykmeldingBekreftEventDTO = call.safeReceiveOrNull<SykmeldingBekreftEventUserDTO>()
 
         sykmeldingStatusService.registrerBekreftet(

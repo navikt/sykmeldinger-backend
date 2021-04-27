@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api
+package no.nav.syfo.sykmeldingstatus.api.v1
 
 import io.ktor.auth.authenticate
 import io.ktor.http.ContentType

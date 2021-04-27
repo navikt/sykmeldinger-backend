@@ -51,13 +51,15 @@ import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingAvbrytApi
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftApi
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingBekreftSyfoServiceApi
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingGjenapneApi
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendApi
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingSendSyfoServiceApi
-import no.nav.syfo.sykmeldingstatus.api.registerSykmeldingStatusSyfoServiceApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftSyfoServiceApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendSyfoServiceApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingStatusSyfoServiceApi
+import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
@@ -95,6 +97,7 @@ fun createApplicationEngine(
             header(HttpHeaders.XCorrelationId)
         }
         install(StatusPages) {
+            setUpSykmeldingSendApiV2ExeptionHandler()
             setUpSykmeldingStatusExeptionHandler()
             setUpSykmeldingExceptionHandler()
             exception<Throwable> { cause ->
@@ -151,7 +154,7 @@ fun createApplicationEngine(
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, soknadstatusService)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, soknadstatusService, arbeidsgiverService)
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
@@ -160,6 +163,7 @@ fun createApplicationEngine(
             }
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
+                registrerSykmeldingSendApiV2(sykmeldingStatusService)
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)

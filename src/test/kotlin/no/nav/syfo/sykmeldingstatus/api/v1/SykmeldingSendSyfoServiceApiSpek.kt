@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api
+package no.nav.syfo.sykmeldingstatus.api.v1
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder

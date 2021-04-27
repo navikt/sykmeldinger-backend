@@ -10,7 +10,7 @@ import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import java.time.LocalDate
 
 @KtorExperimentalAPI

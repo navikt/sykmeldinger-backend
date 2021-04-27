@@ -1,26 +1,37 @@
 package no.nav.syfo.sykmeldingstatus
 
+import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
+import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
-import no.nav.syfo.sykmeldingstatus.api.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
+import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import no.nav.syfo.sykmeldingstatus.redis.tilSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val sykmeldingStatusJedisService: SykmeldingStatusRedisService,
     private val syfosmregisterStatusClient: SyfosmregisterStatusClient,
-    private val soknadstatusService: SoknadstatusService
+    private val soknadstatusService: SoknadstatusService,
+    private val arbeidsgiverService: ArbeidsgiverService,
 ) {
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
@@ -52,6 +63,47 @@ class SykmeldingStatusService(
                 sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
             }
         }
+    }
+
+    suspend fun registrerUserEvent(
+        sykmeldingUserEvent: SykmeldingUserEvent,
+        sykmeldingId: String,
+        fnr: String,
+        token: String
+    ) {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        val nesteStatus = sykmeldingUserEvent.toStatusEvent()
+        if (
+            canChangeStatus(
+                nyStatusEvent = nesteStatus,
+                sisteStatus = sisteStatus.statusEvent,
+                erAvvist = sisteStatus.erAvvist,
+                erEgenmeldt = sisteStatus.erEgenmeldt,
+                sykmeldingId = sykmeldingId,
+                token = token,
+            )
+        ) {
+            val arbeidsgiver = when (nesteStatus) {
+                StatusEventDTO.SENDT -> getArbeidsgiver(fnr, token, sykmeldingId, sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar)
+                else -> null
+            }
+            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+
+            sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp, sykmeldingId, arbeidsgiver), source = "user", fnr = fnr)
+            sykmeldingStatusJedisService.updateStatus(sykmeldingUserEvent.tilSykmeldingStatusRedisModel(timestamp, arbeidsgiver), sykmeldingId)
+
+            when (nesteStatus) {
+                StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
+                StatusEventDTO.BEKREFTET -> BEKREFTET_AV_BRUKER_COUNTER.inc()
+                else -> Unit
+            }
+        }
+    }
+
+    private suspend fun getArbeidsgiver(fnr: String, token: String, sykmeldingId: String, orgnummer: String): Arbeidsgiverinfo {
+        return arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now(), sykmeldingId)
+            .find { it.orgnummer == orgnummer }
+            ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
     }
 
     suspend fun registrerSendt(
@@ -136,4 +188,11 @@ private fun SykmeldingStatusRedisModel.toSykmeldingStatusDTO(): SykmeldingStatus
         erAvvist = erAvvist,
         erEgenmeldt = erEgenmeldt
     )
+}
+
+fun SykmeldingUserEvent.toStatusEvent(): StatusEventDTO {
+    if (arbeidssituasjon.svar == ArbeidssituasjonDTO.ARBEIDSTAKER) {
+        return StatusEventDTO.SENDT
+    }
+    return StatusEventDTO.BEKREFTET
 }

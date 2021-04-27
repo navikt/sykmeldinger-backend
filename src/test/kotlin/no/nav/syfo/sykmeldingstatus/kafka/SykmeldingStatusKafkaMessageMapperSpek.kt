@@ -4,13 +4,14 @@ import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
 import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
 import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
-import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
-import no.nav.syfo.sykmeldingstatus.api.ShortNameDTO
-import no.nav.syfo.sykmeldingstatus.api.SporsmalOgSvarDTO
-import no.nav.syfo.sykmeldingstatus.api.SvartypeDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingSendEventDTO
-import no.nav.syfo.sykmeldingstatus.api.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -133,7 +134,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         it("Mapper SykmeldingStatusEventDTO for AVBRUTT") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingStatusEventDTO =
-                SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.AVBRUTT, timestamp)
+                SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 
@@ -147,7 +148,7 @@ class SykmeldingStatusKafkaMessageMapperSpek : Spek({
         it("Mapper SykmeldingStatusEventDTO for APEN riktig") {
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
             val sykmeldingStatusEventDTO =
-                SykmeldingStatusEventDTO(no.nav.syfo.sykmeldingstatus.api.StatusEventDTO.APEN, timestamp)
+                SykmeldingStatusEventDTO(StatusEventDTO.APEN, timestamp)
 
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
 

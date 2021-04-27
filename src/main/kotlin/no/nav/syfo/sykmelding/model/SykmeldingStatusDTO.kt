@@ -1,6 +1,6 @@
 package no.nav.syfo.sykmelding.model
 
-import no.nav.syfo.sykmeldingstatus.api.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import java.time.OffsetDateTime
 
 data class SykmeldingStatusDTO(
