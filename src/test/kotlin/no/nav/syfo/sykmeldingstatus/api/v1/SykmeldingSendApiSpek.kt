@@ -35,7 +35,7 @@ class SykmeldingSendApiSpek : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any(), any()) } just Runs
+        coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } just Runs
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
             Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", "Bedriften AS", "100", "", true, null)
         )
@@ -110,7 +110,6 @@ class SykmeldingSendApiSpek : Spek({
                         any(),
                         any(),
                         any(),
-                        any(),
                         any()
                     )
                 } throws InvalidSykmeldingStatusException("Invalid status")
@@ -138,7 +137,6 @@ class SykmeldingSendApiSpek : Spek({
             it("Skal ikke kunne sende annen brukers sykmelding") {
                 coEvery {
                     sykmeldingStatusService.registrerSendt(
-                        any(),
                         any(),
                         any(),
                         any(),

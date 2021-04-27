@@ -9,10 +9,9 @@ import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.Environment
 import no.nav.syfo.log
 
-fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvider: JwkProvider, issuer: String, env: Environment, stsOidcJwkProvider: JwkProvider) {
+fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvider: JwkProvider, issuer: String) {
     install(Authentication) {
         jwt(name = "jwt") {
             verifier(jwkProvider, issuer)
@@ -23,22 +22,7 @@ fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvide
                 }
             }
         }
-
-        jwt(name = "oidc") {
-            verifier(stsOidcJwkProvider, env.stsOidcIssuer)
-            validate { credentials ->
-                when {
-                    isValidStsOidcToken(credentials, env) -> JWTPrincipal(credentials.payload)
-                    else -> unauthorized(credentials)
-                }
-            }
-        }
     }
-}
-
-fun isValidStsOidcToken(credentials: JWTCredential, env: Environment): Boolean {
-    return credentials.payload.audience.contains(env.stsOidcAudience) &&
-        "srvsyfoservice".equals(credentials.payload.getClaim("sub").asString())
 }
 
 fun unauthorized(credentials: JWTCredential): Principal? {

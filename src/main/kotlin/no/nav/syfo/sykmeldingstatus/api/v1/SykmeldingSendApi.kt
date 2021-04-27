@@ -51,8 +51,7 @@ fun Route.registerSykmeldingSendApi(
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,
-            token = token,
-            fromSyfoservice = false
+            token = token
         )
 
         SENDT_AV_BRUKER_COUNTER.inc()

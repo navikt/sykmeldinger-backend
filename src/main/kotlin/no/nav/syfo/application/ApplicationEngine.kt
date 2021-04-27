@@ -53,11 +53,8 @@ import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendSyfoServiceApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingStatusSyfoServiceApi
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
@@ -78,7 +75,6 @@ fun createApplicationEngine(
     jwkProvider: JwkProvider,
     issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
-    jwkProviderStsOidc: JwkProvider,
     jedisPool: JedisPool
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
@@ -90,7 +86,7 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(env.loginserviceIdportenAudience, jwkProvider, issuer, env, jwkProviderStsOidc)
+        setupAuth(env.loginserviceIdportenAudience, jwkProvider, issuer)
         install(CallId) {
             generate { UUID.randomUUID().toString() }
             verify { callId: String -> callId.isNotEmpty() }
@@ -170,11 +166,6 @@ fun createApplicationEngine(
                 registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
                 registrerArbeidsgiverApi(arbeidsgiverService)
                 registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
-            }
-            authenticate("oidc") {
-                registerSykmeldingStatusSyfoServiceApi(sykmeldingStatusService)
-                registerSykmeldingSendSyfoServiceApi(sykmeldingStatusService)
-                registerSykmeldingBekreftSyfoServiceApi(sykmeldingStatusService)
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

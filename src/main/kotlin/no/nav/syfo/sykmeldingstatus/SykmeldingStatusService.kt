@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
@@ -26,6 +27,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
+@KtorExperimentalAPI
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val sykmeldingStatusJedisService: SykmeldingStatusRedisService,
@@ -53,15 +55,10 @@ class SykmeldingStatusService(
     }
 
     suspend fun registrerStatus(sykmeldingStatusEventDTO: SykmeldingStatusEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        if (source == "syfoservice") {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        if (canChangeStatus(nyStatusEvent = sykmeldingStatusEventDTO.statusEvent, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
             sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
-        } else {
-            val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-            if (canChangeStatus(nyStatusEvent = sykmeldingStatusEventDTO.statusEvent, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
-                sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-                sykmeldingStatusJedisService.updateStatus(sykmeldingStatusEventDTO.toSykmeldingRedisModel(), sykmeldingId)
-            }
         }
     }
 
@@ -73,16 +70,7 @@ class SykmeldingStatusService(
     ) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
-        if (
-            canChangeStatus(
-                nyStatusEvent = nesteStatus,
-                sisteStatus = sisteStatus.statusEvent,
-                erAvvist = sisteStatus.erAvvist,
-                erEgenmeldt = sisteStatus.erEgenmeldt,
-                sykmeldingId = sykmeldingId,
-                token = token,
-            )
-        ) {
+        if (canChangeStatus(nyStatusEvent = nesteStatus, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
             val arbeidsgiver = when (nesteStatus) {
                 StatusEventDTO.SENDT -> getArbeidsgiver(fnr, token, sykmeldingId, sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar)
                 else -> null
@@ -111,31 +99,20 @@ class SykmeldingStatusService(
         sykmeldingId: String,
         source: String,
         fnr: String,
-        token: String,
-        fromSyfoservice: Boolean
+        token: String
     ) {
-        if (fromSyfoservice) {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        if (canChangeStatus(nyStatusEvent = StatusEventDTO.SENDT, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
             sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
-        } else {
-            val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-            if (canChangeStatus(nyStatusEvent = StatusEventDTO.SENDT, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
-                sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-                sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
-            }
         }
     }
 
     suspend fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        if (source == "syfoservice") {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        if (canChangeStatus(nyStatusEvent = StatusEventDTO.BEKREFTET, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
             sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
             sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
-        } else {
-            val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-            if (canChangeStatus(nyStatusEvent = StatusEventDTO.BEKREFTET, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
-                sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-                sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
-            }
         }
     }
 

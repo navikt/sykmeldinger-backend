@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus
 
+import io.ktor.util.KtorExperimentalAPI
 import io.mockk.MockKMatcherScope
 import io.mockk.Runs
 import io.mockk.clearAllMocks
@@ -16,11 +17,14 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.opprettSykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.opprettSykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
@@ -38,6 +42,7 @@ import java.time.ZoneOffset
 import kotlin.RuntimeException
 import kotlin.test.assertFailsWith
 
+@KtorExperimentalAPI
 class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingId = "id"
     val fnr = "fnr"
@@ -65,8 +70,7 @@ class SykmeldingStatusServiceSpek : Spek({
                         sykmeldingId,
                         "user",
                         fnr,
-                        token,
-                        false
+                        token
                     )
                     StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(
                         opprettSykmeldingBekreftEventDTO(),
@@ -96,8 +100,7 @@ class SykmeldingStatusServiceSpek : Spek({
                     sykmeldingId,
                     "user",
                     fnr,
-                    token,
-                    false
+                    token
                 )
                 StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "user", fnr, token)
                 else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr, token)
@@ -176,46 +179,6 @@ class SykmeldingStatusServiceSpek : Spek({
                     sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
                 }
                 exception.message shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
-            }
-        }
-    }
-
-    describe("Spesialhåndtering for syfoservice") {
-        it("Skal ikke sjekke status eller tilgang når source er syfoservice ved sending") {
-            runBlocking {
-                sykmeldingStatusService.registrerSendt(
-                    opprettSykmeldingSendEventDTO(),
-                    sykmeldingId,
-                    "syfoservice",
-                    fnr,
-                    token,
-                    true
-                )
-
-                coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-                verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            }
-        }
-        it("Skal ikke sjekke status eller tilgang når source er syfoservice ved bekrefting") {
-            runBlocking {
-                sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "syfoservice", fnr, token)
-
-                coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-                verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            }
-        }
-        it("Skal ikke sjekke status eller tilgang når source er syfoservice ved statusendring") {
-            runBlocking {
-                sykmeldingStatusService.registrerStatus(SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC)), sykmeldingId, "syfoservice", fnr, token)
-
-                coVerify(exactly = 0) { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-                verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }
     }
@@ -566,3 +529,13 @@ class SykmeldingStatusServiceSpek : Spek({
 fun MockKMatcherScope.statusEquals(statusEvent: String) = match<SykmeldingStatusKafkaEventDTO> {
     statusEvent == it.statusEvent
 }
+
+fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =
+    SykmeldingSendEventDTO(
+        OffsetDateTime.now(ZoneOffset.UTC),
+        ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
+        listOf(
+            SporsmalOgSvarDTO("", no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
+            SporsmalOgSvarDTO("", no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+        )
+    )
