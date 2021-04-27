@@ -44,11 +44,6 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val jwkProviderStsOidc = JwkProviderBuilder(URL(vaultSecrets.stsOidcWellKnownUri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
-
     val applicationState = ApplicationState()
 
     DefaultExports.initialize()
@@ -68,7 +63,6 @@ fun main() {
         jwkProvider,
         wellKnown.issuer,
         sykmeldingStatusKafkaProducer,
-        jwkProviderStsOidc,
         jedisPool
     )
 

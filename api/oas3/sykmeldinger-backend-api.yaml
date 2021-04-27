@@ -150,64 +150,6 @@ paths:
         '403':
           description: Forbidden
 
-  /sykmeldinger/{sykmeldingId}/status:
-    post:
-      operationId: lagreSykmeldingStatusSyfoService
-      tags:
-        - SyfoService
-      security:
-        - bearerAuth: []
-      description: Lagrer status for sykmelding fra syfoservice
-      parameters:
-        - $ref: '#/components/parameters/sykmeldingId'
-      requestBody:
-        $ref: '#/components/requestBodies/SyfoServiceLagreSykmeldingStatusEvent'
-      responses:
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-  /sykmeldinger/{sykmeldingId}/bekreft:
-    post:
-      operationId: bekreftSykmeldingSyfoService
-      tags:
-        - SyfoService
-      security:
-        - bearerAuth: []
-      description: Bekreft sykmelding fra syfoservice
-      parameters:
-        - $ref: '#/components/parameters/sykmeldingId'
-      requestBody:
-        $ref: '#/components/requestBodies/SyfoServiceBekreftSykmeldingEvent'
-      responses:
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-  /sykmeldinger/{sykmeldingId}/send:
-    post:
-      operationId: sendSykmeldingSyfoService
-      tags:
-        - SyfoService
-      security:
-        - bearerAuth: []
-      description: Send sykmelding fra syfoservice
-      parameters:
-        - $ref: '#/components/parameters/sykmeldingId'
-      requestBody:
-        $ref: '#/components/requestBodies/SyfoServiceSendSykmeldingEvent'
-      responses:
-        '201':
-          description: Created
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-
 components:
   responses:
     UserSykmeldingerResponse:
@@ -243,24 +185,6 @@ components:
             items:
               $ref: '#/components/schemas/Brukerinformasjon'
   requestBodies:
-    SyfoServiceLagreSykmeldingStatusEvent:
-      description: "Lagre StatusEvent"
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SykmeldingStatusEventDTO'
-    SyfoServiceBekreftSykmeldingEvent:
-      description: "BekreftEvent"
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SykmeldingBekreftEventDTO'
-    SyfoServiceSendSykmeldingEvent:
-      description: "SendEvent"
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SykmeldingSendEventDTO'
     UserBekreftSykmeldingEvent:
       description: "BekreftEvent sluttbruker"
       content:
@@ -338,25 +262,6 @@ components:
     StatusEvent:
       type: string
       enum: [SENDT, APEN, AVBRUTT, UTGATT, BEKREFTET]
-    SykmeldingStatusEventDTO:
-      type: object
-      required:
-        - timestamp
-        - statusEvent
-      properties:
-        timestamp:
-          $ref: '#/components/schemas/Timestamp'
-        statusEvent:
-          $ref: '#/components/schemas/StatusEvent'
-    SykmeldingBekreftEventDTO:
-      type: object
-      required:
-        - timestamp
-      properties:
-        timestamp:
-          $ref: '#/components/schemas/Timestamp'
-        sporsmalOgSvarListe:
-          $ref: '#/components/schemas/SporsmalOgSvarListe'
     SykmeldingBekreftEventUserDTO:
       type: object
       properties:
@@ -371,19 +276,6 @@ components:
           type: string
         beOmNyNaermesteLeder:
           type: boolean
-        sporsmalOgSvarListe:
-          $ref: '#/components/schemas/SporsmalOgSvarListe'
-    SykmeldingSendEventDTO:
-      type: object
-      required:
-        - timestamp
-        - arbeidsgiver
-        - sporsmalOgSvarListe
-      properties:
-        timestamp:
-          $ref: '#/components/schemas/Timestamp'
-        arbeidsgiver:
-          $ref: '#/components/schemas/ArbeidsgiverStatus'
         sporsmalOgSvarListe:
           $ref: '#/components/schemas/SporsmalOgSvarListe'
     RegelStatus:
