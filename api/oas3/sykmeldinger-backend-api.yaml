@@ -595,7 +595,6 @@ components:
         - fornavn
         - etternavn
         - aktoerId
-        - fnr
         - adresse
       properties:
         fornavn:
@@ -606,8 +605,6 @@ components:
           type: string
         aktoerId:
           type: string
-        fnr:
-          $ref: '#/components/schemas/Fodselsnummer'
         hpr:
           type: string
         her:
