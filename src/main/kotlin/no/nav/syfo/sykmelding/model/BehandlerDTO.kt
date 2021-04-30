@@ -5,7 +5,6 @@ data class BehandlerDTO(
     val mellomnavn: String?,
     val etternavn: String,
     val aktoerId: String,
-    val fnr: String,
     val hpr: String?,
     val her: String?,
     val adresse: AdresseDTO,
