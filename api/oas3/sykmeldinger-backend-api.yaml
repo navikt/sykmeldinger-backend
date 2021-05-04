@@ -603,12 +603,6 @@ components:
           type: string
         etternavn:
           type: string
-        aktoerId:
-          type: string
-        hpr:
-          type: string
-        her:
-          type: string
         adresse:
           $ref: '#/components/schemas/Adresse'
         tlf:
