@@ -45,6 +45,10 @@ spec:
   ingresses:
     - "https://sykmeldinger-backend.nais.preprod.local"
   webproxy: true
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
   envFrom:
     - configmap: loginservice-idporten
   env:

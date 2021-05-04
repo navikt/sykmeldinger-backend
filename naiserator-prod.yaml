@@ -45,6 +45,10 @@ spec:
   ingresses:
     - "https://sykmeldinger-backend.nais.adeo.no"
   webproxy: true
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
   envFrom:
     - configmap: loginservice-idporten
   env:
