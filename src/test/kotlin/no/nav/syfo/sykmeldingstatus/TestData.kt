@@ -52,7 +52,6 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         medisinskVurdering = getMedisinskVurdering(),
         behandler = BehandlerDTO(
             "fornavn", null, "etternavn",
-            "123", "01234567891", null,
             AdresseDTO(null, null, null, null, null), null
         ),
         behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
