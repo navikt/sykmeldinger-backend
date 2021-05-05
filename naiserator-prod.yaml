@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: sykmeldinger-backend
-  namespace: default
+  namespace: teamsykmelding
   labels:
-    team: teamsykefravr
+    team: teamsykmelding
 spec:
   image: {{ image }}
   replicas:
@@ -40,7 +40,7 @@ spec:
         mountPath: /secrets/azuread/sykmeldinger-backend
       - kvPath: serviceuser/data/prod/srvsykm-backend
         mountPath: /secrets/serviceuser
-      - kvPath: /kv/prod/fss/sykmeldinger-backend/default
+      - kvPath: /kv/prod/fss/sykmeldinger-backend/teamsykmelding
         mountPath: /var/run/secrets/nais.io/vault
   ingresses:
     - "https://sykmeldinger-backend.nais.adeo.no"

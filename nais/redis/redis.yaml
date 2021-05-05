@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   labels:
-    team: teamsykefravr
+    team: teamsykmelding
   name: sykmeldinger-backend-redis
-  namespace: default
+  namespace: teamsykmelding
 spec:
   image: navikt/secure-redis:5.0.3-alpine-2
   port: 6379
