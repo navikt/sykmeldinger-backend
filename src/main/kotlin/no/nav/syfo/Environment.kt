@@ -18,7 +18,7 @@ data class Environment(
     val stsUrl: String = getEnvVar("STS_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.nais.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
-    val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://default.syfosmregister"),
+    val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister.default"),
     val syfosoknadUrl: String = getEnvVar("SYFOSOKNAD_URL", "http://syfosoknad.flex"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
