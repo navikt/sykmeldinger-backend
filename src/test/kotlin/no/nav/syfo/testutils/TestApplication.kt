@@ -35,7 +35,8 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
         truststorePassword = "",
-        truststore = ""
+        truststore = "",
+        narmesteLederBasePath = "http://url"
     )
 
 fun TestApplicationEngine.setUpTestApplication() {

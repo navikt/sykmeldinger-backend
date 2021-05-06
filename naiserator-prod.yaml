@@ -61,3 +61,5 @@ spec:
       value: https://modapp.adeo.no
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
+    - name: NARMESTELEDER_URL
+      value: https://narmesteleder.nav.no
