@@ -45,7 +45,7 @@ class ArbeidsgiverService(
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
         }
-        val aktiveNarmesteledere = narmestelederClient.getNarmesteledere(person.aktorId).filter { it.aktivTom == null }
+        val aktiveNarmesteledere = narmestelederClient.getNarmesteledere(token).filter { it.aktivTom == null }
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {
             it.arbeidsgiver.type == "Organisasjon"
