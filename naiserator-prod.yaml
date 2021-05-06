@@ -62,4 +62,4 @@ spec:
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
     - name: NARMESTELEDER_URL
-      value: https://narmesteleder.nav.no
+      value: https://narmesteleder.intern.nav.no
