@@ -24,9 +24,7 @@ data class Environment(
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
-    val aadAccessTokenUrl: String = getEnvVar("AAD_ACCESS_TOKEN_URL"),
-    val narmestelederClientId: String = getEnvVar("NARMESTELEDER_CLIENT_ID"),
-    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL", "http://syfonarmesteleder.default"),
+    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL", "http://narmesteleder"),
     override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
     override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD")

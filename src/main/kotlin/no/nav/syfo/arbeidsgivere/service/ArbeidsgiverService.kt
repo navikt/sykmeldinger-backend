@@ -4,7 +4,6 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsavtale
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
-import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLederRelasjon
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
@@ -71,7 +70,7 @@ class ArbeidsgiverService(
         organisasjonsinfo: Organisasjonsinfo,
         arbeidsavtale: Arbeidsavtale,
         arbeidsforhold: Arbeidsforhold,
-        narmesteLederRelasjon: NarmesteLederRelasjon?
+        narmesteLederRelasjon: no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder?
     ) {
         val orgnavn = getName(organisasjonsinfo.navn)
         arbeidsgiverList.add(
@@ -117,9 +116,9 @@ class ArbeidsgiverService(
         }.joinToString(separator = ",")
     }
 
-    private fun NarmesteLederRelasjon.tilNarmesteLeder(orgnavn: String): NarmesteLeder {
+    private fun no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder.tilNarmesteLeder(orgnavn: String): NarmesteLeder {
         return NarmesteLeder(
-            aktoerId = narmesteLederAktorId,
+            aktoerId = "", // brukes ikke i frontend
             navn = navn ?: "",
             epost = narmesteLederEpost,
             mobil = narmesteLederTelefonnummer,

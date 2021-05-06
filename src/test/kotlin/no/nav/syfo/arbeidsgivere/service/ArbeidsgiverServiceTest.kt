@@ -44,7 +44,7 @@ class ArbeidsgiverServiceTest : Spek({
     beforeEachTest {
         clearMocks(arbeidsforholdClient, arbeidsgiverRedisService, narmestelederClient, organisasjonsinfoClient, pdlPersonService)
         coEvery { arbeidsgiverRedisService.getArbeidsgivere(any()) } returns null
-        coEvery { narmestelederClient.getNarmesteledere(any()) } returns getNarmestelederRelasjoner()
+        coEvery { narmestelederClient.getNarmesteledere(any()) } returns getNarmesteledere()
         coEvery { organisasjonsinfoClient.getOrginfo(any()) } returns getOrganisasjonsinfo()
         coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
     }
@@ -59,7 +59,6 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].naermesteLeder?.aktoerId shouldBeEqualTo "nlAktorId"
                 arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
                 arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
                 arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
@@ -178,7 +177,6 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon.size shouldBeEqualTo 2
                 arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].naermesteLeder?.aktoerId shouldBeEqualTo "nlAktorId"
                 arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
                 arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
                 arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"

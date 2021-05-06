@@ -35,9 +35,7 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
         truststorePassword = "",
-        truststore = "",
-        aadAccessTokenUrl = "url",
-        narmestelederClientId = "clientid"
+        truststore = ""
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
