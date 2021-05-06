@@ -17,7 +17,7 @@ class NarmestelederClient(
     suspend fun getNarmesteledere(token: String): List<NarmesteLeder> {
         return httpClient.get<List<NarmesteLeder>>("$baseUrl/user/sykmeldt/narmesteledere") {
             headers {
-                append(HttpHeaders.Authorization, "Bearer $token")
+                append(HttpHeaders.Authorization, token)
                 append("Nav-Consumer-Id", "sykmeldinger-backend")
             }
             accept(ContentType.Application.Json)
