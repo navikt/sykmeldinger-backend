@@ -7,7 +7,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
+import no.nav.syfo.metrics.BEKREFTET_AVVIST_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
 fun Route.registrerSykmeldingBekreftAvvistApi(sykmeldingStatusService: SykmeldingStatusService) {
@@ -24,7 +24,7 @@ fun Route.registrerSykmeldingBekreftAvvistApi(sykmeldingStatusService: Sykmeldin
                 token = token
         )
 
-        BEKREFTET_AV_BRUKER_COUNTER.inc()
+        BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()
         call.respond(HttpStatusCode.Accepted)
     }
 }

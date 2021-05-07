@@ -17,6 +17,12 @@ val BEKREFTET_AV_BRUKER_COUNTER: Counter = Counter.build()
     .help("Antall sykmeldinger bekreftet av bruker")
     .register()
 
+val BEKREFTET_AVVIST_AV_BRUKER_COUNTER: Counter = Counter.build()
+    .namespace(METRICS_NS)
+    .name("bekreftet_avvist_counter")
+    .help("Antall sykmeldinger bekreftet avvist av bruker")
+    .register()
+
 val AVBRUTT_AV_BRUKER_COUNTER: Counter = Counter.build()
     .namespace(METRICS_NS)
     .name("avbrutt_counter")
