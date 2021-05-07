@@ -5,13 +5,15 @@ import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsgiver
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Gyldighetsperiode
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Opplysningspliktig
-import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLederRelasjon
+import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Organisasjonsinfo
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverinfoRedisModel
 import no.nav.syfo.arbeidsgivere.redis.NarmesteLederRedisModel
 import no.nav.syfo.pdl.model.PdlPerson
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 fun getArbeidsgiverforhold(
     gyldighetsperiode: Gyldighetsperiode = Gyldighetsperiode(
@@ -52,45 +54,36 @@ fun getPdlPerson(): PdlPerson {
     )
 }
 
-fun getNarmestelederRelasjoner(): List<NarmesteLederRelasjon> {
+fun getNarmesteledere(): List<NarmesteLeder> {
     return listOf(
-        NarmesteLederRelasjon(
-            aktorId = "aktorId",
+        NarmesteLeder(
             orgnummer = "123456789",
-            narmesteLederAktorId = "nlAktorId",
-            narmesteLederTelefonnummer = null,
+            narmesteLederTelefonnummer = "90909090",
             narmesteLederEpost = "epost@nav.no",
             aktivFom = LocalDate.now().minusYears(1),
             aktivTom = null,
             arbeidsgiverForskutterer = true,
-            skrivetilgang = false,
-            tilganger = emptyList(),
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
             navn = "Leder Ledersen"
         ),
-        NarmesteLederRelasjon(
-            aktorId = "aktorId",
+        NarmesteLeder(
             orgnummer = "123456789",
-            narmesteLederAktorId = "nlAktorId2",
-            narmesteLederTelefonnummer = null,
+            narmesteLederTelefonnummer = "99999999",
             narmesteLederEpost = "epost2@nav.no",
             aktivFom = LocalDate.now().minusYears(2),
             aktivTom = LocalDate.now().minusYears(1),
             arbeidsgiverForskutterer = true,
-            skrivetilgang = false,
-            tilganger = emptyList(),
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
             navn = "Forrige Ledersen"
         ),
-        NarmesteLederRelasjon(
-            aktorId = "aktorId",
+        NarmesteLeder(
             orgnummer = "123456777",
-            narmesteLederAktorId = "nlAktorId3",
-            narmesteLederTelefonnummer = null,
+            narmesteLederTelefonnummer = "40404040",
             narmesteLederEpost = "epost3@nav.no",
             aktivFom = LocalDate.now().minusYears(2),
             aktivTom = null,
             arbeidsgiverForskutterer = true,
-            skrivetilgang = false,
-            tilganger = emptyList(),
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
             navn = "Annen Ledersen"
         )
     )
@@ -110,7 +103,7 @@ fun getArbeidsgiverInfoRedisModel(): ArbeidsgiverinfoRedisModel {
             epost = "epost@nav.no",
             mobil = null,
             orgnummer = "123456789",
-            organisasjonsnavn = "Navn 1",
+            organisasjonsnavn = "OrgNavn 1",
             aktivTom = null,
             arbeidsgiverForskuttererLoenn = true
         )

@@ -31,7 +31,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
-import no.nav.syfo.application.azuread.AccessTokenClient
 import no.nav.syfo.arbeidsgivere.api.registrerArbeidsgiverApi
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
@@ -62,9 +61,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.client.SyfosoknadClient
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import redis.clients.jedis.JedisPool
-import java.net.ProxySelector
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -112,30 +109,20 @@ fun createApplicationEngine(
                 }
             }
         }
-        val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-            config()
-            engine {
-                customizeClient {
-                    setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-                }
-            }
-        }
         val httpClient = HttpClient(Apache, config)
-        val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
         val stsOidcClient = StsOidcClient(
             username = vaultSecrets.serviceuserUsername,
             password = vaultSecrets.serviceuserPassword,
             stsUrl = env.stsUrl
         )
-        val accessTokenClient = AccessTokenClient(aadAccessTokenUrl = env.aadAccessTokenUrl, clientId = vaultSecrets.clientId, clientSecret = vaultSecrets.clientSecret, resource = env.narmestelederClientId, httpClient = httpClientWithProxy)
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
         val syfosoknadClient = SyfosoknadClient(env.syfosoknadUrl, httpClient)
         val soknadstatusService = SoknadstatusService(syfosoknadClient)
         val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath)
-        val narmestelederClient = NarmestelederClient(httpClient, accessTokenClient, env.narmesteLederBasePath)
+        val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath)
 
         val pdlClient = PdlClient(
             httpClient,
