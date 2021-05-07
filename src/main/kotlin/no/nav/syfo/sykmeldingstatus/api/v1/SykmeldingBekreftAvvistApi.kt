@@ -10,7 +10,7 @@ import io.ktor.routing.post
 import no.nav.syfo.metrics.BEKREFTET_AVVIST_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
-fun Route.registrerSykmeldingBekreftAvvistApi(sykmeldingStatusService: SykmeldingStatusService) {
+fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: SykmeldingStatusService) {
     post("/api/v1/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!

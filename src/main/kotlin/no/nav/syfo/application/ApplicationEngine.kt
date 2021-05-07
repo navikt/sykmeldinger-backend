@@ -53,6 +53,7 @@ import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendApi
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
@@ -161,6 +162,7 @@ fun createApplicationEngine(
                 registerSykmeldingApi(sykmeldingService)
                 registrerSykmeldingSendApiV2(sykmeldingStatusService)
                 registerSykmeldingBekreftApi(sykmeldingStatusService)
+                registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
                 registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
