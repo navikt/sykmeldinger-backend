@@ -210,6 +210,60 @@ class SykmeldingStatusServiceSpek : Spek({
         }
     }
 
+    describe("Test bekrefting av avvist sykmelding") {
+        it("Får bekrefte avvist sykmelding med status APEN") {
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
+                    statusEvent = StatusEventDTO.APEN,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                    erAvvist = true
+            )
+
+            runBlocking {
+                sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
+            }
+
+            coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+        }
+
+        it("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
+                    statusEvent = StatusEventDTO.BEKREFTET,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                    erAvvist = true
+            )
+
+            runBlocking {
+                assertFailsWith<InvalidSykmeldingStatusException> {
+                    sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
+                }
+            }
+
+            coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+        }
+
+        it("Får ikke bekrefte sykmelding som ikke er avvist") {
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
+                    statusEvent = StatusEventDTO.BEKREFTET,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                    erAvvist = false
+            )
+
+            runBlocking {
+                assertFailsWith<InvalidSykmeldingStatusException> {
+                    sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
+                }
+            }
+
+            coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
+            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+        }
+    }
+
     describe("Test user event") {
         it("Test SEND user event") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
@@ -528,6 +582,10 @@ class SykmeldingStatusServiceSpek : Spek({
 
 fun MockKMatcherScope.statusEquals(statusEvent: String) = match<SykmeldingStatusKafkaEventDTO> {
     statusEvent == it.statusEvent
+}
+
+fun MockKMatcherScope.matchStatusWithEmptySporsmals(statusEvent: String) = match<SykmeldingStatusKafkaEventDTO> {
+    statusEvent == it.statusEvent && it.sporsmals?.isEmpty() ?: true
 }
 
 fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =

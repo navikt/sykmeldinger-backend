@@ -108,6 +108,44 @@ class SykmeldingStatusService(
         }
     }
 
+    suspend fun registrerBekreftetAvvist(sykmeldingId: String, source: String, fnr: String, token: String) {
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        when (sisteStatus.erAvvist) {
+            true -> {
+                if (canChangeStatus(
+                                nyStatusEvent = StatusEventDTO.BEKREFTET,
+                                sisteStatus = sisteStatus.statusEvent,
+                                erAvvist = true,
+                                erEgenmeldt = sisteStatus.erEgenmeldt,
+                                sykmeldingId = sykmeldingId,
+                                token = token
+                        )
+                ) {
+                    val sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                            sporsmalOgSvarListe = emptyList(),
+                    )
+                    sykmeldingStatusKafkaProducer.send(
+                            sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId),
+                            source,
+                            fnr
+                    )
+                    sykmeldingStatusJedisService.updateStatus(
+                            sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(),
+                            sykmeldingId
+                    )
+                } else {
+                    log.warn("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: ${sykmeldingId}")
+                    throw InvalidSykmeldingStatusException("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: ${sykmeldingId}")
+                }
+            }
+            else -> {
+                log.warn("Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId")
+                throw InvalidSykmeldingStatusException("Kan ikke bekrefte sykmelding med id: $sykmeldingId fordi den ikke er avvist")
+            }
+        }
+    }
+
     suspend fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
         if (canChangeStatus(nyStatusEvent = StatusEventDTO.BEKREFTET, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId, token = token)) {
