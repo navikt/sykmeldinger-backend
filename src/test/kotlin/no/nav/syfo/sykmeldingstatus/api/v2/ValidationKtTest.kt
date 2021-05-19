@@ -171,7 +171,7 @@ class ValidationKtTest : Spek({
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
-                            svar = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE,
+                            svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                         ),
                         arbeidsgiverOrgnummer = null,
                         nyNarmesteLeder = null,
@@ -534,7 +534,7 @@ class ValidationKtTest : Spek({
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
-                    svar = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE,
+                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                 ),
                 arbeidsgiverOrgnummer = null,
                 nyNarmesteLeder = null,
@@ -558,7 +558,7 @@ class ValidationKtTest : Spek({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE.name,
+                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE.name,
                 ),
                 SporsmalOgSvarDTO(
                     "",
