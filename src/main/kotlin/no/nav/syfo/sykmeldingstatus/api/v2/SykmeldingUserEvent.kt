@@ -43,6 +43,5 @@ enum class ArbeidssituasjonDTO {
     FRILANSER,
     NAERINGSDRIVENDE,
     ARBEIDSLEDIG,
-    PERMITTERT,
     ANNET,
 }
