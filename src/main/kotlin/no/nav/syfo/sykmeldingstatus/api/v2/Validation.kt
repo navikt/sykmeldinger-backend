@@ -12,7 +12,7 @@ fun SykmeldingUserEvent.validate() {
         require(arbeidsgiverOrgnummer == null, "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker")
         require(nyNarmesteLeder == null, "Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
     }
-    if (arbeidssituasjon.svar == ArbeidssituasjonDTO.FRILANSER || arbeidssituasjon.svar == ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE) {
+    if (arbeidssituasjon.svar == ArbeidssituasjonDTO.FRILANSER || arbeidssituasjon.svar == ArbeidssituasjonDTO.NAERINGSDRIVENDE) {
         if (harBruktEgenmelding != null) {
             requireNotNull(harForsikring, "Spørsmål om forsikring må være besvart hvis spørsmål om egenmelding er besvart")
             if (harBruktEgenmelding.svar == JaEllerNei.JA) {

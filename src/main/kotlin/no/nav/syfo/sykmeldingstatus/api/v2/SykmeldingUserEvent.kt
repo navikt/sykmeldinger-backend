@@ -41,8 +41,7 @@ enum class UriktigeOpplysningerDTO {
 enum class ArbeidssituasjonDTO {
     ARBEIDSTAKER,
     FRILANSER,
-    SELVSTENDIG_NARINGSDRIVENDE,
+    NAERINGSDRIVENDE,
     ARBEIDSLEDIG,
-    PERMITTERT,
     ANNET,
 }

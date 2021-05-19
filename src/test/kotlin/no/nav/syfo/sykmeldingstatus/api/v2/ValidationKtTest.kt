@@ -171,7 +171,7 @@ class ValidationKtTest : Spek({
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
-                            svar = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE,
+                            svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                         ),
                         arbeidsgiverOrgnummer = null,
                         nyNarmesteLeder = null,
@@ -232,66 +232,6 @@ class ValidationKtTest : Spek({
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
-                        ),
-                        arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                        ),
-                    )
-
-                    assertFailsWith<ValidationException> {
-                        sykmeldingUserEvent.validate()
-                    }
-                }
-            }
-
-            describe("permittert") {
-                it("Skal kaste exception hvis egenmeldingsperioder er satt") {
-                    val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                        ),
-                        uriktigeOpplysninger = null,
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.PERMITTERT,
-                        ),
-                        arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = listOf(),
-                        ),
-                        harForsikring = null,
-                    )
-
-                    assertFailsWith<ValidationException> {
-                        sykmeldingUserEvent.validate()
-                    }
-                }
-
-                it("Skal kaste exception hvis harForsikring er satt") {
-                    val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = JaEllerNei.JA,
-                        ),
-                        uriktigeOpplysninger = null,
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svartekster = "",
-                            svar = ArbeidssituasjonDTO.PERMITTERT,
                         ),
                         arbeidsgiverOrgnummer = null,
                         nyNarmesteLeder = null,
@@ -534,7 +474,7 @@ class ValidationKtTest : Spek({
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
-                    svar = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE,
+                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                 ),
                 arbeidsgiverOrgnummer = null,
                 nyNarmesteLeder = null,
@@ -558,7 +498,7 @@ class ValidationKtTest : Spek({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.SELVSTENDIG_NARINGSDRIVENDE.name,
+                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE.name,
                 ),
                 SporsmalOgSvarDTO(
                     "",
