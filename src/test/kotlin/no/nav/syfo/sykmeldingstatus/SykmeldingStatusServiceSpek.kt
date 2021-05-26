@@ -513,7 +513,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 )
                 coEvery { soknadstatusService.finnesSendtSoknadForSykmelding(any(), any()) } returns true
                 val expextedErrorMessage =
-                    "Kan ikke gjenåpne sykmelding fordi du allerede har sendt en søknad om sykepenger for sykmeldingen"
+                    "Du kan dessverre ikke endre denne sykmeldingen fordi du allerede har søkt om sykepenger for denne sykmeldingsperioden"
                 val error = assertFailsWith<InvalidSykmeldingStatusException> {
                     sykmeldingStatusService.registrerStatus(
                         getSykmeldingStatus(StatusEventDTO.APEN),
