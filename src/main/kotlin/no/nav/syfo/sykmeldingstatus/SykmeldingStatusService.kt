@@ -170,7 +170,7 @@ class SykmeldingStatusService(
                 val finnesSendtSoknad = soknadstatusService.finnesSendtSoknadForSykmelding(token = token, sykmeldingId = sykmeldingId)
                 if (finnesSendtSoknad) {
                     log.warn("Forsøk på å gjenåpne sykmelding som det er sendt søknad for: $sykmeldingId")
-                    throw InvalidSykmeldingStatusException("Kan ikke gjenåpne sykmelding med id $sykmeldingId fordi det finnes en sendt søknad for sykmeldingen")
+                    throw InvalidSykmeldingStatusException("Kan ikke gjenåpne sykmelding fordi du allerede har sendt en søknad om sykepenger for sykmeldingen")
                 }
                 return true
             }
