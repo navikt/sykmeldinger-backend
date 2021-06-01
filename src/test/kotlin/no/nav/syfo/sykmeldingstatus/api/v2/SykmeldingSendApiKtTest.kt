@@ -179,7 +179,7 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
             svar = ArbeidssituasjonDTO.ANNET,
         ),
         arbeidsgiverOrgnummer = null,
-        nyNarmesteLeder = null,
+        riktigNarmesteLeder = null,
         harBruktEgenmelding = null,
         egenmeldingsperioder = null,
         harForsikring = null,

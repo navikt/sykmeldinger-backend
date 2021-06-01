@@ -42,18 +42,18 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
             it("Bruker skal få bekrefte sin egen avviste sykmelding") {
                 val sykmeldingId = "123"
                 with(
-                        handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                    "AUTHORIZATION",
-                                    "Bearer ${generateJWT(
-                                            "client",
-                                            "loginserviceId2",
-                                            subject = "12345678910",
-                                            issuer = env.jwtIssuer
-                                    )}"
-                            )
-                        }
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Accepted
                 }
@@ -63,19 +63,19 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
-                        handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
-                            setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                    "AUTHORIZATION",
-                                    "Bearer ${generateJWT(
-                                            "client",
-                                            "loginserviceId2",
-                                            subject = "12345678910",
-                                            issuer = env.jwtIssuer
-                                    )}"
-                            )
-                        }
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "AUTHORIZATION",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                 }
@@ -84,19 +84,19 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
             it("Skal ikke kunne bekrefte annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
-                        handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
-                            setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                    "Authorization",
-                                    "Bearer ${generateJWT(
-                                            "client",
-                                            "loginserviceId2",
-                                            subject = "00000000000",
-                                            issuer = env.jwtIssuer
-                                    )}"
-                            )
-                        }
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "loginserviceId2",
+                                subject = "00000000000",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
@@ -104,19 +104,19 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
 
             it("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                        handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
-                            setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                    "Authorization",
-                                    "Bearer ${generateJWT(
-                                            "client",
-                                            "annenservice",
-                                            subject = "12345678910",
-                                            issuer = env.jwtIssuer
-                                    )}"
-                            )
-                        }
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
+                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT(
+                                "client",
+                                "annenservice",
+                                subject = "12345678910",
+                                issuer = env.jwtIssuer
+                            )}"
+                        )
+                    }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

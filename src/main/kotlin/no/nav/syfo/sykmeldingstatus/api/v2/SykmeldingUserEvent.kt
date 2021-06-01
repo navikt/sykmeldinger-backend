@@ -13,7 +13,7 @@ data class SykmeldingUserEvent(
     val uriktigeOpplysninger: SporsmalSvar<List<UriktigeOpplysningerDTO>>?,
     val arbeidssituasjon: SporsmalSvar<ArbeidssituasjonDTO>,
     val arbeidsgiverOrgnummer: SporsmalSvar<String>?,
-    val nyNarmesteLeder: SporsmalSvar<JaEllerNei>?,
+    val riktigNarmesteLeder: SporsmalSvar<JaEllerNei>?,
     val harBruktEgenmelding: SporsmalSvar<JaEllerNei>?,
     val egenmeldingsperioder: SporsmalSvar<List<Egenmeldingsperiode>>?,
     val harForsikring: SporsmalSvar<JaEllerNei>?,

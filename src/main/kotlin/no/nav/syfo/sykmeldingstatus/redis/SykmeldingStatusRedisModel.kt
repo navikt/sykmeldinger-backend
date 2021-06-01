@@ -80,12 +80,12 @@ private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(arbeidsgiver: Arb
         )
     }
 
-    if (nyNarmesteLeder != null) {
+    if (riktigNarmesteLeder != null) {
         return SporsmalOgSvarDTO(
-            tekst = nyNarmesteLeder.sporsmaltekst,
+            tekst = riktigNarmesteLeder.sporsmaltekst,
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = nyNarmesteLeder.svar.name,
+            svar = riktigNarmesteLeder.svar.name,
         )
     }
     return null

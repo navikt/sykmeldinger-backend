@@ -18,10 +18,10 @@ fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: Sykmelding
         val fnr = principal.payload.subject
 
         sykmeldingStatusService.registrerBekreftetAvvist(
-                sykmeldingId = sykmeldingId,
-                source = "user",
-                fnr = fnr,
-                token = token
+            sykmeldingId = sykmeldingId,
+            source = "user",
+            fnr = fnr,
+            token = token
         )
 
         BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()

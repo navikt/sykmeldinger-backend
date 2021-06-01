@@ -16,6 +16,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
 import java.time.OffsetDateTime
@@ -39,7 +40,7 @@ fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = nu
         arbeidssituasjonSporsmalBuilder(),
         fravarSporsmalBuilder(),
         periodeSporsmalBuilder(),
-        nyNarmesteLederSporsmalBuilder(arbeidsgiver),
+        riktigNarmesteLederSporsmalBuilder(arbeidsgiver),
         forsikringSporsmalBuilder(),
     )
 }
@@ -77,7 +78,7 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
     return null
 }
 
-private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(arbeidsgiver: Arbeidsgiverinfo?): SporsmalOgSvarDTO? {
+private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(arbeidsgiver: Arbeidsgiverinfo?): SporsmalOgSvarDTO? {
     if (arbeidsgiver?.aktivtArbeidsforhold == false) {
         return SporsmalOgSvarDTO(
             tekst = "Skal finne ny nærmeste leder",
@@ -87,12 +88,15 @@ private fun SykmeldingUserEvent.nyNarmesteLederSporsmalBuilder(arbeidsgiver: Arb
         )
     }
 
-    if (nyNarmesteLeder != null) {
+    if (riktigNarmesteLeder != null) {
         return SporsmalOgSvarDTO(
-            tekst = nyNarmesteLeder.sporsmaltekst,
+            tekst = riktigNarmesteLeder.sporsmaltekst,
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = nyNarmesteLeder.svar.name,
+            svar = when (riktigNarmesteLeder.svar) {
+                JaEllerNei.JA -> JaEllerNei.NEI
+                JaEllerNei.NEI -> JaEllerNei.JA
+            }.name
         )
     }
     return null

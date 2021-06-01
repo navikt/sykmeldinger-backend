@@ -10,7 +10,7 @@ fun SykmeldingUserEvent.validate() {
         requireNotNull(arbeidsgiverOrgnummer, "Arbeidsgiver må være valgt når arbeidssituasjon er arbeidstaker")
     } else {
         require(arbeidsgiverOrgnummer == null, "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker")
-        require(nyNarmesteLeder == null, "Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
+        require(riktigNarmesteLeder == null, "Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
     }
     if (arbeidssituasjon.svar == ArbeidssituasjonDTO.FRILANSER || arbeidssituasjon.svar == ArbeidssituasjonDTO.NAERINGSDRIVENDE) {
         if (harBruktEgenmelding != null) {
