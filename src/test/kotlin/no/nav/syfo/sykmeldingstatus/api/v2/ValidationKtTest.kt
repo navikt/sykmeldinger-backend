@@ -29,7 +29,7 @@ class ValidationKtTest : Spek({
                         svar = ArbeidssituasjonDTO.ANNET,
                     ),
                     arbeidsgiverOrgnummer = null,
-                    nyNarmesteLeder = null,
+                    riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
                     harForsikring = null,
@@ -58,7 +58,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
                         harForsikring = null,
@@ -87,7 +87,7 @@ class ValidationKtTest : Spek({
                             svartekster = "",
                             svar = "13456789"
                         ),
-                        nyNarmesteLeder = SporsmalSvar(
+                        riktigNarmesteLeder = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
                             svar = JaEllerNei.JA,
@@ -116,7 +116,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
                         harForsikring = null,
@@ -143,7 +143,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.FRILANSER,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
@@ -174,7 +174,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = SporsmalSvar(
                             sporsmaltekst = "",
                             svartekster = "",
@@ -205,7 +205,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = SporsmalSvar(
                             sporsmaltekst = "",
@@ -234,7 +234,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
                         harForsikring = SporsmalSvar(
@@ -265,7 +265,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.ANNET,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = SporsmalSvar(
                             sporsmaltekst = "",
@@ -294,7 +294,7 @@ class ValidationKtTest : Spek({
                             svar = ArbeidssituasjonDTO.ANNET,
                         ),
                         arbeidsgiverOrgnummer = null,
-                        nyNarmesteLeder = null,
+                        riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
                         harForsikring = SporsmalSvar(
@@ -327,7 +327,7 @@ class ValidationKtTest : Spek({
                     svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
-                nyNarmesteLeder = null,
+                riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,
@@ -347,7 +347,7 @@ class ValidationKtTest : Spek({
             sporsmalOgSvarListe shouldBeEqualTo expected
         }
 
-        it("Skal lage SporsmalOgSvarDTO for nyNarmesteLeder med aktiv arbeidsgiver") {
+        it("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med aktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -365,7 +365,7 @@ class ValidationKtTest : Spek({
                     svartekster = "",
                     svar = "123456789",
                 ),
-                nyNarmesteLeder = SporsmalSvar(
+                riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -398,14 +398,14 @@ class ValidationKtTest : Spek({
                     "",
                     ShortNameDTO.NY_NARMESTE_LEDER,
                     SvartypeDTO.JA_NEI,
-                    svar = JaEllerNei.JA.name,
+                    svar = JaEllerNei.NEI.name,
                 )
             )
 
             sporsmalOgSvarListe shouldBeEqualTo expected
         }
 
-        it("Skal lage SporsmalOgSvarDTO for nyNarmesteLeder med inaktiv arbeidsgiver") {
+        it("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med inaktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -423,7 +423,7 @@ class ValidationKtTest : Spek({
                     svartekster = "",
                     svar = "123456789",
                 ),
-                nyNarmesteLeder = SporsmalSvar(
+                riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.JA,
@@ -477,7 +477,7 @@ class ValidationKtTest : Spek({
                     svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                 ),
                 arbeidsgiverOrgnummer = null,
-                nyNarmesteLeder = null,
+                riktigNarmesteLeder = null,
                 harBruktEgenmelding = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
@@ -531,7 +531,7 @@ class ValidationKtTest : Spek({
                     svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
-                nyNarmesteLeder = null,
+                riktigNarmesteLeder = null,
                 harBruktEgenmelding = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",

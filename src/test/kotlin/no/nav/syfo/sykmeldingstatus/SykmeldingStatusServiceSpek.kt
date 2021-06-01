@@ -213,9 +213,9 @@ class SykmeldingStatusServiceSpek : Spek({
     describe("Test bekrefting av avvist sykmelding") {
         it("Får bekrefte avvist sykmelding med status APEN") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
-                    statusEvent = StatusEventDTO.APEN,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                    erAvvist = true
+                statusEvent = StatusEventDTO.APEN,
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                erAvvist = true
             )
 
             runBlocking {
@@ -229,9 +229,9 @@ class SykmeldingStatusServiceSpek : Spek({
 
         it("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
-                    statusEvent = StatusEventDTO.BEKREFTET,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                    erAvvist = true
+                statusEvent = StatusEventDTO.BEKREFTET,
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                erAvvist = true
             )
 
             runBlocking {
@@ -247,9 +247,9 @@ class SykmeldingStatusServiceSpek : Spek({
 
         it("Får ikke bekrefte sykmelding som ikke er avvist") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
-                    statusEvent = StatusEventDTO.BEKREFTET,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                    erAvvist = false
+                statusEvent = StatusEventDTO.BEKREFTET,
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                erAvvist = false
             )
 
             runBlocking {
@@ -294,7 +294,7 @@ class SykmeldingStatusServiceSpek : Spek({
                     svartekster = "",
                     svar = "123456789",
                 ),
-                nyNarmesteLeder = SporsmalSvar(
+                riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.NEI,
@@ -343,7 +343,7 @@ class SykmeldingStatusServiceSpek : Spek({
                     svartekster = "",
                     svar = "feilOrnummer",
                 ),
-                nyNarmesteLeder = SporsmalSvar(
+                riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
                     svartekster = "",
                     svar = JaEllerNei.NEI,
@@ -379,7 +379,7 @@ class SykmeldingStatusServiceSpek : Spek({
                     svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
-                nyNarmesteLeder = null,
+                riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,
@@ -425,7 +425,7 @@ class SykmeldingStatusServiceSpek : Spek({
                     svartekster = "",
                     svar = "123456789"
                 ),
-                nyNarmesteLeder = null,
+                riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,

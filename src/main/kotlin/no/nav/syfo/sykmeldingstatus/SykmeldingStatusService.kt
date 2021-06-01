@@ -113,30 +113,30 @@ class SykmeldingStatusService(
         when (sisteStatus.erAvvist) {
             true -> {
                 if (canChangeStatus(
-                                nyStatusEvent = StatusEventDTO.BEKREFTET,
-                                sisteStatus = sisteStatus.statusEvent,
-                                erAvvist = true,
-                                erEgenmeldt = sisteStatus.erEgenmeldt,
-                                sykmeldingId = sykmeldingId,
-                                token = token
-                        )
+                        nyStatusEvent = StatusEventDTO.BEKREFTET,
+                        sisteStatus = sisteStatus.statusEvent,
+                        erAvvist = true,
+                        erEgenmeldt = sisteStatus.erEgenmeldt,
+                        sykmeldingId = sykmeldingId,
+                        token = token
+                    )
                 ) {
                     val sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                            sporsmalOgSvarListe = emptyList(),
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                        sporsmalOgSvarListe = emptyList(),
                     )
                     sykmeldingStatusKafkaProducer.send(
-                            sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId),
-                            source,
-                            fnr
+                        sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId),
+                        source,
+                        fnr
                     )
                     sykmeldingStatusJedisService.updateStatus(
-                            sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(),
-                            sykmeldingId
+                        sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(),
+                        sykmeldingId
                     )
                 } else {
-                    log.warn("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: ${sykmeldingId}")
-                    throw InvalidSykmeldingStatusException("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: ${sykmeldingId}")
+                    log.warn("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId")
+                    throw InvalidSykmeldingStatusException("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId")
                 }
             }
             else -> {
