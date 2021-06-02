@@ -149,6 +149,50 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /api/v1/sykmeldinger/{sykmeldingId}/bekreftAvvist:
+    post:
+      operationId: bekreftAvvistSykmelding
+      tags:
+        - Sykmeldingstatus
+      security:
+        - bearerAuth: [ ]
+      summary: Bekreft avvist sykmelding for sluttbruker
+      parameters:
+        - $ref: '#/components/parameters/sykmeldingId'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+  /api/v2/sykmeldinger/{sykmeldingId}/send:
+    post:
+      operationId: sendSykmeldingV2
+      tags:
+        - Sykmeldingstatus
+      security:
+        - bearerAuth: [ ]
+      summary: Send og bekreft sykmelding for sluttbruker
+      parameters:
+        - $ref: '#/components/parameters/sykmeldingId'
+      requestBody:
+        $ref: '#/components/requestBodies/UserSendSykmeldingEventV2'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
 
 components:
   responses:
@@ -197,6 +241,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/SykmeldingSendEventUserDTO'
+    UserSendSykmeldingEventV2:
+      description: "Send/bekreft av sykmelding for sluttbruker"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SykmeldingUserEvent'
 
   parameters:
     sykmeldingId:
@@ -278,6 +328,155 @@ components:
           type: boolean
         sporsmalOgSvarListe:
           $ref: '#/components/schemas/SporsmalOgSvarListe'
+    SykmeldingUserEvent:
+      type: object
+      properties:
+        erOpplysningeneRiktige:
+          $ref: '#/components/schemas/erOpplysningeneRiktige'
+        uriktigeOpplysninger:
+          $ref: '#/components/schemas/uriktigeOpplysninger'
+        arbeidssituasjon:
+          $ref: '#/components/schemas/arbeidssituasjon'
+        arbeidsgiverOrgnummer:
+          $ref: '#/components/schemas/arbeidsgiverOrgnummer'
+        riktigNarmesteLeder:
+          $ref: '#/components/schemas/riktigNarmesteLeder'
+        harBruktEgenmelding:
+          $ref: '#/components/schemas/harBruktEgenmelding'
+        egenmeldingsperioder:
+          $ref: '#/components/schemas/egenmeldingsperioder'
+        harForsikring:
+          $ref: '#/components/schemas/harForsikring'
+      required:
+        - erOpplysningeneRiktige
+        - arbeidssituasjon
+    erOpplysningeneRiktige:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          $ref: '#/components/schemas/JaEllerNei'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    uriktigeOpplysninger:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          type: array
+          items:
+            $ref: '#/components/schemas/UriktigeOpplysningerDTO'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    arbeidssituasjon:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          $ref: '#/components/schemas/ArbeidssituasjonDTO'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    arbeidsgiverOrgnummer:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          type: string
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    riktigNarmesteLeder:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          $ref: '#/components/schemas/JaEllerNei'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    harBruktEgenmelding:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          $ref: '#/components/schemas/JaEllerNei'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    egenmeldingsperioder:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          type: array
+          items:
+            $ref: '#/components/schemas/Egenmeldingsperiode'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    harForsikring:
+      type: object
+      properties:
+        sporsmaltekst:
+          type: string
+        svartekster:
+          type: string
+        svar:
+          $ref: '#/components/schemas/JaEllerNei'
+      required:
+        - sporsmaltekst
+        - svartekster
+        - svar
+    JaEllerNei:
+      type: string
+      enum: [JA, NEI]
+    Egenmeldingsperiode:
+      type: object
+      properties:
+        fom:
+          $ref: '#/components/schemas/Date'
+        tom:
+          $ref: '#/components/schemas/Date'
+      required:
+        - fom
+        - tom
+    UriktigeOpplysningerDTO:
+      type: string
+      enum: [PERIODE, SYKMELDINGSGRA_FOR_HOY, SYKMELDINGSGRA_FOR_LAV, ARBEIDSGIVER, DIAGNOSE, ANDRE_OPPLYSNINGER]
+    ArbeidssituasjonDTO:
+      type: string
+      enum: [ARBEIDSTAKER, FRILANSER, NAERINGSDRIVENDE, ARBEIDSLEDIG, ANNET]
     RegelStatus:
       type: string
       enum: [OK, MANUAL_PROCESSING, INVALID]
