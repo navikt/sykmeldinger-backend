@@ -9,6 +9,7 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
+import no.nav.syfo.log
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import java.time.OffsetDateTime
@@ -43,5 +44,6 @@ fun Route.registerSykmeldingBekreftApi(sykmeldingStatusService: SykmeldingStatus
 suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? = try {
     receiveOrNull()
 } catch (e: Exception) {
+    log.error("An error occurred while receiving body content: ${e.message}")
     null
 }
