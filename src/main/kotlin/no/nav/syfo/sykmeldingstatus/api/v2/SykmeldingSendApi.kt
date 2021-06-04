@@ -4,11 +4,9 @@ import io.ktor.application.call
 import io.ktor.auth.authentication
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receiveText
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.safeReceiveOrNull
 
@@ -22,10 +20,7 @@ fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatus
         val sykmeldingUserEvent = call.safeReceiveOrNull<SykmeldingUserEvent>()
 
         when (sykmeldingUserEvent) {
-            null -> {
-                log.error("User with sykmeldingid: $sykmeldingId, posted a body of: ${call.receiveText()}")
-                call.respond(HttpStatusCode.BadRequest, "Empty body")
-            }
+            null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
                 sykmeldingUserEvent.validate()
                 sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, sykmeldingId, fnr, token)
