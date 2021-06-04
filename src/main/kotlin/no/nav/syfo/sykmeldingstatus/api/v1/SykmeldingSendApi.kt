@@ -13,7 +13,6 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -32,7 +31,6 @@ fun Route.registerSykmeldingSendApi(
         val arbeidsgivere = arbeidsgiverService.getArbeidsgivere(
             fnr = fnr,
             token = token,
-            date = LocalDate.now(),
             sykmeldingId = sykmeldingId
         )
         val arbeidsgiver = arbeidsgivere.find { it.orgnummer == sykmeldingSendEventUserDTO.orgnummer }

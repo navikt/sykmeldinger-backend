@@ -1,10 +1,12 @@
 package no.nav.syfo.arbeidsgivere.service
 
+import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Ansettelsesperiode
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsavtale
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsgiver
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Gyldighetsperiode
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Opplysningspliktig
+import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Periode
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Organisasjonsinfo
@@ -16,17 +18,17 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 fun getArbeidsgiverforhold(
-    gyldighetsperiode: Gyldighetsperiode = Gyldighetsperiode(
-        LocalDate.now(),
-        LocalDate.now()
+    ansettelsesperiode: Ansettelsesperiode = Ansettelsesperiode(
+        Periode(fom = LocalDate.of(2020, 6, 1), tom = null)
     )
 ): List<Arbeidsforhold> {
     return listOf(
         Arbeidsforhold(
             Arbeidsgiver("Organisasjon", "123456789"),
             Opplysningspliktig("Organisasjon", "987654321"),
+            ansettelsesperiode,
             listOf(
-                Arbeidsavtale(gyldighetsperiode = gyldighetsperiode, stillingsprosent = 100.0)
+                Arbeidsavtale(gyldighetsperiode = Gyldighetsperiode(LocalDate.now(), null), stillingsprosent = 100.0)
             )
         )
     )

@@ -38,7 +38,7 @@ class BrukerinformasjonApiKtTest : Spek({
         clearMocks(arbeidsgiverService)
         coEvery { stsOidcClient.oidcToken() } returns OidcToken("accesstoken", "type", 1L)
         coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", false)
-        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null))
+        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null))
     }
 
     describe("Test brukerinformasjon-api med tilgangskontroll") {
@@ -65,7 +65,7 @@ class BrukerinformasjonApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+                    coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
                     objectMapper.readValue<Brukerinformasjon>(response.content!!) shouldBeEqualTo Brukerinformasjon(
                         arbeidsgivere = listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null)),
                         strengtFortroligAdresse = false
@@ -91,7 +91,7 @@ class BrukerinformasjonApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+                    coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
                     objectMapper.readValue<Brukerinformasjon>(response.content!!) shouldBeEqualTo Brukerinformasjon(
                         arbeidsgivere = emptyList(),
                         strengtFortroligAdresse = true

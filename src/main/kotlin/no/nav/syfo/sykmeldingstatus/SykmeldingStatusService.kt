@@ -23,7 +23,6 @@ import no.nav.syfo.sykmeldingstatus.redis.tilSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -89,7 +88,7 @@ class SykmeldingStatusService(
     }
 
     private suspend fun getArbeidsgiver(fnr: String, token: String, sykmeldingId: String, orgnummer: String): Arbeidsgiverinfo {
-        return arbeidsgiverService.getArbeidsgivere(fnr, token, LocalDate.now(), sykmeldingId)
+        return arbeidsgiverService.getArbeidsgivere(fnr, token, sykmeldingId)
             .find { it.orgnummer == orgnummer }
             ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
     }

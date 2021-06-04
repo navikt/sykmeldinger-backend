@@ -27,7 +27,7 @@ class ArbeidsgiverService(
     private val stsOidcClient: StsOidcClient,
     private val arbeidsgiverRedisService: ArbeidsgiverRedisService
 ) {
-    suspend fun getArbeidsgivere(fnr: String, token: String, date: LocalDate, sykmeldingId: String): List<Arbeidsgiverinfo> {
+    suspend fun getArbeidsgivere(fnr: String, token: String, sykmeldingId: String): List<Arbeidsgiverinfo> {
         val arbeidsgivereFraRedis = getArbeidsgivereFromRedis(fnr)
         if (arbeidsgivereFraRedis != null) {
             log.debug("Fant arbeidsgivere i redis")
@@ -55,11 +55,13 @@ class ArbeidsgiverService(
             val organisasjonsinfo =
                 organisasjonsinfoClient.getOrginfo(arbeidsforhold.arbeidsgiver.organisasjonsnummer!!)
             val narmesteLeder = aktiveNarmesteledere.find { it.orgnummer == arbeidsforhold.arbeidsgiver.organisasjonsnummer }
-            arbeidsforhold.arbeidsavtaler.asSequence().filter {
-                checkGyldighetsperiode(it, date)
-            }.forEach { arbeidsavtale ->
-                addArbeidsinfo(arbeidsgiverList, organisasjonsinfo, arbeidsavtale, arbeidsforhold, narmesteLeder)
+            val arbeidsavtale = if (arbeidsforhold.arbeidsavtaler.size < 2) {
+                arbeidsforhold.arbeidsavtaler.firstOrNull()
+            } else {
+                arbeidsforhold.arbeidsavtaler.filter { it.gyldighetsperiode.fom != null }
+                    .maxByOrNull { it.gyldighetsperiode.fom!! } ?: arbeidsforhold.arbeidsavtaler.first()
             }
+            addArbeidsinfo(arbeidsgiverList, organisasjonsinfo, arbeidsavtale, arbeidsforhold, narmesteLeder)
         }
         arbeidsgiverRedisService.updateArbeidsgivere(arbeidsgiverList.map { it.toArbeidsgiverinfoRedisModel() }, fnr)
         return arbeidsgiverList
@@ -68,7 +70,7 @@ class ArbeidsgiverService(
     private fun addArbeidsinfo(
         arbeidsgiverList: ArrayList<Arbeidsgiverinfo>,
         organisasjonsinfo: Organisasjonsinfo,
-        arbeidsavtale: Arbeidsavtale,
+        arbeidsavtale: Arbeidsavtale?,
         arbeidsforhold: Arbeidsforhold,
         narmesteLederRelasjon: no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder?
     ) {
@@ -79,19 +81,11 @@ class ArbeidsgiverService(
                 juridiskOrgnummer = arbeidsforhold.opplysningspliktig.organisasjonsnummer!!,
                 navn = orgnavn,
                 stilling = "", // denne brukes ikke, men er påkrevd i formatet
-                stillingsprosent = arbeidsavtale.stillingsprosent.toString(),
-                aktivtArbeidsforhold = arbeidsavtale.gyldighetsperiode.tom == null,
+                stillingsprosent = arbeidsavtale?.stillingsprosent?.toString() ?: "100.0",
+                aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null,
                 naermesteLeder = narmesteLederRelasjon?.tilNarmesteLeder(orgnavn)
             )
         )
-    }
-
-    private fun checkGyldighetsperiode(it: Arbeidsavtale, date: LocalDate): Boolean {
-        val fom = it.gyldighetsperiode.fom
-        val tom = it.gyldighetsperiode.tom
-        val tomIsNullOrBeforeNow = !(tom?.isBefore(date) ?: false)
-        val fomIsNullOrAfterNow = !(fom?.isAfter(date) ?: true)
-        return tomIsNullOrBeforeNow && fomIsNullOrAfterNow
     }
 
     fun getName(navn: Navn): String {
