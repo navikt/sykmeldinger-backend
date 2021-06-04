@@ -36,7 +36,7 @@ class SykmeldingSendApiSpek : Spek({
     beforeEachTest {
         clearAllMocks()
         coEvery { sykmeldingStatusService.registrerSendt(any(), any(), any(), any(), any()) } just Runs
-        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
             Arbeidsgiverinfo("orgnummer", "juridiskOrgnummer", "Bedriften AS", "100", "", true, null)
         )
     }
@@ -80,7 +80,7 @@ class SykmeldingSendApiSpek : Spek({
 
             it("Bruker skal ikke få sende sin egen sykmelding hvis bruker ikke har arbeidsforhold hos oppgitt orgnummer") {
                 val sykmeldingId = "123"
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns emptyList()
+                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns emptyList()
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/send") {
                         setBody(objectMapper.writeValueAsString(opprettSykmeldingSendEventUserDTO()))

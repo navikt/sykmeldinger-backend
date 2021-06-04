@@ -13,7 +13,6 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.pdl.service.PdlPersonService
-import java.time.LocalDate
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -35,7 +34,6 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
             val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
                 fnr = fnr,
                 token = token,
-                date = LocalDate.now(),
                 sykmeldingId = UUID.randomUUID().toString()
             )
 

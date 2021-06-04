@@ -10,7 +10,6 @@ import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
-import java.time.LocalDate
 import java.util.UUID
 
 @KtorExperimentalAPI
@@ -24,7 +23,6 @@ fun Route.registrerArbeidsgiverApi(arbeidsgiverService: ArbeidsgiverService) {
                 arbeidsgiverService.getArbeidsgivere(
                     fnr = fnr,
                     token = token,
-                    date = LocalDate.now(),
                     sykmeldingId = call.request.queryParameters["sykmeldingId"] ?: UUID.randomUUID().toString()
                 )
             )

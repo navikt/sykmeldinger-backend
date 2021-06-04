@@ -266,7 +266,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
     describe("Test user event") {
         it("Test SEND user event") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -308,14 +308,14 @@ class SykmeldingStatusServiceSpek : Spek({
                 sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
             }
 
-            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         it("Test SEND user event - finner ikke riktig arbeidsgiver") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -359,7 +359,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 }
             }
 
-            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
             verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
@@ -389,14 +389,14 @@ class SykmeldingStatusServiceSpek : Spek({
                 sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
             }
 
-            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
             verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         it("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -437,7 +437,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
             }
 
-            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
             verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
