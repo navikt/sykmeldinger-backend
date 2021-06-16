@@ -43,21 +43,21 @@ fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: Offs
     return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null, erAvvist, erEgenmeldt)
 }
 
-fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): Sykmelding {
+fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): Sykmelding {
     return Sykmelding(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
         kontaktMedPasient = KontaktMedPasientDTO(null, null),
         sykmeldingsperioder = listOf(SykmeldingsperiodeDTO(LocalDate.now(), LocalDate.now(), null, null, null, PeriodetypeDTO.AKTIVITET_IKKE_MULIG, null, false)),
-        sykmeldingStatus = SykmeldingStatusDTO("APEN", OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
+        sykmeldingStatus = SykmeldingStatusDTO("APEN", timestamps ?: OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
         behandler = BehandlerDTO(
             "fornavn", null, "etternavn",
             AdresseDTO(null, null, null, null, null), null
         ),
-        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+        behandletTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
+        mottattTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
         skjermesForPasient = false,
         meldingTilNAV = null,
         prognose = null,
@@ -75,21 +75,21 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         merknader = merknader,
     )
 }
-fun getSykmeldingWithPasientInfoModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): SykmeldingDTO {
+fun getSykmeldingDTO(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): SykmeldingDTO {
     return SykmeldingDTO(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
         kontaktMedPasient = KontaktMedPasientDTO(null, null),
         sykmeldingsperioder = listOf(SykmeldingsperiodeDTO(LocalDate.now(), LocalDate.now(), null, null, null, PeriodetypeDTO.AKTIVITET_IKKE_MULIG, null, false)),
-        sykmeldingStatus = SykmeldingStatusDTO("APEN", OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
+        sykmeldingStatus = SykmeldingStatusDTO("APEN", timestamps ?: OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
         behandler = BehandlerDTO(
             "fornavn", null, "etternavn",
             AdresseDTO(null, null, null, null, null), null
         ),
-        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+        behandletTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
+        mottattTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
         skjermesForPasient = false,
         meldingTilNAV = null,
         prognose = null,

@@ -19,9 +19,9 @@ import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.syforestmodel.Merknad
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
-import no.nav.syfo.sykmeldingstatus.getSykmeldingWithPasientInfoModel
 import no.nav.syfo.sykmeldingstatus.lagSyforestSykmelding
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import org.amshove.kluent.shouldBeEqualTo
@@ -38,7 +38,6 @@ class SykmeldingServiceTest : Spek({
     val syfosmregisterSykmeldingClient = mockkClass(SyfosmregisterSykmeldingClient::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlPersonService)
-//    coEvery { pdlPersonService.getPerson(any() ,any() ,any(), any()) } returns getPdlPerson()
 
     beforeEachTest {
         clearAllMocks()
@@ -46,25 +45,32 @@ class SykmeldingServiceTest : Spek({
 
     describe("Get Sykmeldinger and latest status") {
         it("Get sykmeldinger") {
-            val sykmelding = getSykmeldingModel()
-            val sykmeldingWithPasientInfo = getSykmeldingWithPasientInfoModel()
+            val now = OffsetDateTime.now()
+            val expected = getSykmeldingDTO(timestamps = now)
+            val sykmelding = getSykmeldingModel(timestamps = now)
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
             runBlocking {
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("12345678901", "token", null)
-                returndSykmelding shouldBeEqualTo listOf(sykmeldingWithPasientInfo)
+                returndSykmelding shouldBeEqualTo listOf(expected)
             }
         }
         it("Get sykmeldinger with newest status from redis") {
+            val now = OffsetDateTime.now()
             val sykmelding = getSykmeldingModel(
                 SykmeldingStatusDTO(
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1), statusEvent = StatusEventDTO.APEN.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList()
-                )
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                    statusEvent = StatusEventDTO.APEN.name,
+                    arbeidsgiver = null,
+                    sporsmalOgSvarListe = emptyList()
+                ),
+                timestamps = now,
             )
             val statusFromRedis = getSykmeldingStatusRedisModel(
                 StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
             )
+            coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
             runBlocking {

@@ -2,7 +2,7 @@ package no.nav.syfo.sykmelding.model
 
 import no.nav.syfo.pdl.model.PdlPerson
 
-fun Sykmelding.toSykmeldingWithPasientInfo(fnr: String, pdlPerson: PdlPerson): SykmeldingDTO {
+fun Sykmelding.toSykmeldingDTO(fnr: String, pdlPerson: PdlPerson): SykmeldingDTO {
     val pasient = PasientDTO(
         fnr = fnr,
         fornavn = pdlPerson.navn.fornavn,

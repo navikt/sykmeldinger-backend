@@ -23,10 +23,10 @@ import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusDto
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
-import no.nav.syfo.sykmeldingstatus.getSykmeldingWithPasientInfoModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.testutils.HttpClientTest
 import no.nav.syfo.testutils.ResponseData
@@ -65,7 +65,7 @@ class SykmeldingApiIntegrationTest : Spek({
                 }
             }
             it("Should get sykmeldinger with updated status from redis") {
-                val sykmeldingWithPasientInfoDTO = getSykmeldingWithPasientInfoModel(
+                val sykmeldingWithPasientInfoDTO = getSykmeldingDTO(
                     getSykmeldingStatusDto(
                         StatusEventDTO.APEN,
                         OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)

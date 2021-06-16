@@ -13,7 +13,7 @@ import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
-import no.nav.syfo.sykmelding.model.toSykmeldingWithPasientInfo
+import no.nav.syfo.sykmelding.model.toSykmeldingDTO
 import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
 import no.nav.syfo.sykmelding.syforestmodel.pdlPersonTilPasient
 import no.nav.syfo.sykmelding.syforestmodel.tilSyforestSykmelding
@@ -32,14 +32,14 @@ class SykmeldingService(
         val callId = UUID.randomUUID().toString()
         return syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
             ?.run(this::getSykmeldingWithLatestStatus)
-            ?.toSykmeldingWithPasientInfo(fnr, pdlPersonService.getPerson(fnr, token, callId))
+            ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
     }
 
     suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
         val callId = UUID.randomUUID().toString()
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
             .map(this::getSykmeldingWithLatestStatus)
-            .map { it.toSykmeldingWithPasientInfo(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
+            .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
     }
 
     suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, arbeidsgivervisning: Boolean, apiFilter: ApiFilter?): List<SyforestSykmelding> {
