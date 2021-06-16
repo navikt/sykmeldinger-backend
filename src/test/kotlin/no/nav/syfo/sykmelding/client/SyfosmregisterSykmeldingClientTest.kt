@@ -6,7 +6,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.ApiFilter
-import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.testutils.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
@@ -23,7 +23,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
 
     describe("Test GET Sykmeldinger fra syfosmregister") {
         it("Should get empty list of Sykmeldinger") {
-            httpClient.respond(objectMapper.writeValueAsString(emptyList<SykmeldingDTO>()))
+            httpClient.respond(objectMapper.writeValueAsString(emptyList<Sykmelding>()))
             runBlocking {
                 val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 result shouldBeEqualTo emptyList()

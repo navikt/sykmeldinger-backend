@@ -13,8 +13,8 @@ import io.mockk.coEvery
 import io.mockk.mockkClass
 import no.nav.syfo.application.jedisObjectMapper
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmelding.model.SykmeldingDTO
-import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
+import no.nav.syfo.sykmelding.model.Sykmelding
+import no.nav.syfo.sykmeldingstatus.getSykmeldingWithPasientInfoModel
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
@@ -29,8 +29,8 @@ class SykmeldingApiKtTest : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns getSykmeldingModel()
-        coEvery { sykmeldingService.hentSykmeldinger(any(), any()) } returns listOf(getSykmeldingModel())
+        coEvery { sykmeldingService.hentSykmelding(any(), any(), any()) } returns getSykmeldingWithPasientInfoModel()
+        coEvery { sykmeldingService.hentSykmeldinger(any(), any(), any()) } returns listOf(getSykmeldingWithPasientInfoModel())
     }
 
     describe("Sykmelding Api test") {
@@ -44,7 +44,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    jedisObjectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
+                    jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             it("Hent sykmeldinger med fom og tom") {
@@ -54,7 +54,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    jedisObjectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
+                    jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             it("Hent sykmeldinger med fom og tom og exclude") {
@@ -64,7 +64,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    jedisObjectMapper.readValue<List<SykmeldingDTO>>(response.content!!).size shouldBeEqualTo 1
+                    jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
         }

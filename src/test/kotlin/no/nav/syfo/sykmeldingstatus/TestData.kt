@@ -8,8 +8,10 @@ import no.nav.syfo.sykmelding.model.DiagnoseDTO
 import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
 import no.nav.syfo.sykmelding.model.MedisinskVurderingDTO
 import no.nav.syfo.sykmelding.model.MerknadDTO
+import no.nav.syfo.sykmelding.model.PasientDTO
 import no.nav.syfo.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
+import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
@@ -41,7 +43,39 @@ fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: Offs
     return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null, erAvvist, erEgenmeldt)
 }
 
-fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): SykmeldingDTO {
+fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): Sykmelding {
+    return Sykmelding(
+        id = "1",
+        utdypendeOpplysninger = emptyMap(),
+        kontaktMedPasient = KontaktMedPasientDTO(null, null),
+        sykmeldingsperioder = listOf(SykmeldingsperiodeDTO(LocalDate.now(), LocalDate.now(), null, null, null, PeriodetypeDTO.AKTIVITET_IKKE_MULIG, null, false)),
+        sykmeldingStatus = SykmeldingStatusDTO("APEN", OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
+        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
+        medisinskVurdering = getMedisinskVurdering(),
+        behandler = BehandlerDTO(
+            "fornavn", null, "etternavn",
+            AdresseDTO(null, null, null, null, null), null
+        ),
+        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+        skjermesForPasient = false,
+        meldingTilNAV = null,
+        prognose = null,
+        arbeidsgiver = null,
+        tiltakNAV = null,
+        syketilfelleStartDato = null,
+        tiltakArbeidsplassen = null,
+        navnFastlege = null,
+        meldingTilArbeidsgiver = null,
+        legekontorOrgnummer = null,
+        andreTiltak = null,
+        egenmeldt = false,
+        harRedusertArbeidsgiverperiode = false,
+        papirsykmelding = false,
+        merknader = merknader,
+    )
+}
+fun getSykmeldingWithPasientInfoModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null): SykmeldingDTO {
     return SykmeldingDTO(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
@@ -70,7 +104,8 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         egenmeldt = false,
         harRedusertArbeidsgiverperiode = false,
         papirsykmelding = false,
-        merknader = merknader
+        merknader = merknader,
+        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
     )
 }
 

@@ -3,9 +3,8 @@ package no.nav.syfo.sykmelding.model
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
-data class SykmeldingDTO(
+data class Sykmelding(
     val id: String,
-    val pasient: PasientDTO,
     val mottattTidspunkt: OffsetDateTime,
     val behandlingsutfall: BehandlingsutfallDTO,
     val legekontorOrgnummer: String?,

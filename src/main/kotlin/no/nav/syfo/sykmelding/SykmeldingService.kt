@@ -10,8 +10,10 @@ import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
+import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.model.toSykmeldingWithPasientInfo
 import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
 import no.nav.syfo.sykmelding.syforestmodel.pdlPersonTilPasient
 import no.nav.syfo.sykmelding.syforestmodel.tilSyforestSykmelding
@@ -26,14 +28,18 @@ class SykmeldingService(
     private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
     private val pdlPersonService: PdlPersonService
 ) {
-    suspend fun hentSykmelding(token: String, sykmeldingid: String): SykmeldingDTO? {
+    suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String): SykmeldingDTO? {
+        val callId = UUID.randomUUID().toString()
         return syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
             ?.run(this::getSykmeldingWithLatestStatus)
+            ?.toSykmeldingWithPasientInfo(fnr, pdlPersonService.getPerson(fnr, token, callId))
     }
 
-    suspend fun hentSykmeldinger(token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
+    suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
+        val callId = UUID.randomUUID().toString()
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
             .map(this::getSykmeldingWithLatestStatus)
+            .map { it.toSykmeldingWithPasientInfo(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
     }
 
     suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, arbeidsgivervisning: Boolean, apiFilter: ApiFilter?): List<SyforestSykmelding> {
@@ -53,7 +59,7 @@ class SykmeldingService(
         return emptyList()
     }
 
-    private fun getSykmeldingWithLatestStatus(sykmelding: SykmeldingDTO): SykmeldingDTO {
+    private fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {
         val redisStatus = sykmeldingStatusRedisService.getStatus(sykmelding.id)
         return when {
             redisStatus != null && redisStatus.timestamp.isAfter(sykmelding.sykmeldingStatus.timestamp) ->

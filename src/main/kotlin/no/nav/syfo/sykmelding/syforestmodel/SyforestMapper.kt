@@ -13,7 +13,7 @@ import no.nav.syfo.sykmelding.model.PrognoseDTO
 import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalSvarDTO
 import no.nav.syfo.sykmelding.model.SvarRestriksjonDTO
-import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
@@ -31,37 +31,37 @@ fun pdlPersonTilPasient(fnr: String, pdlPerson: PdlPerson): Pasient {
     )
 }
 
-fun tilSyforestSykmelding(sykmeldingDTO: SykmeldingDTO, pasient: Pasient, arbeidsgivervisning: Boolean): SyforestSykmelding {
-    val arbeidsgiverNavnHvisSendt = sykmeldingDTO.sykmeldingStatus.arbeidsgiver?.orgNavn
+fun tilSyforestSykmelding(sykmelding: Sykmelding, pasient: Pasient, arbeidsgivervisning: Boolean): SyforestSykmelding {
+    val arbeidsgiverNavnHvisSendt = sykmelding.sykmeldingStatus.arbeidsgiver?.orgNavn
 
     return SyforestSykmelding(
-        id = sykmeldingDTO.id,
-        startLegemeldtFravaer = sykmeldingDTO.syketilfelleStartDato,
-        skalViseSkravertFelt = !sykmeldingDTO.skjermesForPasient,
-        identdato = sykmeldingDTO.syketilfelleStartDato,
-        status = tilStatus(sykmeldingDTO.sykmeldingStatus, sykmeldingDTO.mottattTidspunkt.toLocalDate()),
+        id = sykmelding.id,
+        startLegemeldtFravaer = sykmelding.syketilfelleStartDato,
+        skalViseSkravertFelt = !sykmelding.skjermesForPasient,
+        identdato = sykmelding.syketilfelleStartDato,
+        status = tilStatus(sykmelding.sykmeldingStatus, sykmelding.mottattTidspunkt.toLocalDate()),
         naermesteLederStatus = null, // brukes ikke av frontend
-        erEgenmeldt = sykmeldingDTO.egenmeldt ?: false,
-        erPapirsykmelding = sykmeldingDTO.papirsykmelding ?: false,
+        erEgenmeldt = sykmelding.egenmeldt ?: false,
+        erPapirsykmelding = sykmelding.papirsykmelding ?: false,
         innsendtArbeidsgivernavn = arbeidsgiverNavnHvisSendt,
-        valgtArbeidssituasjon = finnArbeidssituasjon(sykmeldingDTO.sykmeldingStatus, arbeidsgivervisning),
-        mottakendeArbeidsgiver = tilMottakendeArbeidsgiver(sykmeldingDTO.sykmeldingStatus.arbeidsgiver),
-        orgnummer = sykmeldingDTO.sykmeldingStatus.arbeidsgiver?.orgnummer,
-        sendtdato = finnSendtDato(sykmeldingDTO.sykmeldingStatus),
-        sporsmal = tilSporsmal(sykmeldingDTO.sykmeldingStatus, arbeidsgivervisning),
+        valgtArbeidssituasjon = finnArbeidssituasjon(sykmelding.sykmeldingStatus, arbeidsgivervisning),
+        mottakendeArbeidsgiver = tilMottakendeArbeidsgiver(sykmelding.sykmeldingStatus.arbeidsgiver),
+        orgnummer = sykmelding.sykmeldingStatus.arbeidsgiver?.orgnummer,
+        sendtdato = finnSendtDato(sykmelding.sykmeldingStatus),
+        sporsmal = tilSporsmal(sykmelding.sykmeldingStatus, arbeidsgivervisning),
         pasient = pasient,
-        arbeidsgiver = sykmeldingDTO.arbeidsgiver?.navn,
-        stillingsprosent = sykmeldingDTO.arbeidsgiver?.stillingsprosent,
-        diagnose = tilDiagnoseinfo(sykmeldingDTO.skjermesForPasient, sykmeldingDTO.medisinskVurdering, arbeidsgivervisning),
-        mulighetForArbeid = tilMulighetForArbeid(sykmeldingDTO.sykmeldingsperioder, sykmeldingDTO.harRedusertArbeidsgiverperiode, arbeidsgivervisning),
-        friskmelding = if (sykmeldingDTO.prognose != null) { tilFriskmelding(sykmeldingDTO.prognose, arbeidsgivervisning) } else { Friskmelding() },
-        utdypendeOpplysninger = tilUtdypendeOpplysninger(sykmeldingDTO.utdypendeOpplysninger, arbeidsgivervisning),
-        arbeidsevne = tilArbeidsevne(sykmeldingDTO, arbeidsgivervisning),
-        meldingTilNav = if (sykmeldingDTO.meldingTilNAV != null && !arbeidsgivervisning) { tilMeldingTilNav((sykmeldingDTO.meldingTilNAV)) } else { MeldingTilNav() },
-        innspillTilArbeidsgiver = sykmeldingDTO.meldingTilArbeidsgiver,
-        tilbakedatering = tilTilbakedatering(sykmeldingDTO.kontaktMedPasient, arbeidsgivervisning),
-        bekreftelse = tilBekreftelse(sykmeldingDTO.behandler, sykmeldingDTO.behandletTidspunkt),
-        merknader = sykmeldingDTO.merknader?.map { Merknad(type = it.type, beskrivelse = it.beskrivelse) }
+        arbeidsgiver = sykmelding.arbeidsgiver?.navn,
+        stillingsprosent = sykmelding.arbeidsgiver?.stillingsprosent,
+        diagnose = tilDiagnoseinfo(sykmelding.skjermesForPasient, sykmelding.medisinskVurdering, arbeidsgivervisning),
+        mulighetForArbeid = tilMulighetForArbeid(sykmelding.sykmeldingsperioder, sykmelding.harRedusertArbeidsgiverperiode, arbeidsgivervisning),
+        friskmelding = if (sykmelding.prognose != null) { tilFriskmelding(sykmelding.prognose, arbeidsgivervisning) } else { Friskmelding() },
+        utdypendeOpplysninger = tilUtdypendeOpplysninger(sykmelding.utdypendeOpplysninger, arbeidsgivervisning),
+        arbeidsevne = tilArbeidsevne(sykmelding, arbeidsgivervisning),
+        meldingTilNav = if (sykmelding.meldingTilNAV != null && !arbeidsgivervisning) { tilMeldingTilNav((sykmelding.meldingTilNAV)) } else { MeldingTilNav() },
+        innspillTilArbeidsgiver = sykmelding.meldingTilArbeidsgiver,
+        tilbakedatering = tilTilbakedatering(sykmelding.kontaktMedPasient, arbeidsgivervisning),
+        bekreftelse = tilBekreftelse(sykmelding.behandler, sykmelding.behandletTidspunkt),
+        merknader = sykmelding.merknader?.map { Merknad(type = it.type, beskrivelse = it.beskrivelse) }
     )
 }
 
@@ -241,18 +241,18 @@ fun tilSporsmal(sporsmalSvarDTOMapEntry: Map.Entry<String, SporsmalSvarDTO>): Sp
     )
 }
 
-private fun tilArbeidsevne(sykmeldingDTO: SykmeldingDTO, arbeidsgivervisning: Boolean): Arbeidsevne {
+private fun tilArbeidsevne(sykmelding: Sykmelding, arbeidsgivervisning: Boolean): Arbeidsevne {
     if (arbeidsgivervisning) {
         return Arbeidsevne(
-            tilretteleggingArbeidsplass = sykmeldingDTO.tiltakArbeidsplassen,
+            tilretteleggingArbeidsplass = sykmelding.tiltakArbeidsplassen,
             tiltakNAV = null,
             tiltakAndre = null
         )
     }
     return Arbeidsevne(
-        tilretteleggingArbeidsplass = sykmeldingDTO.tiltakArbeidsplassen,
-        tiltakNAV = sykmeldingDTO.tiltakNAV,
-        tiltakAndre = sykmeldingDTO.andreTiltak
+        tilretteleggingArbeidsplass = sykmelding.tiltakArbeidsplassen,
+        tiltakNAV = sykmelding.tiltakNAV,
+        tiltakAndre = sykmelding.andreTiltak
     )
 }
 
