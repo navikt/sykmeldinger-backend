@@ -10,16 +10,20 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
 import io.ktor.util.KtorExperimentalAPI
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkClass
 import no.nav.syfo.Environment
+import no.nav.syfo.arbeidsgivere.service.getPdlPerson
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusDto
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
@@ -47,6 +51,7 @@ class SykmeldingApiIntegrationTest : Spek({
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
 
     every { redisService.getStatus(any()) } returns null
+    coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
 
     describe("Sykmeldinger api integration test") {
         with(TestApplicationEngine()) {
@@ -60,15 +65,15 @@ class SykmeldingApiIntegrationTest : Spek({
                 }
             }
             it("Should get sykmeldinger with updated status from redis") {
-                val sykmeldingDTO = getSykmeldingModel(
+                val sykmeldingWithPasientInfoDTO = getSykmeldingDTO(
                     getSykmeldingStatusDto(
                         StatusEventDTO.APEN,
                         OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
                     )
                 )
-                httpClient.respond(listOf(sykmeldingDTO))
+                httpClient.respond(listOf(sykmeldingWithPasientInfoDTO))
                 val newSykmeldingStatus = getSykmeldingStatusRedisModel(
-                    StatusEventDTO.SENDT, sykmeldingDTO.sykmeldingStatus.timestamp.plusSeconds(1)
+                    StatusEventDTO.SENDT, sykmeldingWithPasientInfoDTO.sykmeldingStatus.timestamp.plusSeconds(1)
                 )
                 every { redisService.getStatus(any()) } returns newSykmeldingStatus
 
@@ -76,7 +81,7 @@ class SykmeldingApiIntegrationTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldBeEqualTo
                         listOf(
-                            sykmeldingDTO.copy(
+                            sykmeldingWithPasientInfoDTO.copy(
                                 sykmeldingStatus = SykmeldingStatusDTO(
                                     timestamp = newSykmeldingStatus.timestamp,
                                     statusEvent = newSykmeldingStatus.statusEvent.name,
@@ -104,7 +109,7 @@ class SykmeldingApiIntegrationTest : Spek({
 
                 withGetSykmeldinger(env) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldBeEqualTo
+                    objectMapper.readValue<List<Sykmelding>>(response.content!!) shouldBeEqualTo
                         listOf(sykmeldingDTO)
                 }
             }

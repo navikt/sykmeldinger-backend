@@ -19,6 +19,8 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
 
         get("/sykmeldinger") {
             val token = call.request.headers["Authorization"]!!
+            val principal: JWTPrincipal = call.authentication.principal()!!
+            val fnr = principal.payload.subject
             val fom = call.parameters["fom"]?.let { LocalDate.parse(it) }
             val tom = call.parameters["tom"]?.let { LocalDate.parse(it) }
             val exclude = call.parameters.getAll("exclude")
@@ -27,15 +29,17 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
                 checkExcludeInclude(exclude, include) -> call.respond(HttpStatusCode.BadRequest, "Can not use both include and exclude")
                 checkFomAndTomDate(fom, tom) -> call.respond(HttpStatusCode.BadRequest, "FOM should be before or equal to TOM")
                 hasInvalidStatus(exclude ?: include) -> call.respond(HttpStatusCode.BadRequest, "include or exclude can only contain ${StatusEventDTO.values().joinToString()}")
-                else -> call.respond(sykmeldingService.hentSykmeldinger(token = token, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include)))
+                else -> call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr, token = token, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include)))
             }
         }
 
         get("/sykmeldinger/{sykmeldingid}") {
             val sykmeldingId = call.parameters["sykmeldingid"]!!
             val token = call.request.headers["Authorization"]!!
+            val principal: JWTPrincipal = call.authentication.principal()!!
+            val fnr = principal.payload.subject
 
-            val sykmelding = sykmeldingService.hentSykmelding(token, sykmeldingId)
+            val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId)
 
             when (sykmelding) {
                 null -> call.respond(HttpStatusCode.NotFound)

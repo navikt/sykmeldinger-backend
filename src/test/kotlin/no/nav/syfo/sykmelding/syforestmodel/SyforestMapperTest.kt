@@ -5,7 +5,7 @@ import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.model.GradertDTO
 import no.nav.syfo.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import org.amshove.kluent.shouldBeEqualTo
@@ -19,7 +19,7 @@ class SyforestMapperTest : Spek({
 
     describe("Sykmelding mappes til riktig syforest-aktig format") {
         it("Test av fullstendig, ny sykmelding") {
-            val sykmeldingDTO: SykmeldingDTO = objectMapper.readValue(
+            val sykmelding: Sykmelding = objectMapper.readValue(
                 SyforestMapperTest::class.java.getResourceAsStream("/smFraRegister.json").readBytes()
                     .toString(Charsets.UTF_8)
             )
@@ -29,7 +29,7 @@ class SyforestMapperTest : Spek({
             )
             val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient, false)
+            val syforestSykmelding = tilSyforestSykmelding(sykmelding, pasient, false)
 
             syforestSykmelding.id shouldBeEqualTo syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldBeEqualTo syforestSykmeldingFasit.startLegemeldtFravaer
@@ -60,7 +60,7 @@ class SyforestMapperTest : Spek({
         }
 
         it("Test av fullstendig, sendt sykmelding") {
-            val sykmeldingDTO: SykmeldingDTO = objectMapper.readValue(
+            val sykmelding: Sykmelding = objectMapper.readValue(
                 SyforestMapperTest::class.java.getResourceAsStream("/sendtSMFraRegister.json").readBytes()
                     .toString(Charsets.UTF_8)
             )
@@ -70,7 +70,7 @@ class SyforestMapperTest : Spek({
             )
             val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient, false)
+            val syforestSykmelding = tilSyforestSykmelding(sykmelding, pasient, false)
 
             syforestSykmelding.id shouldBeEqualTo syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldBeEqualTo syforestSykmeldingFasit.startLegemeldtFravaer
@@ -101,7 +101,7 @@ class SyforestMapperTest : Spek({
         }
 
         it("Test av arbeidsgivervisning for fullstendig, ny sykmelding") {
-            val sykmeldingDTO: SykmeldingDTO = objectMapper.readValue(
+            val sykmelding: Sykmelding = objectMapper.readValue(
                 SyforestMapperTest::class.java.getResourceAsStream("/smFraRegister.json").readBytes()
                     .toString(Charsets.UTF_8)
             )
@@ -111,7 +111,7 @@ class SyforestMapperTest : Spek({
             )
             val pasient = Pasient(fnr = "10987654321", fornavn = "Frida", mellomnavn = "Perma", etternavn = "Frost")
 
-            val syforestSykmelding = tilSyforestSykmelding(sykmeldingDTO, pasient, true)
+            val syforestSykmelding = tilSyforestSykmelding(sykmelding, pasient, true)
 
             syforestSykmelding.id shouldBeEqualTo syforestSykmeldingFasit.id
             syforestSykmelding.startLegemeldtFravaer shouldBeEqualTo syforestSykmeldingFasit.startLegemeldtFravaer
