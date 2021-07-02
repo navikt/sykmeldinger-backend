@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmeldingstatus.kafka
 
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
+import no.nav.syfo.log
 import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
 import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
@@ -31,16 +32,16 @@ fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp: OffsetDateTi
                 orgNavn = it.navn,
             )
         },
-        toSporsmalSvarListe(arbeidsgiver),
+        toSporsmalSvarListe(arbeidsgiver, sykmeldingId),
     )
 }
 
-fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = null): List<SporsmalOgSvarDTO> {
+fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = null, sykmeldingId: String): List<SporsmalOgSvarDTO> {
     return listOfNotNull(
         arbeidssituasjonSporsmalBuilder(),
         fravarSporsmalBuilder(),
         periodeSporsmalBuilder(),
-        riktigNarmesteLederSporsmalBuilder(arbeidsgiver),
+        riktigNarmesteLederSporsmalBuilder(arbeidsgiver, sykmeldingId),
         forsikringSporsmalBuilder(),
     )
 }
@@ -78,8 +79,9 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
     return null
 }
 
-private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(arbeidsgiver: Arbeidsgiverinfo?): SporsmalOgSvarDTO? {
+private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(arbeidsgiver: Arbeidsgiverinfo?, sykmeldingId: String): SporsmalOgSvarDTO? {
     if (arbeidsgiver?.aktivtArbeidsforhold == false) {
+        log.info("Ber ikke om ny nærmeste leder for arbeidsforhold som ikke er aktivt: $sykmeldingId")
         return SporsmalOgSvarDTO(
             tekst = "Skal finne ny nærmeste leder",
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
