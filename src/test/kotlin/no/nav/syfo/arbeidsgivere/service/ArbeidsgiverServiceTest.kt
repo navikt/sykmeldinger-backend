@@ -247,5 +247,51 @@ class ArbeidsgiverServiceTest : Spek({
             }
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
+        it("arbeidsgiverService velger det nyeste arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.of(2020, 1, 1), tom = LocalDate.of(2020, 6, 1))
+                    ),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = LocalDate.now()
+                            ),
+                            stillingsprosent = 100.0
+                        )
+                    )
+                ),
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.of(2020, 6, 1), tom = null)
+                    ),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = null
+                            ),
+                            stillingsprosent = 100.0
+                        )
+                    )
+                )
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
+            }
+            coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
+        }
     }
 })
