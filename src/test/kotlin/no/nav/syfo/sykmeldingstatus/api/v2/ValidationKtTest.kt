@@ -333,7 +333,7 @@ class ValidationKtTest : Spek({
                 harForsikring = null,
             )
 
-            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe()
+            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
 
             val expected = listOf(
                 SporsmalOgSvarDTO(
@@ -385,7 +385,7 @@ class ValidationKtTest : Spek({
                 naermesteLeder = null
             )
 
-            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver)
+            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver, "id")
 
             val expected = listOf(
                 SporsmalOgSvarDTO(
@@ -443,7 +443,7 @@ class ValidationKtTest : Spek({
                 naermesteLeder = null
             )
 
-            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver)
+            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver, "id")
 
             val expected = listOf(
                 SporsmalOgSvarDTO(
@@ -491,7 +491,7 @@ class ValidationKtTest : Spek({
                 ),
             )
 
-            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe()
+            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
 
             val expected = listOf(
                 SporsmalOgSvarDTO(
@@ -550,7 +550,7 @@ class ValidationKtTest : Spek({
                 harForsikring = null,
             )
 
-            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe()
+            val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
 
             val expected = listOf(
                 SporsmalOgSvarDTO(
