@@ -49,8 +49,8 @@ class ArbeidsgiverService(
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {
             it.arbeidsgiver.type == "Organisasjon"
-        }.sortedByDescending {
-            it.ansettelsesperiode.periode.fom
+        }.sortedBy {
+            it.ansettelsesperiode.periode.tom != null
         }.distinctBy {
             it.arbeidsgiver.organisasjonsnummer
         }.forEach { arbeidsforhold ->

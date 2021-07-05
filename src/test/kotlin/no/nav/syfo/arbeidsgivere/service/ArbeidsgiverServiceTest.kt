@@ -247,13 +247,13 @@ class ArbeidsgiverServiceTest : Spek({
             }
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
-        it("arbeidsgiverService velger det nyeste arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
+        it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
             coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
                     Ansettelsesperiode(
-                        Periode(fom = LocalDate.of(2020, 1, 1), tom = LocalDate.of(2020, 6, 1))
+                        Periode(fom = LocalDate.of(2020, 5, 1), tom = LocalDate.of(2020, 6, 1))
                     ),
                     listOf(
                         Arbeidsavtale(
@@ -269,7 +269,7 @@ class ArbeidsgiverServiceTest : Spek({
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
                     Ansettelsesperiode(
-                        Periode(fom = LocalDate.of(2020, 6, 1), tom = null)
+                        Periode(fom = LocalDate.of(2020, 1, 1), tom = null)
                     ),
                     listOf(
                         Arbeidsavtale(
