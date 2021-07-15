@@ -116,7 +116,7 @@ class ArbeidsgiverServiceTest : Spek({
             coVerify(exactly = 0) { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
 
-        it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode") {
+        it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode utenfor dagens dato") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
@@ -125,12 +125,46 @@ class ArbeidsgiverServiceTest : Spek({
                     any()
                 )
             } returns getArbeidsgiverforhold(
-                ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.now()))
+                ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.now().minusDays(1)))
             )
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
+            }
+        }
+        it("Viser arbeidsforhold som ikke aktivt hvis fom er satt for ansettelsesperiode utenfor dagens dato") {
+            coEvery {
+                arbeidsforholdClient.getArbeidsforhold(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            } returns getArbeidsgiverforhold(
+                ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.now().plusDays(1), tom = LocalDate.now().plusDays(10)))
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
+            }
+        }
+        it("Viser arbeidsforhold som aktivt hvis tom dato er i ansettelsesperioden") {
+            coEvery {
+                arbeidsforholdClient.getArbeidsforhold(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            } returns getArbeidsgiverforhold(
+                ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.now().minusDays(1), tom = LocalDate.now().plusDays(1)))
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
             }
         }
         it("Bruker stillingsprosent fra nyeste arbeidsavtale") {
