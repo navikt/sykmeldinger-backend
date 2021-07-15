@@ -27,7 +27,7 @@ class ArbeidsgiverService(
     private val stsOidcClient: StsOidcClient,
     private val arbeidsgiverRedisService: ArbeidsgiverRedisService
 ) {
-    suspend fun getArbeidsgivere(fnr: String, token: String, sykmeldingId: String): List<Arbeidsgiverinfo> {
+    suspend fun getArbeidsgivere(fnr: String, token: String, sykmeldingId: String, date: LocalDate = LocalDate.now()): List<Arbeidsgiverinfo> {
         val arbeidsgivereFraRedis = getArbeidsgivereFromRedis(fnr)
         if (arbeidsgivereFraRedis != null) {
             log.debug("Fant arbeidsgivere i redis")
@@ -63,7 +63,7 @@ class ArbeidsgiverService(
                 arbeidsforhold.arbeidsavtaler.filter { it.gyldighetsperiode.fom != null }
                     .maxByOrNull { it.gyldighetsperiode.fom!! } ?: arbeidsforhold.arbeidsavtaler.first()
             }
-            addArbeidsinfo(arbeidsgiverList, organisasjonsinfo, arbeidsavtale, arbeidsforhold, narmesteLeder)
+            addArbeidsinfo(arbeidsgiverList, organisasjonsinfo, arbeidsavtale, arbeidsforhold, narmesteLeder, date)
         }
         arbeidsgiverRedisService.updateArbeidsgivere(arbeidsgiverList.map { it.toArbeidsgiverinfoRedisModel() }, fnr)
         return arbeidsgiverList
@@ -74,7 +74,8 @@ class ArbeidsgiverService(
         organisasjonsinfo: Organisasjonsinfo,
         arbeidsavtale: Arbeidsavtale?,
         arbeidsforhold: Arbeidsforhold,
-        narmesteLederRelasjon: no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder?
+        narmesteLederRelasjon: no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder?,
+        date: LocalDate
     ) {
         val orgnavn = getName(organisasjonsinfo.navn)
         arbeidsgiverList.add(
@@ -84,7 +85,8 @@ class ArbeidsgiverService(
                 navn = orgnavn,
                 stilling = "", // denne brukes ikke, men er påkrevd i formatet
                 stillingsprosent = arbeidsavtale?.stillingsprosent?.toString() ?: "100.0",
-                aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null,
+                aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null ||
+                    !date.isAfter(arbeidsforhold.ansettelsesperiode.periode.tom) && !date.isBefore(arbeidsforhold.ansettelsesperiode.periode.fom),
                 naermesteLeder = narmesteLederRelasjon?.tilNarmesteLeder(orgnavn)
             )
         )
