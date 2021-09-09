@@ -116,7 +116,7 @@ class ArbeidsgiverServiceTest : Spek({
             coVerify(exactly = 0) { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
 
-        it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode utenfor dagens dato") {
+        it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode før dagens dato") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
@@ -125,7 +125,12 @@ class ArbeidsgiverServiceTest : Spek({
                     any()
                 )
             } returns getArbeidsgiverforhold(
-                ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.now().minusDays(1)))
+                ansettelsesperiode = Ansettelsesperiode(
+                    Periode(
+                        fom = LocalDate.of(2019, 1, 1),
+                        tom = LocalDate.now().minusDays(1)
+                    )
+                )
             )
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
@@ -133,7 +138,7 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
             }
         }
-        it("Viser arbeidsforhold som ikke aktivt hvis fom er satt for ansettelsesperiode utenfor dagens dato") {
+        it("Viser arbeidsforhold som ikke aktivt hvis fom er satt for ansettelsesperiode etter dagens dato") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
@@ -150,7 +155,7 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
             }
         }
-        it("Viser arbeidsforhold som aktivt hvis tom dato er i ansettelsesperioden") {
+        it("Viser arbeidsforhold som aktivt hvis tom-dato er i fremtiden") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
@@ -318,6 +323,52 @@ class ArbeidsgiverServiceTest : Spek({
             )
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+                arbeidsgiverinformasjon.size shouldBeEqualTo 1
+                arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
+            }
+            coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
+        }
+        it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold der alle har satt tom-dato for samme orgnummer") {
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.of(2021, 3, 12), tom = LocalDate.of(2021, 4, 22))
+                    ),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = LocalDate.now()
+                            ),
+                            stillingsprosent = 100.0
+                        )
+                    )
+                ),
+                Arbeidsforhold(
+                    Arbeidsgiver("Organisasjon", "123456789"),
+                    Opplysningspliktig("Organisasjon", "987654321"),
+                    Ansettelsesperiode(
+                        Periode(fom = LocalDate.of(2021, 4, 23), tom = LocalDate.of(2021, 9, 1))
+                    ),
+                    listOf(
+                        Arbeidsavtale(
+                            gyldighetsperiode = Gyldighetsperiode(
+                                fom = LocalDate.now(),
+                                tom = LocalDate.now()
+                            ),
+                            stillingsprosent = 100.0
+                        )
+                    )
+                )
+            )
+            runBlocking {
+                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId, date = LocalDate.of(2021, 8, 22))
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
