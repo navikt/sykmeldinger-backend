@@ -5,25 +5,36 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.http.ContentType
+import no.nav.syfo.log
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.model.Sykmelding
 
 class SyfosmregisterSykmeldingClient(private val endpointUrl: String, private val httpClient: HttpClient) {
     suspend fun getSykmelding(token: String, sykmeldingid: String): Sykmelding? {
-        return httpClient.get("$endpointUrl/api/v2/sykmeldinger/$sykmeldingid") {
-            accept(ContentType.Application.Json)
-            headers {
-                append("Authorization", token)
+        try {
+            return httpClient.get("$endpointUrl/api/v2/sykmeldinger/$sykmeldingid") {
+                accept(ContentType.Application.Json)
+                headers {
+                    append("Authorization", token)
+                }
             }
+        } catch (e: Exception) {
+            log.error("Noe gikk galt ved kall getSykmelding $sykmeldingid", e)
+            throw e
         }
     }
 
     suspend fun getSykmeldinger(token: String, apiFilter: ApiFilter?): List<Sykmelding> {
-        return httpClient.get(getRequestUrl(apiFilter)) {
-            accept(ContentType.Application.Json)
-            headers {
-                append("Authorization", token)
+        try {
+            return httpClient.get(getRequestUrl(apiFilter)) {
+                accept(ContentType.Application.Json)
+                headers {
+                    append("Authorization", token)
+                }
             }
+        } catch (e: Exception) {
+            log.error("Noe gikk galt ved kall getSykmeldinger", e)
+            throw e
         }
     }
 
