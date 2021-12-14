@@ -9,7 +9,6 @@ import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkClass
@@ -39,7 +38,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-@KtorExperimentalAPI
 class SykmeldingApiIntegrationTest : Spek({
 
     val httpClient = HttpClientTest()

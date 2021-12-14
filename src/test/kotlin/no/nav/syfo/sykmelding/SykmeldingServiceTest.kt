@@ -1,6 +1,5 @@
 package no.nav.syfo.sykmelding
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -32,7 +31,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 class SykmeldingServiceTest : Spek({
     val sykmeldingStatusRedisService = mockkClass(SykmeldingStatusRedisService::class)
     val syfosmregisterSykmeldingClient = mockkClass(SyfosmregisterSykmeldingClient::class)

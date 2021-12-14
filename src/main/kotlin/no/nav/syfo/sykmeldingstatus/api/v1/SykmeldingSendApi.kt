@@ -8,7 +8,6 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
@@ -16,7 +15,6 @@ import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-@KtorExperimentalAPI
 fun Route.registerSykmeldingSendApi(
     sykmeldingStatusService: SykmeldingStatusService,
     arbeidsgiverService: ArbeidsgiverService

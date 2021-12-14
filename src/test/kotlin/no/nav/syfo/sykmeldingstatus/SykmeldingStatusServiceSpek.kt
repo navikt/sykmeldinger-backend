@@ -1,6 +1,5 @@
 package no.nav.syfo.sykmeldingstatus
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.MockKMatcherScope
 import io.mockk.Runs
 import io.mockk.clearAllMocks
@@ -42,7 +41,6 @@ import java.time.ZoneOffset
 import kotlin.RuntimeException
 import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingId = "id"
     val fnr = "fnr"

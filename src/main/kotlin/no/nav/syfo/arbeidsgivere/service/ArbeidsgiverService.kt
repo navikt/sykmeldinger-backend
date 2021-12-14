@@ -1,6 +1,5 @@
 package no.nav.syfo.arbeidsgivere.service
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsavtale
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
@@ -18,7 +17,6 @@ import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.LocalDate
 
-@KtorExperimentalAPI
 class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val organisasjonsinfoClient: OrganisasjonsinfoClient,
