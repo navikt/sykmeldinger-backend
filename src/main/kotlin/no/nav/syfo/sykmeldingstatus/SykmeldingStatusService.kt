@@ -1,6 +1,5 @@
 package no.nav.syfo.sykmeldingstatus
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
@@ -26,7 +25,6 @@ import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-@KtorExperimentalAPI
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val sykmeldingStatusJedisService: SykmeldingStatusRedisService,

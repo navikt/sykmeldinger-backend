@@ -1,6 +1,5 @@
 package no.nav.syfo.pdl.service
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
@@ -14,7 +13,6 @@ import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
 
 const val AKTORID_GRUPPE = "AKTORID"
 
-@KtorExperimentalAPI
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val stsOidcClient: StsOidcClient,

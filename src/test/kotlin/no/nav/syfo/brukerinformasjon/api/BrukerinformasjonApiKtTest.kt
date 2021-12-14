@@ -7,7 +7,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -27,7 +26,6 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-@KtorExperimentalAPI
 class BrukerinformasjonApiKtTest : Spek({
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val stsOidcClient = mockkClass(StsOidcClient::class)

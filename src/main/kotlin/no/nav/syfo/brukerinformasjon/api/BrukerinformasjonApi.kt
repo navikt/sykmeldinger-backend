@@ -8,14 +8,12 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
 
-@KtorExperimentalAPI
 fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService, pdlPersonService: PdlPersonService, stsOidcClient: StsOidcClient) {
     route("api/v1") {
         get("/brukerinformasjon") {

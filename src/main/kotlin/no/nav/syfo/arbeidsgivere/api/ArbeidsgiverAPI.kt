@@ -8,11 +8,9 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import java.util.UUID
 
-@KtorExperimentalAPI
 fun Route.registrerArbeidsgiverApi(arbeidsgiverService: ArbeidsgiverService) {
     route("api/v1/syforest/arbeidsforhold") {
         get {

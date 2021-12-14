@@ -1,6 +1,5 @@
 package no.nav.syfo.sykmelding
 
-import io.ktor.util.KtorExperimentalAPI
 import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
@@ -22,7 +21,6 @@ import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import java.util.UUID
 
-@KtorExperimentalAPI
 class SykmeldingService(
     private val syfosmregisterSykmeldingClient: SyfosmregisterSykmeldingClient,
     private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
