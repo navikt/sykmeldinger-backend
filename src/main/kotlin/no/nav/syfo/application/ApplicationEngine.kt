@@ -13,6 +13,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.features.HttpResponseValidator
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.features.CallId
@@ -21,6 +22,7 @@ import io.ktor.features.StatusPages
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
@@ -30,6 +32,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
+import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.arbeidsgivere.api.registrerArbeidsgiverApi
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
@@ -105,6 +108,13 @@ fun createApplicationEngine(
                     registerModule(JavaTimeModule())
                     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+            HttpResponseValidator {
+                handleResponseException { exception ->
+                    when (exception) {
+                        is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    }
                 }
             }
         }
