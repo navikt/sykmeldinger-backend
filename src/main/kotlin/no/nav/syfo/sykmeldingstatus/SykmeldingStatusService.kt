@@ -31,6 +31,7 @@ class SykmeldingStatusService(
     private val syfosmregisterStatusClient: SyfosmregisterStatusClient,
     private val soknadstatusService: SoknadstatusService,
     private val arbeidsgiverService: ArbeidsgiverService,
+    private val cluster: String = "prod-fss"
 ) {
     companion object {
         private val allowedSykmeldingIds = listOf(
@@ -168,7 +169,7 @@ class SykmeldingStatusService(
             }
         if (allowedStatuses != null && allowedStatuses.contains(nyStatusEvent)) {
             if (sisteStatus == StatusEventDTO.BEKREFTET && nyStatusEvent == StatusEventDTO.APEN) {
-                if (allowedSykmeldingIds.contains(sykmeldingId)) {
+                if (allowedSykmeldingIds.contains(sykmeldingId) || cluster == "dev-fss") {
                     log.info("Tillater reåpning av sykmelding $sykmeldingId")
                     return true
                 }
