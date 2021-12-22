@@ -31,8 +31,13 @@ class SykmeldingStatusService(
     private val syfosmregisterStatusClient: SyfosmregisterStatusClient,
     private val soknadstatusService: SoknadstatusService,
     private val arbeidsgiverService: ArbeidsgiverService,
+    private val cluster: String = "prod-fss"
 ) {
     companion object {
+        private val allowedSykmeldingIds = listOf(
+            "2ed2b46b-c11c-4521-b676-be89e5b4aa3d",
+            "e5476494-9697-41ed-89a6-c330aed63934"
+        )
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
             Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT, StatusEventDTO.SENDT, StatusEventDTO.APEN, StatusEventDTO.UTGATT)),
             Pair(StatusEventDTO.BEKREFTET, listOf(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT)),
@@ -164,6 +169,10 @@ class SykmeldingStatusService(
             }
         if (allowedStatuses != null && allowedStatuses.contains(nyStatusEvent)) {
             if (sisteStatus == StatusEventDTO.BEKREFTET && nyStatusEvent == StatusEventDTO.APEN) {
+                if (allowedSykmeldingIds.contains(sykmeldingId) || cluster == "dev-fss") {
+                    log.info("Tillater reåpning av sykmelding $sykmeldingId")
+                    return true
+                }
                 val finnesSendtSoknad = soknadstatusService.finnesSendtSoknadForSykmelding(token = token, sykmeldingId = sykmeldingId)
                 if (finnesSendtSoknad) {
                     log.warn("Forsøk på å gjenåpne sykmelding som det er sendt søknad for: $sykmeldingId")
