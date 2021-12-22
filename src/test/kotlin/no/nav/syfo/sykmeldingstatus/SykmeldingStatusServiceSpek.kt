@@ -38,7 +38,6 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 import kotlin.RuntimeException
 import kotlin.test.assertFailsWith
 
@@ -502,31 +501,6 @@ class SykmeldingStatusServiceSpek : Spek({
         }
         it("Skal ikke kunne endre status til APEN fra SENDT") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.SENDT)
-        }
-        it("skal kunne gjennåpne alle sykmeldinger i dev") {
-            val sykmeldingStatusServiceDev = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient, soknadstatusService, arbeidsgiverService, "dev-fss")
-
-            runBlocking {
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
-                    StatusEventDTO.BEKREFTET,
-                    erAvvist = false,
-                    erEgenmeldt = false
-                )
-                coEvery { soknadstatusService.finnesSendtSoknadForSykmelding(any(), any()) } returns true
-                val sykmeldingIds = listOf(
-                    UUID.randomUUID().toString(),
-                    UUID.randomUUID().toString()
-                )
-                sykmeldingIds.forEach {
-                    sykmeldingStatusServiceDev.registrerStatus(
-                        getSykmeldingStatus(StatusEventDTO.APEN),
-                        it,
-                        "user",
-                        fnr,
-                        token
-                    )
-                }
-            }
         }
         it("En bruker skal kunne gjenaapne sykmeldinger der soknad er sendt for en gitt sykmeldignID") {
             runBlocking {
