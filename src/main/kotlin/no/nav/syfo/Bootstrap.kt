@@ -11,11 +11,7 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
-import no.nav.syfo.kafka.envOverrides
-import no.nav.syfo.kafka.loadBaseConfig
-import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.sykmeldingstatus.kafka.KafkaFactory.Companion.getSykmeldingStatusKafkaProducer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
@@ -48,11 +44,7 @@ fun main() {
 
     val jedisPool = JedisPool(JedisPoolConfig(), env.redisHost, env.redisPort)
 
-    val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
-    val producerConfig = kafkaBaseConfig.toProducerConfig(
-        "${env.applicationName}-producer", valueSerializer = StringSerializer::class
-    )
-    val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(producerConfig, env)
+    val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(env)
 
     val applicationEngine = createApplicationEngine(
         env,

@@ -43,7 +43,7 @@ fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: Offs
     return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null, erAvvist, erEgenmeldt)
 }
 
-fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): Sykmelding {
+fun getSykmeldingModel(merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): Sykmelding {
     return Sykmelding(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
@@ -75,7 +75,7 @@ fun getSykmeldingModel(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingS
         merknader = merknader,
     )
 }
-fun getSykmeldingDTO(sykmeldingStatusDTO: SykmeldingStatusDTO = getSykmeldingStatusDto(StatusEventDTO.APEN), merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): SykmeldingDTO {
+fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): SykmeldingDTO {
     return SykmeldingDTO(
         id = "1",
         utdypendeOpplysninger = emptyMap(),

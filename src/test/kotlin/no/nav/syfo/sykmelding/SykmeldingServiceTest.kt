@@ -57,12 +57,6 @@ class SykmeldingServiceTest : Spek({
         it("Get sykmeldinger with newest status from redis") {
             val now = OffsetDateTime.now()
             val sykmelding = getSykmeldingModel(
-                SykmeldingStatusDTO(
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                    statusEvent = StatusEventDTO.APEN.name,
-                    arbeidsgiver = null,
-                    sporsmalOgSvarListe = emptyList()
-                ),
                 timestamps = now,
             )
             val statusFromRedis = getSykmeldingStatusRedisModel(

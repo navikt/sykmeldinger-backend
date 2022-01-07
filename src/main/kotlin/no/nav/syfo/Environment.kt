@@ -1,7 +1,5 @@
 package no.nav.syfo
 
-import no.nav.syfo.kafka.KafkaConfig
-import no.nav.syfo.kafka.KafkaCredentials
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -9,10 +7,10 @@ import java.nio.file.Paths
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "sykmeldinger-backend"),
-    override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
-    val sykmeldingStatusTopic: String = getEnvVar("KAFKA_SYKMELDING_STATUS_TOPIC", "aapen-syfo-sykmeldingstatus-leesah-v1"),
+    val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
     val stsOidcIssuer: String = getEnvVar("STS_OIDC_ISSUER"),
     val stsOidcAudience: String = getEnvVar("STS_OIDC_AUDIENCE"),
     val stsUrl: String = getEnvVar("STS_URL", "http://security-token-service.default/rest/v1/sts/token"),
@@ -24,11 +22,8 @@ data class Environment(
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
-    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL"),
-    override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
-    override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD")
-) : KafkaConfig
+    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL")
+)
 
 data class VaultSecrets(
     val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
@@ -36,10 +31,7 @@ data class VaultSecrets(
     val clientId: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_id"),
     val clientSecret: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_secret"),
     val redisSecret: String = getEnvVar("REDIS_PASSWORD")
-) : KafkaCredentials {
-    override val kafkaUsername: String = serviceuserUsername
-    override val kafkaPassword: String = serviceuserPassword
-}
+)
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
