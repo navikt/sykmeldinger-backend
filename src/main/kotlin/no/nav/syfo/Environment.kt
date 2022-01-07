@@ -24,11 +24,8 @@ data class Environment(
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
-    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL"),
-    override val kafkaBootstrapServers: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-    override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
-    override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD")
-) : KafkaConfig
+    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL")
+)
 
 data class VaultSecrets(
     val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
@@ -36,10 +33,7 @@ data class VaultSecrets(
     val clientId: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_id"),
     val clientSecret: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_secret"),
     val redisSecret: String = getEnvVar("REDIS_PASSWORD")
-) : KafkaCredentials {
-    override val kafkaUsername: String = serviceuserUsername
-    override val kafkaPassword: String = serviceuserPassword
-}
+)
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
