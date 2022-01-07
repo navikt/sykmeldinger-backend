@@ -12,7 +12,7 @@ data class Environment(
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
-    val sykmeldingStatusTopic: String = getEnvVar("KAFKA_SYKMELDING_STATUS_TOPIC", "aapen-syfo-sykmeldingstatus-leesah-v1"),
+    val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
     val stsOidcIssuer: String = getEnvVar("STS_OIDC_ISSUER"),
     val stsOidcAudience: String = getEnvVar("STS_OIDC_AUDIENCE"),
     val stsUrl: String = getEnvVar("STS_URL", "http://security-token-service.default/rest/v1/sts/token"),

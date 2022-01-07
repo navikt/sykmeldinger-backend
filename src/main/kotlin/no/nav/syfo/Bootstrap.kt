@@ -48,11 +48,7 @@ fun main() {
 
     val jedisPool = JedisPool(JedisPoolConfig(), env.redisHost, env.redisPort)
 
-    val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets).envOverrides()
-    val producerConfig = kafkaBaseConfig.toProducerConfig(
-        "${env.applicationName}-producer", valueSerializer = StringSerializer::class
-    )
-    val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(producerConfig, env)
+    val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(env)
 
     val applicationEngine = createApplicationEngine(
         env,

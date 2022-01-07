@@ -33,6 +33,8 @@ spec:
     requests:
       cpu: 2048m
       memory: 1Gi
+  kafka:
+    pool: nav-prod
   vault:
     enabled: true
     paths:
