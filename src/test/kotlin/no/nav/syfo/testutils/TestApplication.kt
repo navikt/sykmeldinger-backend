@@ -26,7 +26,6 @@ val testAudience = listOf("loginserviceId1", "loginserviceId2")
 fun getTestEnvironment(audience: List<String> = testAudience): Environment =
     Environment(
         jwtIssuer = "issuer",
-        kafkaBootstrapServers = "",
         stsOidcIssuer = "https://security-token-service.nais.preprod.local",
         stsOidcAudience = "preprod.local",
         registerBasePath = "https://register",
@@ -34,8 +33,6 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         cluster = "dev-fss",
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
-        truststorePassword = "",
-        truststore = "",
         narmesteLederBasePath = "http://url"
     )
 

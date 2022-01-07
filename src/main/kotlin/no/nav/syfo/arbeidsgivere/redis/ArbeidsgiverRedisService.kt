@@ -11,7 +11,7 @@ class ArbeidsgiverRedisService(private val jedisPool: JedisPool, private val red
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(ArbeidsgiverRedisService::class.java)
-        private const val redisTimeoutSeconds: Int = 600
+        private const val redisTimeoutSeconds: Long = 600L
         private const val prefix = "ARB"
     }
 

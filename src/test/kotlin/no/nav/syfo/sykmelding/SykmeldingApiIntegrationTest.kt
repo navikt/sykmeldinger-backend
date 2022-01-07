@@ -24,7 +24,6 @@ import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
-import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusDto
 import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.testutils.HttpClientTest
@@ -63,12 +62,7 @@ class SykmeldingApiIntegrationTest : Spek({
                 }
             }
             it("Should get sykmeldinger with updated status from redis") {
-                val sykmeldingWithPasientInfoDTO = getSykmeldingDTO(
-                    getSykmeldingStatusDto(
-                        StatusEventDTO.APEN,
-                        OffsetDateTime.now(ZoneOffset.UTC).minusSeconds(1)
-                    )
-                )
+                val sykmeldingWithPasientInfoDTO = getSykmeldingDTO()
                 httpClient.respond(listOf(sykmeldingWithPasientInfoDTO))
                 val newSykmeldingStatus = getSykmeldingStatusRedisModel(
                     StatusEventDTO.SENDT, sykmeldingWithPasientInfoDTO.sykmeldingStatus.timestamp.plusSeconds(1)
@@ -92,12 +86,7 @@ class SykmeldingApiIntegrationTest : Spek({
             }
 
             it("Should get sykmeldinger with newest status in registeret") {
-                val sykmeldingDTO = getSykmeldingModel(
-                    getSykmeldingStatusDto(
-                        StatusEventDTO.APEN,
-                        OffsetDateTime.now(ZoneOffset.UTC)
-                    )
-                )
+                val sykmeldingDTO = getSykmeldingModel()
                 httpClient.respond(listOf(sykmeldingDTO))
                 val redisSykmeldingStatus = getSykmeldingStatusRedisModel(
                     StatusEventDTO.BEKREFTET,

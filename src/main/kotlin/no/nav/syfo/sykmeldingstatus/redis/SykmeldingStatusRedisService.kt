@@ -10,7 +10,7 @@ class SykmeldingStatusRedisService(private val jedisPool: JedisPool, private val
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(SykmeldingStatusRedisService::class.java)
-        private const val redisTimeoutSeconds: Int = 180
+        private const val redisTimeoutSeconds: Long = 180
     }
 
     fun updateStatus(sykmeldingStatusEventDTO: SykmeldingStatusRedisModel, sykmeldingId: String) {
