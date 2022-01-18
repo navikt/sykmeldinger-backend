@@ -64,9 +64,9 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import no.nav.syfo.sykmeldingstatus.soknadstatus.client.SyfosoknadClient
-import org.apache.kafka.common.errors.ClusterAuthorizationException
 import redis.clients.jedis.JedisPool
 import java.util.UUID
+import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
     env: Environment,
@@ -99,8 +99,8 @@ fun createApplicationEngine(
             exception<Throwable> { cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception ${cause.message}", cause)
-                if (cause is ClusterAuthorizationException) {
-                    log.error("Exception is ClusterAuthorizationException, restarting", cause.cause)
+                if (cause is ExecutionException) {
+                    log.error("Exception is ExecutionException, restarting", cause.cause)
                     applicationState.ready = false
                     applicationState.alive = false
                 }
