@@ -40,7 +40,7 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
 
             if (sykmeldingId == "null") {
                 log.warn("Mottok kall for å hente sykmelding med id null")
-                call.respond(HttpStatusCode.BadRequest, "Kan ikke hente sykmelding når sykmeldingsid mangler")
+                call.respond(HttpStatusCode.NotFound)
             } else {
                 val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId)
 
