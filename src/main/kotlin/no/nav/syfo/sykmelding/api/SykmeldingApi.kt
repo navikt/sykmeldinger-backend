@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
+import no.nav.syfo.log
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import java.time.LocalDate
@@ -32,16 +33,21 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
         }
 
         get("/sykmeldinger/{sykmeldingid}") {
-            val sykmeldingId = call.parameters["sykmeldingid"]!!
+            val sykmeldingId = call.parameters["sykmeldingid"]
             val token = call.request.headers["Authorization"]!!
             val principal: JWTPrincipal = call.authentication.principal()!!
             val fnr = principal.payload.subject
 
-            val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId)
+            if (sykmeldingId == null) {
+                log.warn("Mottok kall for å hente sykmelding med id null")
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke hente sykmelding når sykmeldingsid mangler")
+            } else {
+                val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId)
 
-            when (sykmelding) {
-                null -> call.respond(HttpStatusCode.NotFound)
-                else -> call.respond(sykmelding)
+                when (sykmelding) {
+                    null -> call.respond(HttpStatusCode.NotFound)
+                    else -> call.respond(sykmelding)
+                }
             }
         }
 
