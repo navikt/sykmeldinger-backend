@@ -33,12 +33,12 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
         }
 
         get("/sykmeldinger/{sykmeldingid}") {
-            val sykmeldingId = call.parameters["sykmeldingid"]
+            val sykmeldingId = call.parameters["sykmeldingid"]!!
             val token = call.request.headers["Authorization"]!!
             val principal: JWTPrincipal = call.authentication.principal()!!
             val fnr = principal.payload.subject
 
-            if (sykmeldingId == null) {
+            if (sykmeldingId == "null") {
                 log.warn("Mottok kall for å hente sykmelding med id null")
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke hente sykmelding når sykmeldingsid mangler")
             } else {
