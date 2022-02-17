@@ -1,10 +1,8 @@
 package no.nav.syfo.sykmelding
 
-import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
-import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
@@ -13,9 +11,6 @@ import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.toSykmeldingDTO
-import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
-import no.nav.syfo.sykmelding.syforestmodel.pdlPersonTilPasient
-import no.nav.syfo.sykmelding.syforestmodel.tilSyforestSykmelding
 import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
@@ -38,23 +33,6 @@ class SykmeldingService(
         return syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
             .map(this::getSykmeldingWithLatestStatus)
             .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
-    }
-
-    suspend fun hentSykmeldingerSyforestFormat(token: String, fnr: String, arbeidsgivervisning: Boolean, apiFilter: ApiFilter?): List<SyforestSykmelding> {
-        val sykmeldingsliste = syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
-            .filter { it.behandlingsutfall.status != RegelStatusDTO.INVALID }
-            .map(this::getSykmeldingWithLatestStatus)
-        if (sykmeldingsliste.isNotEmpty()) {
-            val callId = UUID.randomUUID().toString()
-            try {
-                val pasient = pdlPersonTilPasient(fnr, pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = callId))
-                return sykmeldingsliste.map { tilSyforestSykmelding(it, pasient, arbeidsgivervisning) }
-            } catch (e: Exception) {
-                log.error("Noe gikk galt ved mapping av sykmeldinger med id: ${sykmeldingsliste.first().id}, callid: $callId")
-                throw e
-            }
-        }
-        return emptyList()
     }
 
     private fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {

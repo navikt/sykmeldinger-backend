@@ -33,7 +33,6 @@ import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.exception.ServiceUnavailableException
-import no.nav.syfo.arbeidsgivere.api.registrerArbeidsgiverApi
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
@@ -53,10 +52,8 @@ import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApi
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingSendApi
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
@@ -162,12 +159,9 @@ fun createApplicationEngine(
             authenticate("jwt") {
                 registerSykmeldingApi(sykmeldingService)
                 registrerSykmeldingSendApiV2(sykmeldingStatusService)
-                registerSykmeldingBekreftApi(sykmeldingStatusService)
                 registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
                 registerSykmeldingAvbrytApi(sykmeldingStatusService)
                 registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                registerSykmeldingSendApi(sykmeldingStatusService, arbeidsgiverService)
-                registrerArbeidsgiverApi(arbeidsgiverService)
                 registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
             }
         }

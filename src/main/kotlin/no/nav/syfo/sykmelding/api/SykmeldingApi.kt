@@ -50,14 +50,6 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
                 }
             }
         }
-
-        get("/syforest/sykmeldinger") {
-            val token = call.request.headers["Authorization"]!!
-            val principal: JWTPrincipal = call.authentication.principal()!!
-            val fnr = principal.payload.subject
-            val arbeidsgivervisning = call.parameters["type"] == "arbeidsgiver"
-            call.respond(sykmeldingService.hentSykmeldingerSyforestFormat(token = token, fnr = fnr, arbeidsgivervisning = arbeidsgivervisning, apiFilter = null))
-        }
     }
 }
 private fun hasInvalidStatus(statusFilter: List<String>?): Boolean {

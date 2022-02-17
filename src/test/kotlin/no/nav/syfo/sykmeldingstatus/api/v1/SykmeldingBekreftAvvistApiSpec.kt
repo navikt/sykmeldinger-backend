@@ -1,19 +1,16 @@
 package no.nav.syfo.sykmeldingstatus.api.v1
 
 import io.ktor.auth.authenticate
-import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockkClass
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
@@ -29,7 +26,7 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
 
     beforeEachTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } just Runs
+        coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } just Runs
     }
 
     describe("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {
@@ -37,13 +34,12 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
             setUpTestApplication()
             val env = setUpAuth()
 
-            application.routing { authenticate("jwt") { registerSykmeldingBekreftApi(sykmeldingStatusService) } }
+            application.routing { authenticate("jwt") { registerSykmeldingBekreftAvvistApi(sykmeldingStatusService) } }
 
             it("Bruker skal få bekrefte sin egen avviste sykmelding") {
                 val sykmeldingId = "123"
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreftAvvist") {
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${generateJWT(
@@ -61,11 +57,9 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
 
             it("Bruker skal ikke få bekrefte sin egen sykmelding når den ikke kan bekreftes") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
+                coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreftAvvist") {
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${generateJWT(
@@ -82,11 +76,9 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
             }
 
             it("Skal ikke kunne bekrefte annen brukers sykmelding") {
-                coEvery { sykmeldingStatusService.registrerBekreftet(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
+                coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
                         addHeader(
                             "Authorization",
                             "Bearer ${generateJWT(
@@ -104,9 +96,7 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
 
             it("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreft") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingBekreftEventDTO()))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
+                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
                         addHeader(
                             "Authorization",
                             "Bearer ${generateJWT(

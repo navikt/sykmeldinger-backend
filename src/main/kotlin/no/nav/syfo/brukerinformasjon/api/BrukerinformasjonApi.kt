@@ -42,29 +42,8 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
                 )
             )
         }
-        get("/syforest/brukerinformasjon") {
-            val principal = call.principal<JWTPrincipal>()!!
-            val fnr = principal.payload.subject
-            val token = call.request.headers[HttpHeaders.Authorization]!!
-
-            val stsToken = stsOidcClient.oidcToken()
-            val person = pdlPersonService.getPerson(
-                fnr = fnr,
-                userToken = token,
-                callId = UUID.randomUUID().toString(),
-                stsToken = stsToken.access_token
-            )
-
-            call.respond(
-                BrukerinformasjonSyforest(strengtFortroligAdresse = person.diskresjonskode)
-            )
-        }
     }
 }
-
-data class BrukerinformasjonSyforest(
-    val strengtFortroligAdresse: Boolean
-)
 
 data class Brukerinformasjon(
     val arbeidsgivere: List<Arbeidsgiverinfo>,
