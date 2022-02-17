@@ -15,19 +15,6 @@ import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
-import no.nav.syfo.sykmelding.syforestmodel.Arbeidsevne
-import no.nav.syfo.sykmelding.syforestmodel.Bekreftelse
-import no.nav.syfo.sykmelding.syforestmodel.Diagnose
-import no.nav.syfo.sykmelding.syforestmodel.Diagnoseinfo
-import no.nav.syfo.sykmelding.syforestmodel.Friskmelding
-import no.nav.syfo.sykmelding.syforestmodel.MeldingTilNav
-import no.nav.syfo.sykmelding.syforestmodel.Merknad
-import no.nav.syfo.sykmelding.syforestmodel.MulighetForArbeid
-import no.nav.syfo.sykmelding.syforestmodel.Pasient
-import no.nav.syfo.sykmelding.syforestmodel.Periode
-import no.nav.syfo.sykmelding.syforestmodel.SyforestSykmelding
-import no.nav.syfo.sykmelding.syforestmodel.Tilbakedatering
-import no.nav.syfo.sykmelding.syforestmodel.UtdypendeOpplysninger
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
@@ -117,61 +104,5 @@ fun getMedisinskVurdering(): MedisinskVurderingDTO {
         svangerskap = false,
         yrkesskade = false,
         yrkesskadeDato = null
-    )
-}
-
-fun getSykmeldingStatusDto(statusEventDTO: StatusEventDTO, offsetDateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC)): SykmeldingStatusDTO {
-    return SykmeldingStatusDTO(timestamp = offsetDateTime, statusEvent = statusEventDTO.name, arbeidsgiver = null, sporsmalOgSvarListe = emptyList())
-}
-
-fun lagSyforestSykmelding(merknader: List<Merknad>? = null): SyforestSykmelding {
-    return SyforestSykmelding(
-        id = "1",
-        startLegemeldtFravaer = null,
-        skalViseSkravertFelt = true,
-        identdato = null,
-        status = "NY",
-        naermesteLederStatus = null,
-        erEgenmeldt = false,
-        erPapirsykmelding = false,
-        innsendtArbeidsgivernavn = null,
-        valgtArbeidssituasjon = null,
-        mottakendeArbeidsgiver = null,
-        orgnummer = null,
-        sendtdato = null,
-        sporsmal = null,
-        pasient = Pasient("fnr", "Fornavn", "Mellomnavn", "Etternavn"),
-        arbeidsgiver = null,
-        stillingsprosent = null,
-        diagnose = Diagnoseinfo(
-            hoveddiagnose = Diagnose("hoveddiagnose", "1", "system"),
-            bidiagnoser = listOf(Diagnose("bidagnose", "2", "system2")),
-            fravaersgrunnLovfestet = null,
-            fravaerBeskrivelse = "",
-            svangerskap = false,
-            yrkesskade = false,
-            yrkesskadeDato = null
-        ),
-        mulighetForArbeid = MulighetForArbeid(
-            perioder = listOf(Periode(LocalDate.now(), LocalDate.now(), 100, null, null, null)),
-            aktivitetIkkeMulig433 = emptyList(),
-            aktivitetIkkeMulig434 = emptyList(),
-            aarsakAktivitetIkkeMulig433 = null,
-            aarsakAktivitetIkkeMulig434 = null
-        ),
-        friskmelding = Friskmelding(),
-        utdypendeOpplysninger = UtdypendeOpplysninger(
-            sykehistorie = null,
-            paavirkningArbeidsevne = null,
-            resultatAvBehandling = null,
-            henvisningUtredningBehandling = null,
-            grupper = emptyList()
-        ),
-        arbeidsevne = Arbeidsevne(null, null, null),
-        meldingTilNav = MeldingTilNav(),
-        innspillTilArbeidsgiver = null,
-        tilbakedatering = Tilbakedatering(null, null),
-        bekreftelse = Bekreftelse(LocalDate.now(), "fornavn etternavn", null),
-        merknader = merknader
     )
 }
