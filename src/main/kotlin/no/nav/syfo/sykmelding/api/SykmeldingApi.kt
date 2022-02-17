@@ -2,12 +2,12 @@ package no.nav.syfo.sykmelding.api
 
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
+import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -18,8 +18,8 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
 
         get("/sykmeldinger") {
             val token = call.request.headers["Authorization"]!!
-            val principal: JWTPrincipal = call.authentication.principal()!!
-            val fnr = principal.payload.subject
+            val principal: BrukerPrincipal = call.authentication.principal()!!
+            val fnr = principal.fnr
             val fom = call.parameters["fom"]?.let { LocalDate.parse(it) }
             val tom = call.parameters["tom"]?.let { LocalDate.parse(it) }
             val exclude = call.parameters.getAll("exclude")
@@ -35,8 +35,8 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
         get("/sykmeldinger/{sykmeldingid}") {
             val sykmeldingId = call.parameters["sykmeldingid"]!!
             val token = call.request.headers["Authorization"]!!
-            val principal: JWTPrincipal = call.authentication.principal()!!
-            val fnr = principal.payload.subject
+            val principal: BrukerPrincipal = call.authentication.principal()!!
+            val fnr = principal.fnr
 
             if (sykmeldingId == "null") {
                 log.warn("Mottok kall for å hente sykmelding med id null")

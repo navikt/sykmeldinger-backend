@@ -3,12 +3,12 @@ package no.nav.syfo.sykmeldingstatus.api.v2
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
+import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
@@ -16,8 +16,8 @@ fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatus
     post("/api/v2/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!
-        val principal: JWTPrincipal = call.authentication.principal()!!
-        val fnr = principal.payload.subject
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
 
         val sykmeldingUserEvent = call.safeReceiveOrNull<SykmeldingUserEvent>()
 
