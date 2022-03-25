@@ -32,13 +32,11 @@ import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
-import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import kotlin.RuntimeException
 import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek : Spek({
@@ -48,9 +46,8 @@ class SykmeldingStatusServiceSpek : Spek({
     val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
     val sykmeldingStatusJedisService = mockkClass(SykmeldingStatusRedisService::class)
     val syfosmregisterClient = mockkClass(SyfosmregisterStatusClient::class)
-    val soknadstatusService = mockkClass(SoknadstatusService::class)
     val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
-    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient, soknadstatusService, arbeidsgiverService)
+    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient, arbeidsgiverService)
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
@@ -115,7 +112,6 @@ class SykmeldingStatusServiceSpek : Spek({
         every { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
         every { sykmeldingStatusJedisService.getStatus(any()) } returns null
         coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1))
-        coEvery { soknadstatusService.finnesSendtSoknadForSykmelding(any(), any()) } returns false
     }
 
     describe("Hent nyeste status") {
@@ -501,28 +497,6 @@ class SykmeldingStatusServiceSpek : Spek({
         }
         it("Skal ikke kunne endre status til APEN fra SENDT") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.SENDT)
-        }
-        it("Bruker skal ikke kunne gjenåpne en bekreftet sykmelding hvis det finnes sendt søknad") {
-            runBlocking {
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
-                    StatusEventDTO.BEKREFTET,
-                    erAvvist = false,
-                    erEgenmeldt = false
-                )
-                coEvery { soknadstatusService.finnesSendtSoknadForSykmelding(any(), any()) } returns true
-                val expextedErrorMessage =
-                    "Du kan dessverre ikke endre denne sykmeldingen fordi du allerede har søkt om sykepenger for denne sykmeldingsperioden"
-                val error = assertFailsWith<InvalidSykmeldingStatusException> {
-                    sykmeldingStatusService.registrerStatus(
-                        getSykmeldingStatus(StatusEventDTO.APEN),
-                        sykmeldingId,
-                        "user",
-                        fnr,
-                        token
-                    )
-                }
-                error.message shouldBeEqualTo expextedErrorMessage
-            }
         }
     }
 

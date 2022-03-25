@@ -21,7 +21,6 @@ import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.sykmeldingstatus.redis.tilSykmeldingStatusRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingRedisModel
 import no.nav.syfo.sykmeldingstatus.redis.toSykmeldingStatusRedisModel
-import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -29,7 +28,6 @@ class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val sykmeldingStatusJedisService: SykmeldingStatusRedisService,
     private val syfosmregisterStatusClient: SyfosmregisterStatusClient,
-    private val soknadstatusService: SoknadstatusService,
     private val arbeidsgiverService: ArbeidsgiverService,
 ) {
     companion object {
@@ -155,7 +153,7 @@ class SykmeldingStatusService(
         return sykmeldingStatusJedisService.getStatus(sykmeldingId)?.toSykmeldingStatusDTO()
     }
 
-    private suspend fun canChangeStatus(nyStatusEvent: StatusEventDTO, sisteStatus: StatusEventDTO, erAvvist: Boolean?, erEgenmeldt: Boolean?, sykmeldingId: String, token: String): Boolean {
+    private fun canChangeStatus(nyStatusEvent: StatusEventDTO, sisteStatus: StatusEventDTO, erAvvist: Boolean?, erEgenmeldt: Boolean?, sykmeldingId: String, token: String): Boolean {
         val allowedStatuses =
             when {
                 erAvvist == true -> { statusStatesAvvistSykmelding[sisteStatus] }
@@ -163,14 +161,6 @@ class SykmeldingStatusService(
                 else -> { statusStates[sisteStatus] }
             }
         if (allowedStatuses != null && allowedStatuses.contains(nyStatusEvent)) {
-            if (sisteStatus == StatusEventDTO.BEKREFTET && nyStatusEvent == StatusEventDTO.APEN) {
-                val finnesSendtSoknad = soknadstatusService.finnesSendtSoknadForSykmelding(token = token, sykmeldingId = sykmeldingId)
-                if (finnesSendtSoknad) {
-                    log.warn("Forsøk på å gjenåpne sykmelding som det er sendt søknad for: $sykmeldingId")
-                    throw InvalidSykmeldingStatusException("Du kan dessverre ikke endre denne sykmeldingen fordi du allerede har søkt om sykepenger for denne sykmeldingsperioden")
-                }
-                return true
-            }
             return true
         }
         log.warn("Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId")
