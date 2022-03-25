@@ -59,8 +59,6 @@ import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandl
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
-import no.nav.syfo.sykmeldingstatus.soknadstatus.SoknadstatusService
-import no.nav.syfo.sykmeldingstatus.soknadstatus.client.SyfosoknadClient
 import redis.clients.jedis.JedisPool
 import java.util.UUID
 import java.util.concurrent.ExecutionException
@@ -130,8 +128,6 @@ fun createApplicationEngine(
         )
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
-        val syfosoknadClient = SyfosoknadClient(env.syfosoknadUrl, httpClient)
-        val soknadstatusService = SoknadstatusService(syfosoknadClient)
         val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath)
         val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath)
@@ -149,7 +145,7 @@ fun createApplicationEngine(
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, soknadstatusService, arbeidsgiverService)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, arbeidsgiverService)
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
