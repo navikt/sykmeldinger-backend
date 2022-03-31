@@ -27,8 +27,8 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
     Environment(
         jwtIssuer = "issuer",
         stsOidcIssuer = "https://security-token-service.nais.preprod.local",
-        stsOidcAudience = "preprod.local",
-        registerBasePath = "https://register",
+        eregUrl = "https://ereg",
+        aaregUrl = "https://aareg",
         pdlGraphqlPath = "http://graphql",
         cluster = "dev-fss",
         loginserviceIdportenDiscoveryUrl = "url",

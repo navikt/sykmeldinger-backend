@@ -8,9 +8,9 @@ import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.log
 import java.time.LocalDate
 
-class ArbeidsforholdClient(private val httpClient: HttpClient, private val basePath: String) {
+class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: String) {
 
-    private val arbeidsforholdPath = "$basePath/aareg-services/api/v1/arbeidstaker/arbeidsforhold"
+    private val arbeidsforholdPath = "$url/api/v1/arbeidstaker/arbeidsforhold"
     private val navPersonident = "Nav-Personident"
     private val navConsumerToken = "Nav-Consumer-Token"
     private val ansettelsesperiodeFomQueryParam = "ansettelsesperiodeFom"

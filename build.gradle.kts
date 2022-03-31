@@ -12,15 +12,17 @@ val logstashEncoderVersion = "7.0.1"
 val prometheusVersion = "0.15.0"
 val smCommonVersion = "1.a92720c"
 val jacksonVersion = "2.13.2"
+val jacksonPatchVersion = "2.13.2.1"
+val jacksonBomVersion = "2.13.2.20220324"
 val kluentVersion = "1.68"
 val mockkVersion = "1.12.3"
 val javaTimeAdapterVersion = "1.1.3"
 val junitPlatformLauncher = "1.8.2"
 val nimbusdsVersion = "9.21"
-val jedisVersion = "4.1.1"
-val spekVersion = "2.0.17"
+val jedisVersion = "4.2.0"
+val spekVersion = "2.0.18"
 val testcontainersVersion = "1.16.3"
-val swaggerUiVersion = "4.5.2"
+val swaggerUiVersion = "4.8.1"
 val kotlinVersion = "1.6.0"
 
 plugins {
@@ -68,6 +70,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation ("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
+    implementation ("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
