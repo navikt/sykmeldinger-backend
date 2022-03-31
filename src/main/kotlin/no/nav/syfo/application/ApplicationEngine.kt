@@ -128,8 +128,8 @@ fun createApplicationEngine(
         )
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
-        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.registerBasePath)
-        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.registerBasePath)
+        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
+        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
         val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath)
 
         val pdlClient = PdlClient(

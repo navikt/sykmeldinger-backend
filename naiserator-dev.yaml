@@ -55,10 +55,10 @@ spec:
       value: https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0
     - name: STS_OIDC_ISSUER
       value: https://security-token-service.nais.preprod.local
-    - name: STS_OIDC_AUDIENCE
-      value: preprod.local
-    - name: REGISTER_BASE_PATH
-      value: https://modapp-q1.adeo.no
+    - name: EREG_URL
+      value: https://ereg-services-q1.dev.intern.nav.no
+    - name: AAREG_URL
+      value: https://aareg-services-q1.dev.intern.nav.no
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.preprod.local/graphql
     - name: NARMESTELEDER_URL
