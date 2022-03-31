@@ -12,11 +12,12 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: 
 
     private val arbeidsforholdPath = "$url/api/v1/arbeidstaker/arbeidsforhold"
     private val navPersonident = "Nav-Personident"
+    private val navConsumerToken = "Nav-Consumer-Token"
     private val ansettelsesperiodeFomQueryParam = "ansettelsesperiodeFom"
     private val ansettelsesperiodeTomQueryParam = "ansettelsesperiodeTom"
     private val sporingsinformasjon = "sporingsinformasjon"
 
-    suspend fun getArbeidsforhold(fnr: String, ansettelsesperiodeFom: LocalDate, token: String): List<Arbeidsforhold> {
+    suspend fun getArbeidsforhold(fnr: String, ansettelsesperiodeFom: LocalDate, token: String, stsToken: String): List<Arbeidsforhold> {
         val iMorgen = LocalDate.now().plusDays(1).toString()
         try {
             return httpClient.get(
@@ -27,6 +28,7 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val url: 
             ) {
                 header(navPersonident, fnr)
                 header(HttpHeaders.Authorization, token)
+                header(navConsumerToken, "Bearer $stsToken")
             }
         } catch (e: Exception) {
             log.error("Noe gikk galt ved henting av arbeidsforhold", e)

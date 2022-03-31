@@ -68,6 +68,7 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
                     any(),
+                    any(),
                     any()
                 )
             } returns getArbeidsgiverforhold()
@@ -84,7 +85,7 @@ class ArbeidsgiverServiceTest : Spek({
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
         it("arbeidsgiverService returnerer tom liste hvis bruker ikke har arbeidsforhold") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns emptyList()
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns emptyList()
             runBlocking {
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
@@ -101,7 +102,7 @@ class ArbeidsgiverServiceTest : Spek({
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
-            coVerify(exactly = 0) { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) }
+            coVerify(exactly = 0) { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) }
         }
         it("henter arbeidsgivere fra redis") {
             coEvery { arbeidsgiverRedisService.getArbeidsgivere(any()) } returns listOf(getArbeidsgiverInfoRedisModel())
@@ -109,13 +110,14 @@ class ArbeidsgiverServiceTest : Spek({
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
             }
-            coVerify(exactly = 0) { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) }
+            coVerify(exactly = 0) { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) }
             coVerify(exactly = 0) { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
 
         it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode før dagens dato") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforhold(
+                    any(),
                     any(),
                     any(),
                     any()
@@ -139,6 +141,7 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
                     any(),
+                    any(),
                     any()
                 )
             } returns getArbeidsgiverforhold(
@@ -155,6 +158,7 @@ class ArbeidsgiverServiceTest : Spek({
                 arbeidsforholdClient.getArbeidsforhold(
                     any(),
                     any(),
+                    any(),
                     any()
                 )
             } returns getArbeidsgiverforhold(
@@ -167,7 +171,7 @@ class ArbeidsgiverServiceTest : Spek({
             }
         }
         it("Bruker stillingsprosent fra nyeste arbeidsavtale") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
@@ -200,7 +204,7 @@ class ArbeidsgiverServiceTest : Spek({
             }
         }
         it("Antar 100% stilling hvis arbeidsavtale mangler") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
@@ -219,7 +223,7 @@ class ArbeidsgiverServiceTest : Spek({
         }
 
         it("arbeidsgiverService filtrerer bort duplikate arbeidsforhold for samme orgnummer") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
@@ -281,7 +285,7 @@ class ArbeidsgiverServiceTest : Spek({
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
         it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
@@ -327,7 +331,7 @@ class ArbeidsgiverServiceTest : Spek({
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
         it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold der alle har satt tom-dato for samme orgnummer") {
-            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsforholdClient.getArbeidsforhold(any(), any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
                     Opplysningspliktig("Organisasjon", "987654321"),
