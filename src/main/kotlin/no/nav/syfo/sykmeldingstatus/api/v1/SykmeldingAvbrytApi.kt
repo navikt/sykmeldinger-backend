@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 fun Route.registerSykmeldingAvbrytApi(sykmeldingStatusService: SykmeldingStatusService) {
-    post("/api/v1/sykmeldinger/{sykmeldingid}/avbryt") {
+    post("/sykmeldinger/{sykmeldingid}/avbryt") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!

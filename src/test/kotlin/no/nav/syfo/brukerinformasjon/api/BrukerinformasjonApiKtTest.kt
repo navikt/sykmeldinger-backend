@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -44,7 +45,13 @@ class BrukerinformasjonApiKtTest : Spek({
             setUpTestApplication()
             val env = setUpAuth()
 
-            application.routing { authenticate("jwt") { registrerBrukerinformasjonApi(arbeidsgiverService, pdlPersonService, stsOidcClient) } }
+            application.routing {
+                authenticate("jwt") {
+                    route("/api/v1") {
+                        registrerBrukerinformasjonApi(arbeidsgiverService, pdlPersonService, stsOidcClient)
+                    }
+                }
+            }
 
             it("Får hentet riktig informasjon for innlogget bruker uten diskresjonskode") {
                 with(

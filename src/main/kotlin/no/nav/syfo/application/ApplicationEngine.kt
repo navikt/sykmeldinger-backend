@@ -24,6 +24,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.response.respond
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
@@ -162,12 +163,16 @@ fun createApplicationEngine(
                 setupSwaggerDocApi()
             }
             authenticate("jwt") {
-                registerSykmeldingApi(sykmeldingService)
-                registrerSykmeldingSendApiV2(sykmeldingStatusService)
-                registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
-                registerSykmeldingAvbrytApi(sykmeldingStatusService)
-                registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
+                route("/api/v1") {
+                    registerSykmeldingApi(sykmeldingService)
+                    registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
+                    registerSykmeldingAvbrytApi(sykmeldingStatusService)
+                    registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
+                }
+                route("/api/v2") {
+                    registrerSykmeldingSendApiV2(sykmeldingStatusService)
+                }
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

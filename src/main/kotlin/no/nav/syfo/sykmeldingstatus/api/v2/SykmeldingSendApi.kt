@@ -13,7 +13,7 @@ import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
 fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatusService) {
-    post("/api/v2/sykmeldinger/{sykmeldingid}/send") {
+    post("/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!

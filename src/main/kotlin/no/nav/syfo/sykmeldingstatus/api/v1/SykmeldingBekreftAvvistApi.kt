@@ -11,7 +11,7 @@ import no.nav.syfo.metrics.BEKREFTET_AVVIST_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
 fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: SykmeldingStatusService) {
-    post("/api/v1/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
+    post("/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
