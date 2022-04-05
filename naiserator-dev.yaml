@@ -35,6 +35,17 @@ spec:
       memory: 768Mi
   kafka:
     pool: nav-dev
+  tokenx:
+    enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: sykmeldinger
+          namespace: teamsykmelding
+          cluster: dev-gcp
+        - application: debug-dings
+          namespace: plattformsikkerhet
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:

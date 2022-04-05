@@ -11,6 +11,7 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.getWellKnown
+import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.sykmeldingstatus.kafka.KafkaFactory.Companion.getSykmeldingStatusKafkaProducer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,6 +39,12 @@ fun main() {
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
+    val wellKnownTokenX = getWellKnownTokenX(env.tokenXWellKnownUrl)
+    val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
+        .cached(10, 24, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
+
     val applicationState = ApplicationState()
 
     DefaultExports.initialize()
@@ -47,13 +54,15 @@ fun main() {
     val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(env)
 
     val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-        vaultSecrets,
-        jwkProvider,
-        wellKnown.issuer,
-        sykmeldingStatusKafkaProducer,
-        jedisPool
+        env = env,
+        applicationState = applicationState,
+        vaultSecrets = vaultSecrets,
+        jwkProvider = jwkProvider,
+        issuer = wellKnown.issuer,
+        sykmeldingStatusKafkaProducer = sykmeldingStatusKafkaProducer,
+        jedisPool = jedisPool,
+        jwkProviderTokenX = jwkProviderTokenX,
+        tokenXIssuer = wellKnownTokenX.issuer
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

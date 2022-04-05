@@ -70,7 +70,9 @@ fun createApplicationEngine(
     jwkProvider: JwkProvider,
     issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
-    jedisPool: JedisPool
+    jedisPool: JedisPool,
+    jwkProviderTokenX: JwkProvider,
+    tokenXIssuer: String,
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -81,7 +83,14 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(env.loginserviceIdportenAudience, jwkProvider, issuer)
+        setupAuth(
+            loginserviceIdportenClientId = env.loginserviceIdportenAudience,
+            jwkProvider = jwkProvider,
+            issuer = issuer,
+            jwkProviderTokenX = jwkProviderTokenX,
+            tokenXIssuer = tokenXIssuer,
+            clientIdTokenX = env.clientIdTokenX
+        )
         install(CallId) {
             generate { UUID.randomUUID().toString() }
             verify { callId: String -> callId.isNotEmpty() }

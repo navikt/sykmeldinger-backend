@@ -21,7 +21,9 @@ data class Environment(
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
-    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL")
+    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL"),
+    val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
+    val clientIdTokenX: String = getEnvVar("TOKEN_X_CLIENT_ID")
 )
 
 data class VaultSecrets(

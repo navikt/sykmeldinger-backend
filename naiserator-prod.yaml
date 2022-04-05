@@ -35,6 +35,14 @@ spec:
       memory: 1Gi
   kafka:
     pool: nav-prod
+  tokenx:
+    enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: sykmeldinger
+          namespace: teamsykmelding
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
