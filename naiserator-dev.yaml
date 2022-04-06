@@ -35,6 +35,8 @@ spec:
       memory: 768Mi
   kafka:
     pool: nav-dev
+  tokenx:
+    enabled: true
   vault:
     enabled: true
     paths:

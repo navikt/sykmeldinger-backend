@@ -35,6 +35,8 @@ spec:
       memory: 1Gi
   kafka:
     pool: nav-prod
+  tokenx:
+    enabled: true
   vault:
     enabled: true
     paths:
