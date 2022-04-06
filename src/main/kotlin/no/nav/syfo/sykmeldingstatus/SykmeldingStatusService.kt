@@ -8,7 +8,6 @@ import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
@@ -96,20 +95,6 @@ class SykmeldingStatusService(
             .find { it.orgnummer == orgnummer }
             ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
     }
-//
-    suspend fun registrerSendt(
-        sykmeldingSendEventDTO: SykmeldingSendEventDTO,
-        sykmeldingId: String,
-        source: String,
-        fnr: String,
-        token: String
-    ) {
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-        if (canChangeStatus(nyStatusEvent = StatusEventDTO.SENDT, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId)) {
-            sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-            sykmeldingStatusJedisService.updateStatus(sykmeldingSendEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
-        }
-    }
 
     suspend fun registrerBekreftetAvvist(sykmeldingId: String, source: String, fnr: String, token: String, erTokenX: Boolean = false) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token, erTokenX)
@@ -145,14 +130,6 @@ class SykmeldingStatusService(
                 log.warn("Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId")
                 throw InvalidSykmeldingStatusException("Kan ikke bekrefte sykmelding med id: $sykmeldingId fordi den ikke er avvist")
             }
-        }
-    }
-//
-    suspend fun registrerBekreftet(sykmeldingBekreftEventDTO: SykmeldingBekreftEventDTO, sykmeldingId: String, source: String, fnr: String, token: String) {
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-        if (canChangeStatus(nyStatusEvent = StatusEventDTO.BEKREFTET, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId)) {
-            sykmeldingStatusKafkaProducer.send(sykmeldingStatusKafkaEventDTO = sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId), source = source, fnr = fnr)
-            sykmeldingStatusJedisService.updateStatus(sykmeldingBekreftEventDTO.toSykmeldingStatusRedisModel(), sykmeldingId)
         }
     }
 
