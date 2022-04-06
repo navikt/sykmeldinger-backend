@@ -3,7 +3,9 @@ package no.nav.syfo.sykmelding.client
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.ServerResponseException
 import io.ktor.http.HttpStatusCode
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.model.Sykmelding
@@ -19,7 +21,8 @@ class SyfosmregisterSykmeldingClientTest : Spek({
 
     val httpClient = HttpClientTest()
     val endpointUrl = "url"
-    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(endpointUrl, httpClient.httpClient)
+    val tokenXClient = mockk<TokenXClient>()
+    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(endpointUrl, httpClient.httpClient, tokenXClient, "audience")
 
     describe("Test GET Sykmeldinger fra syfosmregister") {
         it("Should get empty list of Sykmeldinger") {
@@ -69,7 +72,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
 
     describe("Lager riktig request-url") {
         it("Får riktig url uten filter") {
-            val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(null, null, null, null))
+            val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(null, null, null, null), "$endpointUrl/api/v2")
 
             url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger"
         }
@@ -80,7 +83,8 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                     LocalDate.of(2020, 4, 5),
                     null,
                     null
-                )
+                ),
+                "$endpointUrl/api/v2"
             )
 
             url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?fom=2020-04-01&tom=2020-04-05"
@@ -92,7 +96,8 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                     LocalDate.of(2020, 4, 5),
                     listOf("AVBRUTT"),
                     null
-                )
+                ),
+                "$endpointUrl/api/v2"
             )
 
             url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-04-01&tom=2020-04-05"

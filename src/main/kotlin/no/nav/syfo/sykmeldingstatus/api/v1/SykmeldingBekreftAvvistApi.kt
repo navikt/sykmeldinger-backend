@@ -28,3 +28,24 @@ fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: Sykmelding
         call.respond(HttpStatusCode.Accepted)
     }
 }
+
+fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: SykmeldingStatusService) {
+    post("/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
+        val sykmeldingId = call.parameters["sykmeldingid"]!!
+        val token = call.request.headers["Authorization"]!!
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+
+        sykmeldingStatusService.registrerBekreftetAvvist(
+            sykmeldingId = sykmeldingId,
+            source = "user",
+            fnr = fnr,
+            token = tokenUtenPrefiks,
+            erTokenX = true
+        )
+
+        BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()
+        call.respond(HttpStatusCode.Accepted)
+    }
+}

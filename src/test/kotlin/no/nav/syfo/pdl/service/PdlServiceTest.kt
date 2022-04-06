@@ -3,10 +3,12 @@ package no.nav.syfo.pdl.service
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.mockk
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.OidcToken
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.Adressebeskyttelse
 import no.nav.syfo.pdl.client.model.ErrorDetails
@@ -31,8 +33,9 @@ import kotlin.test.assertFailsWith
 class PdlServiceTest : Spek({
     val pdlClient = mockkClass(PdlClient::class)
     val stsOidcClient = mockkClass(StsOidcClient::class)
+    val tokenXClient = mockk<TokenXClient>()
     val pdlPersonRedisService = mockkClass(PdlPersonRedisService::class, relaxed = true)
-    val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+    val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService, tokenXClient, "audience")
 
     coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
 

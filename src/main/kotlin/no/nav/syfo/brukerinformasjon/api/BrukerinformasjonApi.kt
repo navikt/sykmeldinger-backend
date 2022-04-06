@@ -42,6 +42,37 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
     }
 }
 
+fun Route.registrerBrukerinformasjonApiV2(arbeidsgiverService: ArbeidsgiverService, pdlPersonService: PdlPersonService) {
+    get("/brukerinformasjon") {
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+        val token = call.request.headers[HttpHeaders.Authorization]!!
+        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+
+        val person = pdlPersonService.getPerson(
+            fnr = fnr,
+            userToken = tokenUtenPrefiks,
+            callId = UUID.randomUUID().toString(),
+            stsToken = null,
+            erTokenX = true
+        )
+
+        val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
+            fnr = fnr,
+            token = tokenUtenPrefiks,
+            sykmeldingId = UUID.randomUUID().toString(),
+            erTokenX = true
+        )
+
+        call.respond(
+            Brukerinformasjon(
+                strengtFortroligAdresse = person.diskresjonskode,
+                arbeidsgivere = arbeidsgivere
+            )
+        )
+    }
+}
+
 data class Brukerinformasjon(
     val arbeidsgivere: List<Arbeidsgiverinfo>,
     val strengtFortroligAdresse: Boolean

@@ -25,7 +25,11 @@ data class Environment(
     val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL"),
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val clientIdTokenX: String = getEnvVar("TOKEN_X_CLIENT_ID"),
-    val tokenXPrivateJwk: RSAKey = RSAKey.parse(getEnvVar("TOKEN_X_PRIVATE_JWK"))
+    val tokenXPrivateJwk: RSAKey = RSAKey.parse(getEnvVar("TOKEN_X_PRIVATE_JWK")),
+    val syfosmregisterAudience: String = getEnvVar("SYFOSMREGISTER_AUDIENCE"),
+    val pdlAudience: String = getEnvVar("PDL_AUDIENCE"),
+    val aaregAudience: String = getEnvVar("AAREG_AUDIENCE"),
+    val narmestelederAudience: String = getEnvVar("NARMESTELEDER_AUDIENCE")
 )
 
 data class VaultSecrets(

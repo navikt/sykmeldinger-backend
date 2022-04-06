@@ -40,6 +40,7 @@ import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoCli
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
+import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApiV2
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.client.TokenXClient
@@ -50,13 +51,18 @@ import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
+import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApiV2
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApiV2
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
@@ -144,11 +150,11 @@ fun createApplicationEngine(
             httpClient = httpClient,
             privateKey = env.tokenXPrivateJwk
         )
-        val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
-        val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
-        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
+        val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.syfosmregisterAudience)
+        val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.syfosmregisterAudience)
+        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
-        val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath)
+        val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath, tokenXClient, env.narmestelederAudience)
 
         val pdlClient = PdlClient(
             httpClient,
@@ -157,7 +163,7 @@ fun createApplicationEngine(
         )
 
         val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
-        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
 
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
@@ -184,14 +190,14 @@ fun createApplicationEngine(
             }
             authenticate("tokenx") {
                 route("/api/v2") {
-                    registerSykmeldingApi(sykmeldingService) // pdl, smreg
-                    registerSykmeldingBekreftAvvistApi(sykmeldingStatusService) // smreg
-                    registerSykmeldingAvbrytApi(sykmeldingStatusService) // smreg
-                    registerSykmeldingGjenapneApi(sykmeldingStatusService) // smreg
-                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient) // aareg, pdl, narmesteleder
+                    registerSykmeldingApiV2(sykmeldingService)
+                    registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService)
+                    registerSykmeldingAvbrytApiV2(sykmeldingStatusService)
+                    registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
+                    registrerBrukerinformasjonApiV2(arbeidsgiverService, pdlService)
                 }
                 route("/api/v3") {
-                    registrerSykmeldingSendApiV2(sykmeldingStatusService) // aareg, pdl, narmesteleder, smreg
+                    registrerSykmeldingSendApiV3(sykmeldingStatusService)
                 }
             }
         }

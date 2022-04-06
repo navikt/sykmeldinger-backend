@@ -33,6 +33,28 @@ fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatus
     }
 }
 
+fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatusService) {
+    post("/sykmeldinger/{sykmeldingid}/send") {
+        val sykmeldingId = call.parameters["sykmeldingid"]!!
+        val token = call.request.headers["Authorization"]!!
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+
+        val sykmeldingUserEvent = call.safeReceiveOrNull<SykmeldingUserEvent>()
+
+        when (sykmeldingUserEvent) {
+            null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
+            else -> {
+                sykmeldingUserEvent.validate()
+                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, sykmeldingId, fnr, tokenUtenPrefiks, erTokenX = true)
+
+                call.respond(HttpStatusCode.Accepted)
+            }
+        }
+    }
+}
+
 // Workaround pga. bug i ktor: https://github.com/ktorio/ktor/issues/901
 suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? = try {
     receiveOrNull()

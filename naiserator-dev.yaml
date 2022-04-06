@@ -74,3 +74,11 @@ spec:
       value: https://pdl-api.nais.preprod.local/graphql
     - name: NARMESTELEDER_URL
       value: https://narmesteleder.dev.intern.nav.no
+    - name: SYFOSMREGISTER_AUDIENCE
+      value: dev-fss:teamsykmelding:syfosmregister
+    - name: PDL_AUDIENCE
+      value: dev-fss:pdl:pdl-api
+    - name: AAREG_AUDIENCE
+      value: dev-fss:arbeidsforhold:aareg-services-nais-q1
+    - name: NARMESTELEDER_AUDIENCE
+      value: dev-gcp:teamsykmelding:narmesteleder

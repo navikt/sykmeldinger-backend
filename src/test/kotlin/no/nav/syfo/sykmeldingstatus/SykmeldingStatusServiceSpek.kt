@@ -260,7 +260,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
     describe("Test user event") {
         it("Test SEND user event") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
