@@ -54,6 +54,7 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
   ingresses:
     - "https://sykmeldinger-backend.nais.adeo.no"
+    - "https://sykmeldinger-backend.intern.nav.no"
   webproxy: true
   envFrom:
     - configmap: loginservice-idporten
