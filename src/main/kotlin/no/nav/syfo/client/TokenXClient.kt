@@ -92,6 +92,7 @@ class TokenXClient(
             .jwtID(UUID.randomUUID().toString())
             .notBeforeTime(getNotBeforeTime())
             .expirationTime(getExpirationTime())
+            .issueTime(getNotBeforeTime())
             .build()
         val signedJwt = SignedJWT(jwsHeader, jwtClaimSet)
         signedJwt.sign(jwsSigner)
