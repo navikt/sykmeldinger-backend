@@ -42,6 +42,7 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
+import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.pdl.client.PdlClient
@@ -74,6 +75,7 @@ fun createApplicationEngine(
     jedisPool: JedisPool,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
+    tokendingsUrl: String
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -136,6 +138,12 @@ fun createApplicationEngine(
             password = vaultSecrets.serviceuserPassword,
             stsUrl = env.stsUrl
         )
+        val tokenXClient = TokenXClient(
+            tokendingsUrl = tokendingsUrl,
+            tokenXClientId = env.clientIdTokenX,
+            httpClient = httpClient,
+            privateKey = env.tokenXPrivateJwk
+        )
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
         val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
@@ -172,6 +180,18 @@ fun createApplicationEngine(
                 }
                 route("/api/v2") {
                     registrerSykmeldingSendApiV2(sykmeldingStatusService)
+                }
+            }
+            authenticate("tokenx") {
+                route("/api/v2") {
+                    registerSykmeldingApi(sykmeldingService) // pdl, smreg
+                    registerSykmeldingBekreftAvvistApi(sykmeldingStatusService) // smreg
+                    registerSykmeldingAvbrytApi(sykmeldingStatusService) // smreg
+                    registerSykmeldingGjenapneApi(sykmeldingStatusService) // smreg
+                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient) // aareg, pdl, narmesteleder
+                }
+                route("/api/v3") {
+                    registrerSykmeldingSendApiV2(sykmeldingStatusService) // aareg, pdl, narmesteleder, smreg
                 }
             }
         }

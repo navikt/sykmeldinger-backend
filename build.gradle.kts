@@ -77,6 +77,8 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
     implementation("redis.clients:jedis:$jedisVersion")
+    implementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
+
     swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
@@ -84,7 +86,6 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
 
     testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformLauncher")
-    testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }

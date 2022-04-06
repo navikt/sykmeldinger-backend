@@ -62,7 +62,8 @@ fun main() {
         sykmeldingStatusKafkaProducer = sykmeldingStatusKafkaProducer,
         jedisPool = jedisPool,
         jwkProviderTokenX = jwkProviderTokenX,
-        tokenXIssuer = wellKnownTokenX.issuer
+        tokenXIssuer = wellKnownTokenX.issuer,
+        tokendingsUrl = wellKnownTokenX.token_endpoint
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

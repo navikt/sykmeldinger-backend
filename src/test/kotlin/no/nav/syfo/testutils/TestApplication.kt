@@ -35,7 +35,8 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         loginserviceIdportenAudience = audience,
         narmesteLederBasePath = "http://url",
         tokenXWellKnownUrl = "https://tokenx",
-        clientIdTokenX = "clientId"
+        clientIdTokenX = "clientId",
+        tokenXPrivateJwk = getDefaultRSAKey()
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
