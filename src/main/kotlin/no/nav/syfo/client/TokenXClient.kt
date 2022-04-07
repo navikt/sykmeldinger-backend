@@ -56,7 +56,7 @@ class TokenXClient(
                 tokenMap[key]
                     ?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
                     ?: run {
-                        log.info("Henter nytt token fra TokenX")
+                        log.debug("Henter nytt token fra TokenX")
                         val response: AccessToken = httpClient.post(tokendingsUrl) {
                             accept(ContentType.Application.Json)
                             method = HttpMethod.Post
@@ -77,7 +77,7 @@ class TokenXClient(
                             expiresOn = Instant.now().plusSeconds(response.expires_in.toLong())
                         )
                         tokenMap[key] = tokenMedExpiry
-                        log.info("Har hentet accesstoken")
+                        log.debug("Har hentet accesstoken")
                         return@run tokenMedExpiry
                     }
                 ).access_token
