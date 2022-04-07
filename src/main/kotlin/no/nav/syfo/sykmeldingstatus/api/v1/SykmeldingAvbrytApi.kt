@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 fun Route.registerSykmeldingAvbrytApi(sykmeldingStatusService: SykmeldingStatusService) {
-    post("/api/v1/sykmeldinger/{sykmeldingid}/avbryt") {
+    post("/sykmeldinger/{sykmeldingid}/avbryt") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
@@ -25,6 +25,28 @@ fun Route.registerSykmeldingAvbrytApi(sykmeldingStatusService: SykmeldingStatusS
             source = "user",
             fnr = fnr,
             token = token
+        )
+
+        AVBRUTT_AV_BRUKER_COUNTER.inc()
+        call.respond(HttpStatusCode.Accepted)
+    }
+}
+
+fun Route.registerSykmeldingAvbrytApiV2(sykmeldingStatusService: SykmeldingStatusService) {
+    post("/sykmeldinger/{sykmeldingid}/avbryt") {
+        val sykmeldingId = call.parameters["sykmeldingid"]!!
+        val token = call.request.headers["Authorization"]!!
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+
+        sykmeldingStatusService.registrerStatus(
+            sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC)),
+            sykmeldingId = sykmeldingId,
+            source = "user",
+            fnr = fnr,
+            token = tokenUtenPrefiks,
+            erTokenX = true
         )
 
         AVBRUTT_AV_BRUKER_COUNTER.inc()

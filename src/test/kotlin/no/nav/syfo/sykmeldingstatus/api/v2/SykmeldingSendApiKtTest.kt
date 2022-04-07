@@ -4,6 +4,7 @@ import io.ktor.auth.authenticate
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -36,9 +37,11 @@ class SykmeldingSendApiKtTest : Spek({
 
             application.routing {
                 authenticate("jwt") {
-                    registrerSykmeldingSendApiV2(
-                        sykmeldingStatusService
-                    )
+                    route("/api/v2") {
+                        registrerSykmeldingSendApiV2(
+                            sykmeldingStatusService
+                        )
+                    }
                 }
             }
 

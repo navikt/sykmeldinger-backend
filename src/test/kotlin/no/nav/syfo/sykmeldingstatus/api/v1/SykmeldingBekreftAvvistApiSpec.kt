@@ -3,6 +3,7 @@ package no.nav.syfo.sykmeldingstatus.api.v1
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -33,8 +34,13 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
-
-            application.routing { authenticate("jwt") { registerSykmeldingBekreftAvvistApi(sykmeldingStatusService) } }
+            application.routing {
+                authenticate("jwt") {
+                    route("/api/v1") {
+                        registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
+                    }
+                }
+            }
 
             it("Bruker skal få bekrefte sin egen avviste sykmelding") {
                 val sykmeldingId = "123"

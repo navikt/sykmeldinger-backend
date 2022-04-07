@@ -16,15 +16,10 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.opprettSykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
@@ -35,6 +30,7 @@ import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
@@ -56,21 +52,30 @@ class SykmeldingStatusServiceSpek : Spek({
                 erAvvist = erAvvist,
                 erEgenmeldt = erEgenmeldt
             )
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any(), any()) } returns listOf(
+                Arbeidsgiverinfo(
+                    orgnummer = "orgnummer",
+                    juridiskOrgnummer = "",
+                    navn = "",
+                    stillingsprosent = "",
+                    stilling = "",
+                    aktivtArbeidsforhold = true,
+                    naermesteLeder = null
+                )
+            )
             val expextedErrorMessage =
                 "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
             val error = assertFailsWith<InvalidSykmeldingStatusException> {
                 when (newStatus) {
-                    StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(
-                        opprettSykmeldingSendEventDTO(),
+                    StatusEventDTO.SENDT -> sykmeldingStatusService.registrerUserEvent(
+                        opprettSendtSykmeldingUserEvent(),
                         sykmeldingId,
-                        "user",
                         fnr,
                         token
                     )
-                    StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(
-                        opprettSykmeldingBekreftEventDTO(),
+                    StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
+                        opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
-                        "user",
                         fnr,
                         token
                     )
@@ -89,15 +94,25 @@ class SykmeldingStatusServiceSpek : Spek({
     fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any(), any()) } returns listOf(
+                Arbeidsgiverinfo(
+                    orgnummer = "orgnummer",
+                    juridiskOrgnummer = "",
+                    navn = "",
+                    stillingsprosent = "",
+                    stilling = "",
+                    aktivtArbeidsforhold = true,
+                    naermesteLeder = null
+                )
+            )
             when (newStatus) {
-                StatusEventDTO.SENDT -> sykmeldingStatusService.registrerSendt(
-                    opprettSykmeldingSendEventDTO(),
+                StatusEventDTO.SENDT -> sykmeldingStatusService.registrerUserEvent(
+                    opprettSendtSykmeldingUserEvent(),
                     sykmeldingId,
-                    "user",
                     fnr,
                     token
                 )
-                StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerBekreftet(opprettSykmeldingBekreftEventDTO(), sykmeldingId, "user", fnr, token)
+                StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
                 else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr, token)
             }
 
@@ -180,7 +195,7 @@ class SykmeldingStatusServiceSpek : Spek({
     describe("Test av BEKREFT for sluttbruker") {
         it("Happy-case") {
             runBlocking {
-                sykmeldingStatusService.registrerBekreftet(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null), sykmeldingId, "user", fnr, token)
+                sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
 
                 coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify { sykmeldingStatusJedisService.getStatus(any()) }
@@ -193,7 +208,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
             runBlocking {
                 assertFailsWith<SykmeldingStatusNotFoundException> {
-                    sykmeldingStatusService.registrerBekreftet(SykmeldingBekreftEventDTO(OffsetDateTime.now(ZoneOffset.UTC), null), sykmeldingId, "user", fnr, token)
+                    sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
                 }
 
                 coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
@@ -260,7 +275,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
     describe("Test user event") {
         it("Test SEND user event") {
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -560,12 +575,67 @@ fun MockKMatcherScope.matchStatusWithEmptySporsmals(statusEvent: String) = match
     statusEvent == it.statusEvent && it.sporsmals?.isEmpty() ?: true
 }
 
-fun opprettSykmeldingSendEventDTO(): SykmeldingSendEventDTO =
-    SykmeldingSendEventDTO(
-        OffsetDateTime.now(ZoneOffset.UTC),
-        ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-        listOf(
-            SporsmalOgSvarDTO("", no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"),
-            SporsmalOgSvarDTO("", no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
+fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent =
+    SykmeldingUserEvent(
+        erOpplysningeneRiktige = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = JaEllerNei.JA
+        ),
+        uriktigeOpplysninger = null,
+        arbeidssituasjon = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+        ),
+        arbeidsgiverOrgnummer = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = "orgnummer"
+        ),
+        riktigNarmesteLeder = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = JaEllerNei.JA
+        ),
+        harBruktEgenmelding = null,
+        egenmeldingsperioder = null,
+        harForsikring = null
+    )
+
+fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
+    SykmeldingUserEvent(
+        erOpplysningeneRiktige = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = JaEllerNei.JA
+        ),
+        uriktigeOpplysninger = null,
+        arbeidssituasjon = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = ArbeidssituasjonDTO.FRILANSER
+        ),
+        arbeidsgiverOrgnummer = null,
+        riktigNarmesteLeder = null,
+        harBruktEgenmelding = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = JaEllerNei.JA
+        ),
+        egenmeldingsperioder = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = listOf(
+                Egenmeldingsperiode(
+                    fom = LocalDate.now().minusWeeks(1),
+                    tom = LocalDate.now(),
+                )
+            )
+        ),
+        harForsikring = SporsmalSvar(
+            sporsmaltekst = "",
+            svartekster = "",
+            svar = JaEllerNei.JA
         )
     )

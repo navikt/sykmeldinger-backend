@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
@@ -11,9 +12,11 @@ import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkClass
 import no.nav.syfo.Environment
 import no.nav.syfo.arbeidsgivere.service.getPdlPerson
+import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
@@ -44,7 +47,8 @@ class SykmeldingApiIntegrationTest : Spek({
 
     val redisService = mockkClass(SykmeldingStatusRedisService::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
-    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient)
+    val tokenXClient = mockk<TokenXClient>()
+    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient, tokenXClient, "audience")
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
 
     every { redisService.getStatus(any()) } returns null
@@ -54,7 +58,13 @@ class SykmeldingApiIntegrationTest : Spek({
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
+            application.routing {
+                authenticate("jwt") {
+                    route("/api/v1") {
+                        registerSykmeldingApi(sykmeldingService)
+                    }
+                }
+            }
             it("Should get list of sykmeldinger OK") {
                 httpClient.respond(emptyList<SykmeldingDTO>())
                 withGetSykmeldinger(env) {

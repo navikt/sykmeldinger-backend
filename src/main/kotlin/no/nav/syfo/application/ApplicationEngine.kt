@@ -24,6 +24,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.response.respond
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
@@ -39,8 +40,10 @@ import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoCli
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
+import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApiV2
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
+import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.pdl.client.PdlClient
@@ -48,13 +51,18 @@ import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
+import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApiV2
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApiV2
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
+import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
@@ -70,7 +78,10 @@ fun createApplicationEngine(
     jwkProvider: JwkProvider,
     issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
-    jedisPool: JedisPool
+    jedisPool: JedisPool,
+    jwkProviderTokenX: JwkProvider,
+    tokenXIssuer: String,
+    tokendingsUrl: String
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -81,7 +92,14 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-        setupAuth(env.loginserviceIdportenAudience, jwkProvider, issuer)
+        setupAuth(
+            loginserviceIdportenClientId = env.loginserviceIdportenAudience,
+            jwkProvider = jwkProvider,
+            issuer = issuer,
+            jwkProviderTokenX = jwkProviderTokenX,
+            tokenXIssuer = tokenXIssuer,
+            clientIdTokenX = env.clientIdTokenX
+        )
         install(CallId) {
             generate { UUID.randomUUID().toString() }
             verify { callId: String -> callId.isNotEmpty() }
@@ -126,11 +144,17 @@ fun createApplicationEngine(
             password = vaultSecrets.serviceuserPassword,
             stsUrl = env.stsUrl
         )
-        val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient)
-        val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient)
-        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl)
+        val tokenXClient = TokenXClient(
+            tokendingsUrl = tokendingsUrl,
+            tokenXClientId = env.clientIdTokenX,
+            httpClient = httpClient,
+            privateKey = env.tokenXPrivateJwk
+        )
+        val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.syfosmregisterAudience)
+        val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.syfosmregisterAudience)
+        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
-        val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath)
+        val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath, tokenXClient, env.narmestelederAudience)
 
         val pdlClient = PdlClient(
             httpClient,
@@ -139,7 +163,7 @@ fun createApplicationEngine(
         )
 
         val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
-        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService)
+        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
 
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
@@ -153,12 +177,28 @@ fun createApplicationEngine(
                 setupSwaggerDocApi()
             }
             authenticate("jwt") {
-                registerSykmeldingApi(sykmeldingService)
-                registrerSykmeldingSendApiV2(sykmeldingStatusService)
-                registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
-                registerSykmeldingAvbrytApi(sykmeldingStatusService)
-                registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
+                route("/api/v1") {
+                    registerSykmeldingApi(sykmeldingService)
+                    registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
+                    registerSykmeldingAvbrytApi(sykmeldingStatusService)
+                    registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
+                }
+                route("/api/v2") {
+                    registrerSykmeldingSendApiV2(sykmeldingStatusService)
+                }
+            }
+            authenticate("tokenx") {
+                route("/api/v2") {
+                    registerSykmeldingApiV2(sykmeldingService)
+                    registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService)
+                    registerSykmeldingAvbrytApiV2(sykmeldingStatusService)
+                    registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
+                    registrerBrukerinformasjonApiV2(arbeidsgiverService, pdlService)
+                }
+                route("/api/v3") {
+                    registrerSykmeldingSendApiV3(sykmeldingStatusService)
+                }
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

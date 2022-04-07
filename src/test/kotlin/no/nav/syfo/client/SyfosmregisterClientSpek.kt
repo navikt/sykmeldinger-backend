@@ -18,6 +18,7 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -33,6 +34,7 @@ import kotlin.test.assertFailsWith
 class SyfosmregisterClientSpek : Spek({
 
     val timestamp = OffsetDateTime.of(2020, 2, 2, 15, 0, 0, 0, ZoneOffset.UTC)
+    val tokenXClient = mockk<TokenXClient>()
 
     val httpClient = HttpClient(Apache) {
         install(JsonFeature) {
@@ -75,7 +77,7 @@ class SyfosmregisterClientSpek : Spek({
         }
     }.start()
 
-    val syfosmregisterClient = SyfosmregisterStatusClient("$mockHttpServerUrl/smreg", httpClient)
+    val syfosmregisterClient = SyfosmregisterStatusClient("$mockHttpServerUrl/smreg", httpClient, tokenXClient, "audience")
 
     afterGroup {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))

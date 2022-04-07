@@ -37,6 +37,12 @@ spec:
     pool: nav-prod
   tokenx:
     enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: sykmeldinger
+          namespace: teamsykmelding
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
@@ -48,6 +54,7 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
   ingresses:
     - "https://sykmeldinger-backend.nais.adeo.no"
+    - "https://sykmeldinger-backend.intern.nav.no"
   webproxy: true
   envFrom:
     - configmap: loginservice-idporten
@@ -65,3 +72,11 @@ spec:
       value: https://pdl-api.nais.adeo.no/graphql
     - name: NARMESTELEDER_URL
       value: https://narmesteleder.intern.nav.no
+    - name: SYFOSMREGISTER_AUDIENCE
+      value: prod-fss:teamsykmelding:syfosmregister
+    - name: PDL_AUDIENCE
+      value: prod-fss:pdl:pdl-api
+    - name: AAREG_AUDIENCE
+      value: prod-fss:arbeidsforhold:aareg-services-nais
+    - name: NARMESTELEDER_AUDIENCE
+      value: prod-gcp:teamsykmelding:narmesteleder

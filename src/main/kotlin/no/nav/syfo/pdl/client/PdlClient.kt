@@ -27,4 +27,14 @@ class PdlClient(
             header(navConsumerToken, "Bearer $stsToken")
         }
     }
+
+    suspend fun getPersonTokenX(fnr: String, token: String): GetPersonResponse {
+        val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(ident = fnr))
+        return httpClient.post(basePath) {
+            body = getPersonRequest
+            header(HttpHeaders.Authorization, "Bearer $token")
+            header(temaHeader, tema)
+            header(HttpHeaders.ContentType, "application/json")
+        }
+    }
 }

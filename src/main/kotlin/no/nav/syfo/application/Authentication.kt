@@ -2,16 +2,26 @@ package no.nav.syfo.application
 
 import com.auth0.jwk.JwkProvider
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.Principal
 import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
+import io.ktor.http.auth.HttpAuthHeader
+import io.ktor.request.header
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
 
-fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvider: JwkProvider, issuer: String) {
+fun Application.setupAuth(
+    loginserviceIdportenClientId: List<String>,
+    jwkProvider: JwkProvider,
+    issuer: String,
+    jwkProviderTokenX: JwkProvider,
+    tokenXIssuer: String,
+    clientIdTokenX: String
+) {
     install(Authentication) {
         jwt(name = "jwt") {
             verifier(jwkProvider, issuer)
@@ -28,7 +38,40 @@ fun Application.setupAuth(loginserviceIdportenClientId: List<String>, jwkProvide
                 }
             }
         }
+        jwt(name = "tokenx") {
+            authHeader {
+                if (it.getToken() == null) {
+                    return@authHeader null
+                }
+                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
+            }
+            verifier(jwkProviderTokenX, tokenXIssuer)
+            validate { credentials ->
+                when {
+                    hasClientIdAudience(credentials, clientIdTokenX) && erNiva4(credentials) ->
+                        {
+                            val principal = JWTPrincipal(credentials.payload)
+                            BrukerPrincipal(
+                                fnr = finnFnrFraToken(principal),
+                                principal = principal
+                            )
+                        }
+                    else -> unauthorized(credentials)
+                }
+            }
+        }
     }
+}
+
+fun ApplicationCall.getToken(): String? {
+    if (request.header("Authorization") != null) {
+        return request.header("Authorization")!!.removePrefix("Bearer ")
+    }
+    return request.cookies.get(name = "selvbetjening-idtoken")
+}
+
+fun hasClientIdAudience(credentials: JWTCredential, clientId: String): Boolean {
+    return credentials.payload.audience.contains(clientId)
 }
 
 fun unauthorized(credentials: JWTCredential): Principal? {

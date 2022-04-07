@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import com.nimbusds.jose.jwk.RSAKey
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -21,7 +22,14 @@ data class Environment(
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
     val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
-    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL")
+    val narmesteLederBasePath: String = getEnvVar("NARMESTELEDER_URL"),
+    val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
+    val clientIdTokenX: String = getEnvVar("TOKEN_X_CLIENT_ID"),
+    val tokenXPrivateJwk: RSAKey = RSAKey.parse(getEnvVar("TOKEN_X_PRIVATE_JWK")),
+    val syfosmregisterAudience: String = getEnvVar("SYFOSMREGISTER_AUDIENCE"),
+    val pdlAudience: String = getEnvVar("PDL_AUDIENCE"),
+    val aaregAudience: String = getEnvVar("AAREG_AUDIENCE"),
+    val narmestelederAudience: String = getEnvVar("NARMESTELEDER_AUDIENCE")
 )
 
 data class VaultSecrets(

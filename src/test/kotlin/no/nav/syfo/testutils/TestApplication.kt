@@ -33,7 +33,14 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         cluster = "dev-fss",
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
-        narmesteLederBasePath = "http://url"
+        narmesteLederBasePath = "http://url",
+        tokenXWellKnownUrl = "https://tokenx",
+        clientIdTokenX = "clientId",
+        tokenXPrivateJwk = getDefaultRSAKey(),
+        syfosmregisterAudience = "smreg",
+        pdlAudience = "pdl",
+        aaregAudience = "aareg",
+        narmestelederAudience = "nl"
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
@@ -63,6 +70,6 @@ fun TestApplicationEngine.setUpAuth(): Environment {
     val jwkProvider = JwkProviderBuilder(uri).build()
     val testEnvironment = getTestEnvironment()
 
-    application.setupAuth(testAudience, jwkProvider, testEnvironment.jwtIssuer)
+    application.setupAuth(testAudience, jwkProvider, testEnvironment.jwtIssuer, jwkProvider, testEnvironment.jwtIssuer, testEnvironment.clientIdTokenX)
     return testEnvironment
 }

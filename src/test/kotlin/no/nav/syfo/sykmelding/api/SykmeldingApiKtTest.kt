@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -40,7 +41,13 @@ class SykmeldingApiKtTest : Spek({
             every { mockPayload.subject } returns "123"
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
+            application.routing {
+                authenticate("jwt") {
+                    route("/api/v1") {
+                        registerSykmeldingApi(sykmeldingService)
+                    }
+                }
+            }
             it("Hent sykmeldinger") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
@@ -107,7 +114,13 @@ class SykmeldingApiKtTest : Spek({
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
-            application.routing { authenticate("jwt") { registerSykmeldingApi(sykmeldingService) } }
+            application.routing {
+                authenticate("jwt") {
+                    route("/api/v1") {
+                        registerSykmeldingApi(sykmeldingService)
+                    }
+                }
+            }
             it("Sykmelding by id OK") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger/sykmeldingid") {

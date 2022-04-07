@@ -4,6 +4,7 @@ import io.ktor.auth.authenticate
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
@@ -36,7 +37,13 @@ class SykmeldingGjenapneApiSpek : Spek({
             setUpTestApplication()
             val env = setUpAuth()
 
-            application.routing { authenticate("jwt") { registerSykmeldingGjenapneApi(sykmeldingStatusService) } }
+            application.routing {
+                authenticate("jwt") {
+                    route("/api/v1") {
+                        registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                    }
+                }
+            }
 
             it("Bruker skal få gjenåpne sin egen sykmelding") {
                 val sykmeldingId = "123"
