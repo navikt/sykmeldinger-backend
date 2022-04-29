@@ -44,7 +44,7 @@ class ArbeidsforholdClient(
 
     suspend fun getArbeidsforholdTokenX(fnr: String, ansettelsesperiodeFom: LocalDate, subjectToken: String): List<Arbeidsforhold> {
         val token = tokenXClient.getAccessToken(
-            subjectToken = subjectToken,
+            subjectToken = subjectToken.removePrefix("Bearer "),
             audience = audience
         )
         val iMorgen = LocalDate.now().plusDays(1).toString()
