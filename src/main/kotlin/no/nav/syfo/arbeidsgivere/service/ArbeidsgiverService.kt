@@ -42,11 +42,7 @@ class ArbeidsgiverService(
             return emptyList() // personer med diskresjonskode skal ikke få hentet arbeidsforhold
         }
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
-        val arbeidsgivere = if (erTokenX) {
-            arbeidsforholdClient.getArbeidsforholdTokenX(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, subjectToken = token)
-        } else {
-            arbeidsforholdClient.getArbeidsforhold(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, token = token, stsToken = stsToken.access_token)
-        }
+        val arbeidsgivere = arbeidsforholdClient.getArbeidsforholdTokenX(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, subjectToken = token)
 
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
