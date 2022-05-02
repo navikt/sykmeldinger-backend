@@ -32,10 +32,10 @@ class ArbeidsgiverService(
             return arbeidsgivereFraRedis
         }
 
-        val stsToken = stsOidcClient.oidcToken()
         val person = if (erTokenX) {
             pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = null, erTokenX = true)
         } else {
+            val stsToken = stsOidcClient.oidcToken()
             pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = stsToken.access_token)
         }
         if (person.diskresjonskode) {
