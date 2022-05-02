@@ -32,21 +32,17 @@ class ArbeidsgiverService(
             return arbeidsgivereFraRedis
         }
 
-        val stsToken = stsOidcClient.oidcToken()
         val person = if (erTokenX) {
             pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = null, erTokenX = true)
         } else {
+            val stsToken = stsOidcClient.oidcToken()
             pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = stsToken.access_token)
         }
         if (person.diskresjonskode) {
             return emptyList() // personer med diskresjonskode skal ikke få hentet arbeidsforhold
         }
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
-        val arbeidsgivere = if (erTokenX) {
-            arbeidsforholdClient.getArbeidsforholdTokenX(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, subjectToken = token)
-        } else {
-            arbeidsforholdClient.getArbeidsforhold(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, token = token, stsToken = stsToken.access_token)
-        }
+        val arbeidsgivere = arbeidsforholdClient.getArbeidsforholdTokenX(fnr = fnr, ansettelsesperiodeFom = ansettelsesperiodeFom, subjectToken = token)
 
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
