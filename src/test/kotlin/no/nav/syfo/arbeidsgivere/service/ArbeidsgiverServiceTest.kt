@@ -57,7 +57,7 @@ class ArbeidsgiverServiceTest : Spek({
             pdlPersonService
         )
         coEvery { arbeidsgiverRedisService.getArbeidsgivere(any()) } returns null
-        coEvery { narmestelederClient.getNarmesteledere(any()) } returns getNarmesteledere()
+        coEvery { narmestelederClient.getNarmesteledereTokenX(any()) } returns getNarmesteledere()
         coEvery { organisasjonsinfoClient.getOrginfo(any()) } returns getOrganisasjonsinfo()
         coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
     }
@@ -89,7 +89,7 @@ class ArbeidsgiverServiceTest : Spek({
                 val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
                 arbeidsgiverinformasjon.size shouldBeEqualTo 0
             }
-            coVerify(exactly = 0) { narmestelederClient.getNarmesteledere(any()) }
+            coVerify(exactly = 0) { narmestelederClient.getNarmesteledereTokenX(any()) }
         }
         it("arbeidsgiverService returnerer tom liste hvis bruker har diskresjonskode") {
             coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(
