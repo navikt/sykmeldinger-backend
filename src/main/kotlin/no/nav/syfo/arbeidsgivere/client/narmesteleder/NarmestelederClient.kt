@@ -19,7 +19,7 @@ class NarmestelederClient(
 ) {
     suspend fun getNarmesteledereTokenX(subjectToken: String): List<NarmesteLeder> {
         val token = tokenXClient.getAccessToken(
-            subjectToken = subjectToken,
+            subjectToken = subjectToken.removePrefix("Bearer "),
             audience = audience
         )
         try {
