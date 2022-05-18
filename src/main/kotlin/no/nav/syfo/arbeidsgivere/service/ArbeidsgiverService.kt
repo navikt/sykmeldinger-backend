@@ -47,11 +47,8 @@ class ArbeidsgiverService(
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
         }
-        val aktiveNarmesteledere = if (erTokenX) {
-            narmestelederClient.getNarmesteledereTokenX(token)
-        } else {
-            narmestelederClient.getNarmesteledere(token)
-        }.filter { it.aktivTom == null }
+        val aktiveNarmesteledere = narmestelederClient.getNarmesteledereTokenX(token)
+            .filter { it.aktivTom == null }
 
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {

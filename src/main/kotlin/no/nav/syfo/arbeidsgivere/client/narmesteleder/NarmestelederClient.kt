@@ -17,22 +17,6 @@ class NarmestelederClient(
     private val tokenXClient: TokenXClient,
     private val audience: String
 ) {
-
-    suspend fun getNarmesteledere(token: String): List<NarmesteLeder> {
-        try {
-            return httpClient.get<List<NarmesteLeder>>("$baseUrl/user/sykmeldt/narmesteledere") {
-                headers {
-                    append(HttpHeaders.Authorization, token)
-                    append("Nav-Consumer-Id", "sykmeldinger-backend")
-                }
-                accept(ContentType.Application.Json)
-            }
-        } catch (e: Exception) {
-            log.error("Noe gikk galt ved henting av nærmeste leder")
-            throw e
-        }
-    }
-
     suspend fun getNarmesteledereTokenX(subjectToken: String): List<NarmesteLeder> {
         val token = tokenXClient.getAccessToken(
             subjectToken = subjectToken,
