@@ -18,7 +18,7 @@ class SyfosmregisterSykmeldingClient(
 ) {
     suspend fun getSykmeldingTokenX(subjectToken: String, sykmeldingid: String): Sykmelding? {
         val token = tokenXClient.getAccessToken(
-            subjectToken = subjectToken,
+            subjectToken = subjectToken.removePrefix("Bearer "),
             audience = audience
         )
         try {
@@ -36,7 +36,7 @@ class SyfosmregisterSykmeldingClient(
 
     suspend fun getSykmeldingerTokenX(subjectToken: String, apiFilter: ApiFilter?): List<Sykmelding> {
         val token = tokenXClient.getAccessToken(
-            subjectToken = subjectToken,
+            subjectToken = subjectToken.removePrefix("Bearer "),
             audience = audience
         )
         try {
