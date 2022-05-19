@@ -41,7 +41,6 @@ import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApiV2
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
@@ -139,11 +138,6 @@ fun createApplicationEngine(
         }
         val httpClient = HttpClient(Apache, config)
 
-        val stsOidcClient = StsOidcClient(
-            username = vaultSecrets.serviceuserUsername,
-            password = vaultSecrets.serviceuserPassword,
-            stsUrl = env.stsUrl
-        )
         val tokenXClient = TokenXClient(
             tokendingsUrl = tokendingsUrl,
             tokenXClientId = env.clientIdTokenX,
@@ -163,10 +157,10 @@ fun createApplicationEngine(
         )
 
         val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
-        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
+        val pdlService = PdlPersonService(pdlClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
 
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
-        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
+        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, arbeidsgiverService)
@@ -182,7 +176,7 @@ fun createApplicationEngine(
                     registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
                     registerSykmeldingAvbrytApi(sykmeldingStatusService)
                     registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
+                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService)
                 }
                 route("/api/v2") {
                     registrerSykmeldingSendApiV2(sykmeldingStatusService)

@@ -37,7 +37,7 @@ class SykmeldingServiceTest : Spek({
             val expected = getSykmeldingDTO(timestamps = now)
             val sykmelding = getSykmeldingModel(timestamps = now)
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
-            coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
+            coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
             runBlocking {
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("12345678901", "token", null)
@@ -52,7 +52,7 @@ class SykmeldingServiceTest : Spek({
             val statusFromRedis = getSykmeldingStatusRedisModel(
                 StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
             )
-            coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
+            coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
             runBlocking {

@@ -1,6 +1,5 @@
 package no.nav.syfo.pdl.service
 
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
@@ -16,29 +15,23 @@ const val AKTORID_GRUPPE = "AKTORID"
 
 class PdlPersonService(
     private val pdlClient: PdlClient,
-    private val stsOidcClient: StsOidcClient,
     private val pdlPersonRedisService: PdlPersonRedisService,
     private val tokenXClient: TokenXClient,
     private val audience: String
 ) {
 
-    suspend fun getPerson(fnr: String, userToken: String, callId: String, stsToken: String? = null, erTokenX: Boolean = false): PdlPerson {
+    suspend fun getPerson(fnr: String, userToken: String, callId: String): PdlPerson {
         val personFraRedis = getPersonFromRedis(fnr)
         if (personFraRedis != null) {
             log.debug("Fant person i redis")
             return personFraRedis
         }
 
-        val pdlResponse = if (erTokenX) {
-            val token = tokenXClient.getAccessToken(
-                subjectToken = userToken,
-                audience = audience
-            )
-            pdlClient.getPersonTokenX(fnr, token)
-        } else {
-            val accessToken = stsToken ?: stsOidcClient.oidcToken().access_token
-            pdlClient.getPerson(fnr, userToken, accessToken)
-        }
+        val pdlToken = tokenXClient.getAccessToken(
+            subjectToken = userToken.removePrefix("Bearer "),
+            audience = audience
+        )
+        val pdlResponse = pdlClient.getPersonTokenX(fnr, pdlToken)
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
