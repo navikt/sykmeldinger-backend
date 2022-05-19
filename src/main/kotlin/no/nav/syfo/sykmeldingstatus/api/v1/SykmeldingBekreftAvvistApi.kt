@@ -41,8 +41,7 @@ fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: Sykmeldi
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,
-            token = tokenUtenPrefiks,
-            erTokenX = true
+            token = tokenUtenPrefiks
         )
 
         BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()
