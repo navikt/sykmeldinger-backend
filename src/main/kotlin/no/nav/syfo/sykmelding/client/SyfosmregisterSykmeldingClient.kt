@@ -16,23 +16,9 @@ class SyfosmregisterSykmeldingClient(
     private val tokenXClient: TokenXClient,
     private val audience: String
 ) {
-    suspend fun getSykmelding(token: String, sykmeldingid: String): Sykmelding? {
-        try {
-            return httpClient.get("$endpointUrl/api/v2/sykmeldinger/$sykmeldingid") {
-                accept(ContentType.Application.Json)
-                headers {
-                    append("Authorization", token)
-                }
-            }
-        } catch (e: Exception) {
-            log.error("Noe gikk galt ved kall getSykmelding $sykmeldingid", e)
-            throw e
-        }
-    }
-
     suspend fun getSykmeldingTokenX(subjectToken: String, sykmeldingid: String): Sykmelding? {
         val token = tokenXClient.getAccessToken(
-            subjectToken = subjectToken,
+            subjectToken = subjectToken.removePrefix("Bearer "),
             audience = audience
         )
         try {
@@ -48,23 +34,9 @@ class SyfosmregisterSykmeldingClient(
         }
     }
 
-    suspend fun getSykmeldinger(token: String, apiFilter: ApiFilter?): List<Sykmelding> {
-        try {
-            return httpClient.get(getRequestUrl(apiFilter, "$endpointUrl/api/v2")) {
-                accept(ContentType.Application.Json)
-                headers {
-                    append("Authorization", token)
-                }
-            }
-        } catch (e: Exception) {
-            log.error("Noe gikk galt ved kall getSykmeldinger", e)
-            throw e
-        }
-    }
-
     suspend fun getSykmeldingerTokenX(subjectToken: String, apiFilter: ApiFilter?): List<Sykmelding> {
         val token = tokenXClient.getAccessToken(
-            subjectToken = subjectToken,
+            subjectToken = subjectToken.removePrefix("Bearer "),
             audience = audience
         )
         try {

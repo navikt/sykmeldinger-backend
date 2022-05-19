@@ -45,8 +45,7 @@ fun Route.registerSykmeldingGjenapneApiV2(sykmeldingStatusService: SykmeldingSta
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,
-            token = tokenUtenPrefiks,
-            erTokenX = true
+            token = tokenUtenPrefiks
         )
 
         GJENAPNET_AV_BRUKER_COUNTER.inc()
