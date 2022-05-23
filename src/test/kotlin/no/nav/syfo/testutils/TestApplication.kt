@@ -26,6 +26,7 @@ val testAudience = listOf("loginserviceId1", "loginserviceId2")
 fun getTestEnvironment(audience: List<String> = testAudience): Environment =
     Environment(
         jwtIssuer = "issuer",
+        stsOidcIssuer = "https://security-token-service.nais.preprod.local",
         eregUrl = "https://ereg",
         aaregUrl = "https://aareg",
         pdlGraphqlPath = "http://graphql",

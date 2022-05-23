@@ -16,6 +16,8 @@ import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Periode
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
+import no.nav.syfo.client.OidcToken
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -31,6 +33,7 @@ class ArbeidsgiverServiceTest : Spek({
     val narmestelederClient = mockkClass(NarmestelederClient::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val arbeidsgiverRedisService = mockkClass(ArbeidsgiverRedisService::class, relaxed = true)
+    val stsOidcToken = mockkClass(StsOidcClient::class)
 
     val sykmeldingId = "sykmeldingId"
 
@@ -39,8 +42,11 @@ class ArbeidsgiverServiceTest : Spek({
         organisasjonsinfoClient,
         narmestelederClient,
         pdlPersonService,
+        stsOidcToken,
         arbeidsgiverRedisService
     )
+
+    coEvery { stsOidcToken.oidcToken() } returns OidcToken("token", "jwt", 1L)
 
     beforeEachTest {
         clearMocks(
@@ -53,7 +59,7 @@ class ArbeidsgiverServiceTest : Spek({
         coEvery { arbeidsgiverRedisService.getArbeidsgivere(any()) } returns null
         coEvery { narmestelederClient.getNarmesteledereTokenX(any()) } returns getNarmesteledere()
         coEvery { organisasjonsinfoClient.getOrginfo(any()) } returns getOrganisasjonsinfo()
-        coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
+        coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
     }
 
     describe("Test ArbeidsgiverService") {
@@ -86,7 +92,7 @@ class ArbeidsgiverServiceTest : Spek({
             coVerify(exactly = 0) { narmestelederClient.getNarmesteledereTokenX(any()) }
         }
         it("arbeidsgiverService returnerer tom liste hvis bruker har diskresjonskode") {
-            coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns PdlPerson(
+            coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(
                 Navn("", "", ""),
                 "aktørid",
                 diskresjonskode = true

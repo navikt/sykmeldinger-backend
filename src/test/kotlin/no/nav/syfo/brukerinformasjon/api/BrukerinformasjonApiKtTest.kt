@@ -14,6 +14,8 @@ import io.mockk.coVerify
 import io.mockk.mockkClass
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
+import no.nav.syfo.client.OidcToken
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -27,12 +29,14 @@ import org.spekframework.spek2.style.specification.describe
 
 class BrukerinformasjonApiKtTest : Spek({
     val pdlPersonService = mockkClass(PdlPersonService::class)
+    val stsOidcClient = mockkClass(StsOidcClient::class)
     val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
 
     beforeEachTest {
         clearMocks(pdlPersonService)
         clearMocks(arbeidsgiverService)
-        coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", false)
+        coEvery { stsOidcClient.oidcToken() } returns OidcToken("accesstoken", "type", 1L)
+        coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", false)
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null))
     }
 
@@ -44,7 +48,7 @@ class BrukerinformasjonApiKtTest : Spek({
             application.routing {
                 authenticate("jwt") {
                     route("/api/v1") {
-                        registrerBrukerinformasjonApi(arbeidsgiverService, pdlPersonService)
+                        registrerBrukerinformasjonApi(arbeidsgiverService, pdlPersonService, stsOidcClient)
                     }
                 }
             }
@@ -75,7 +79,7 @@ class BrukerinformasjonApiKtTest : Spek({
             }
 
             it("Får hentet riktig informasjon for innlogget bruker med diskresjonskode") {
-                coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", true)
+                coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", true)
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
                         addHeader(

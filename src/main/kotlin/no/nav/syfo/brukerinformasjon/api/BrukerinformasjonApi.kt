@@ -9,19 +9,22 @@ import io.ktor.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
+import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.util.UUID
 
-fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService, pdlPersonService: PdlPersonService) {
+fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService, pdlPersonService: PdlPersonService, stsOidcClient: StsOidcClient) {
     get("/brukerinformasjon") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
         val token = call.request.headers[HttpHeaders.Authorization]!!
 
+        val stsToken = stsOidcClient.oidcToken()
         val person = pdlPersonService.getPerson(
             fnr = fnr,
             userToken = token,
-            callId = UUID.randomUUID().toString()
+            callId = UUID.randomUUID().toString(),
+            stsToken = stsToken.access_token
         )
 
         val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
@@ -49,13 +52,16 @@ fun Route.registrerBrukerinformasjonApiV2(arbeidsgiverService: ArbeidsgiverServi
         val person = pdlPersonService.getPerson(
             fnr = fnr,
             userToken = tokenUtenPrefiks,
-            callId = UUID.randomUUID().toString()
+            callId = UUID.randomUUID().toString(),
+            stsToken = null,
+            erTokenX = true
         )
 
         val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
             fnr = fnr,
             token = tokenUtenPrefiks,
-            sykmeldingId = UUID.randomUUID().toString()
+            sykmeldingId = UUID.randomUUID().toString(),
+            erTokenX = true
         )
 
         call.respond(

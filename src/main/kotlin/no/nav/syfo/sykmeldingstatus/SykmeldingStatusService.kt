@@ -74,7 +74,7 @@ class SykmeldingStatusService(
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
         if (canChangeStatus(nyStatusEvent = nesteStatus, sisteStatus = sisteStatus.statusEvent, erAvvist = sisteStatus.erAvvist, erEgenmeldt = sisteStatus.erEgenmeldt, sykmeldingId = sykmeldingId)) {
             val arbeidsgiver = when (nesteStatus) {
-                StatusEventDTO.SENDT -> getArbeidsgiver(fnr, token, sykmeldingId, sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar)
+                StatusEventDTO.SENDT -> getArbeidsgiver(fnr, token, sykmeldingId, sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar, erTokenX = erTokenX)
                 else -> null
             }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
@@ -90,8 +90,8 @@ class SykmeldingStatusService(
         }
     }
 
-    private suspend fun getArbeidsgiver(fnr: String, token: String, sykmeldingId: String, orgnummer: String): Arbeidsgiverinfo {
-        return arbeidsgiverService.getArbeidsgivere(fnr, token, sykmeldingId)
+    private suspend fun getArbeidsgiver(fnr: String, token: String, sykmeldingId: String, orgnummer: String, erTokenX: Boolean = false): Arbeidsgiverinfo {
+        return arbeidsgiverService.getArbeidsgivere(fnr, token, sykmeldingId, erTokenX = erTokenX)
             .find { it.orgnummer == orgnummer }
             ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
     }
