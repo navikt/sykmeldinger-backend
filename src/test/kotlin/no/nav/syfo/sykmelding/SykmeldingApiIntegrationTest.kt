@@ -52,7 +52,6 @@ class SykmeldingApiIntegrationTest : Spek({
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
 
     every { redisService.getStatus(any()) } returns null
-    coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
     coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
 
     describe("Sykmeldinger api integration test") {

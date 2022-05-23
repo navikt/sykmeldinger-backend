@@ -3,7 +3,6 @@ package no.nav.syfo.sykmelding.client
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.ServerResponseException
 import io.ktor.http.HttpStatusCode
-import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.TokenXClient
@@ -25,15 +24,11 @@ class SyfosmregisterSykmeldingClientTest : Spek({
     val tokenXClient = mockk<TokenXClient>()
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(endpointUrl, httpClient.httpClient, tokenXClient, "audience")
 
-    beforeEachTest {
-        coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
-    }
-
     describe("Test GET Sykmeldinger fra syfosmregister") {
         it("Should get empty list of Sykmeldinger") {
             httpClient.respond(objectMapper.writeValueAsString(emptyList<Sykmelding>()))
             runBlocking {
-                val result = syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null)
+                val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 result shouldBeEqualTo emptyList()
             }
         }
@@ -41,7 +36,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
         it("Should get list of sykmeldinger") {
             httpClient.respond(objectMapper.writeValueAsString(listOf(getSykmeldingModel())))
             runBlocking {
-                val result = syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null)
+                val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 result.size shouldBeEqualTo 1
             }
         }
@@ -50,7 +45,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
             httpClient.respond(HttpStatusCode.InternalServerError)
             runBlocking {
                 val exception = assertFailsWith<ServerResponseException> {
-                    syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null)
+                    syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 }
                 exception.response.status shouldBeEqualTo HttpStatusCode.InternalServerError
             }
@@ -59,7 +54,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
             httpClient.respond(HttpStatusCode.Unauthorized)
             runBlocking {
                 val exception = assertFailsWith<ClientRequestException> {
-                    syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null)
+                    syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 }
                 exception.response.status shouldBeEqualTo HttpStatusCode.Unauthorized
             }
@@ -68,7 +63,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
             httpClient.respond(HttpStatusCode.NotFound)
             runBlocking {
                 val exception = assertFailsWith<ClientRequestException> {
-                    syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null)
+                    syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
                 }
                 exception.response.status shouldBeEqualTo HttpStatusCode.NotFound
             }
@@ -77,9 +72,9 @@ class SyfosmregisterSykmeldingClientTest : Spek({
 
     describe("Lager riktig request-url") {
         it("Får riktig url uten filter") {
-            val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(null, null, null, null), "$endpointUrl/api/v3")
+            val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(null, null, null, null), "$endpointUrl/api/v2")
 
-            url shouldBeEqualTo "$endpointUrl/api/v3/sykmeldinger"
+            url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger"
         }
         it("Får riktig url med fom og tom") {
             val url = syfosmregisterSykmeldingClient.getRequestUrl(
@@ -89,10 +84,10 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                     null,
                     null
                 ),
-                "$endpointUrl/api/v3"
+                "$endpointUrl/api/v2"
             )
 
-            url shouldBeEqualTo "$endpointUrl/api/v3/sykmeldinger?fom=2020-04-01&tom=2020-04-05"
+            url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?fom=2020-04-01&tom=2020-04-05"
         }
         it("Får riktig url med fom og tom og exclude") {
             val url = syfosmregisterSykmeldingClient.getRequestUrl(
@@ -102,10 +97,10 @@ class SyfosmregisterSykmeldingClientTest : Spek({
                     listOf("AVBRUTT"),
                     null
                 ),
-                "$endpointUrl/api/v3"
+                "$endpointUrl/api/v2"
             )
 
-            url shouldBeEqualTo "$endpointUrl/api/v3/sykmeldinger?exclude=AVBRUTT&fom=2020-04-01&tom=2020-04-05"
+            url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-04-01&tom=2020-04-05"
         }
     }
 })

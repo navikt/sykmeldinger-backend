@@ -45,7 +45,8 @@ fun Route.registerSykmeldingAvbrytApiV2(sykmeldingStatusService: SykmeldingStatu
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,
-            token = tokenUtenPrefiks
+            token = tokenUtenPrefiks,
+            erTokenX = true
         )
 
         AVBRUTT_AV_BRUKER_COUNTER.inc()
