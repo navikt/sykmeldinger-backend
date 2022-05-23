@@ -1,6 +1,6 @@
 package no.nav.syfo.sykmelding
 
-import io.mockk.clearMocks
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkClass
@@ -28,7 +28,7 @@ class SykmeldingServiceTest : Spek({
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlPersonService)
 
     beforeEachTest {
-        clearMocks(sykmeldingStatusRedisService, syfosmregisterSykmeldingClient, pdlPersonService)
+        clearAllMocks()
     }
 
     describe("Get Sykmeldinger and latest status") {
@@ -36,7 +36,7 @@ class SykmeldingServiceTest : Spek({
             val now = OffsetDateTime.now()
             val expected = getSykmeldingDTO(timestamps = now)
             val sykmelding = getSykmeldingModel(timestamps = now)
-            coEvery { syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null) } returns listOf(sykmelding)
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
             every { sykmeldingStatusRedisService.getStatus(any()) } returns null
             runBlocking {
@@ -53,7 +53,7 @@ class SykmeldingServiceTest : Spek({
                 StatusEventDTO.SENDT, OffsetDateTime.now(ZoneOffset.UTC)
             )
             coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
-            coEvery { syfosmregisterSykmeldingClient.getSykmeldingerTokenX("token", null) } returns listOf(sykmelding)
+            coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
             runBlocking {
                 val returndSykmelding = sykmeldingService.hentSykmeldinger("fnr", "token", null)

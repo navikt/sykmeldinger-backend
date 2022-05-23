@@ -21,18 +21,30 @@ class SykmeldingService(
     private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
     private val pdlPersonService: PdlPersonService
 ) {
-    suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String): SykmeldingDTO? {
+    suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String, erTokenX: Boolean = false): SykmeldingDTO? {
         val callId = UUID.randomUUID().toString()
-        return syfosmregisterSykmeldingClient.getSykmeldingTokenX(subjectToken = token, sykmeldingid = sykmeldingid)
-            ?.run(this::getSykmeldingWithLatestStatus)
-            ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
+        return if (erTokenX) {
+            syfosmregisterSykmeldingClient.getSykmeldingTokenX(subjectToken = token, sykmeldingid = sykmeldingid)
+                ?.run(this::getSykmeldingWithLatestStatus)
+                ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
+        } else {
+            syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
+                ?.run(this::getSykmeldingWithLatestStatus)
+                ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
+        }
     }
 
-    suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
+    suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?, erTokenX: Boolean = false): List<SykmeldingDTO> {
         val callId = UUID.randomUUID().toString()
-        return syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
-            .map(this::getSykmeldingWithLatestStatus)
-            .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
+        return if (erTokenX) {
+            syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
+                .map(this::getSykmeldingWithLatestStatus)
+                .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
+        } else {
+            syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
+                .map(this::getSykmeldingWithLatestStatus)
+                .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
+        }
     }
 
     private fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {

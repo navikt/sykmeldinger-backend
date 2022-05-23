@@ -47,7 +47,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
-            coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
                 oldStatus,
                 erAvvist = erAvvist,
                 erEgenmeldt = erEgenmeldt
@@ -93,7 +93,7 @@ class SykmeldingStatusServiceSpek : Spek({
     }
     fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
-            coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
@@ -126,7 +126,7 @@ class SykmeldingStatusServiceSpek : Spek({
         every { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
         every { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
         every { sykmeldingStatusJedisService.getStatus(any()) } returns null
-        coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1))
+        coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1))
     }
 
     describe("Hent nyeste status") {
@@ -139,7 +139,7 @@ class SykmeldingStatusServiceSpek : Spek({
                     erEgenmeldt = false
                 )
                 coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingSendEventDTO
-                coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
                     StatusEventDTO.APEN,
                     redisSykmeldingSendEventDTO.timestamp.minusNanos(1),
                     erAvvist = true,
@@ -160,7 +160,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 val redisSykmeldingStatus =
                     getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
                 coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingStatus
-                coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(
+                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
                     StatusEventDTO.SENDT,
                     redisSykmeldingStatus.timestamp.plusNanos(1),
                     erAvvist = false,
@@ -179,7 +179,10 @@ class SykmeldingStatusServiceSpek : Spek({
         it("Ikke tilgang til sykmeldingstatus") {
             runBlocking {
                 coEvery {
-                    syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any())
+                    syfosmregisterClient.hentSykmeldingstatus(
+                        any(),
+                        any()
+                    )
                 } throws RuntimeException("Ingen tilgang")
                 val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
                     sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
@@ -194,21 +197,21 @@ class SykmeldingStatusServiceSpek : Spek({
             runBlocking {
                 sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
 
-                coVerify { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) }
+                coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify { sykmeldingStatusJedisService.getStatus(any()) }
                 verify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
                 verify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
             }
         }
         it("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
-            coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } throws RuntimeException("Ingen tilgang")
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } throws RuntimeException("Ingen tilgang")
 
             runBlocking {
                 assertFailsWith<SykmeldingStatusNotFoundException> {
                     sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
                 }
 
-                coVerify { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) }
+                coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
                 verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
                 verify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
@@ -218,7 +221,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
     describe("Test bekrefting av avvist sykmelding") {
         it("Får bekrefte avvist sykmelding med status APEN") {
-            coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns SykmeldingStatusEventDTO(
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = true
@@ -234,7 +237,7 @@ class SykmeldingStatusServiceSpek : Spek({
         }
 
         it("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
-            coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns SykmeldingStatusEventDTO(
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.BEKREFTET,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = true
@@ -252,7 +255,7 @@ class SykmeldingStatusServiceSpek : Spek({
         }
 
         it("Får ikke bekrefte sykmelding som ikke er avvist") {
-            coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns SykmeldingStatusEventDTO(
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.BEKREFTET,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = false

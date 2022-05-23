@@ -18,7 +18,6 @@ import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -60,7 +59,7 @@ class SyfosmregisterClientSpek : Spek({
             }
         }
         routing {
-            get("/smreg/api/v3/sykmeldinger/{sykmeldingsid}/status") {
+            get("/smreg/sykmeldinger/{sykmeldingsid}/status") {
                 when {
                     call.parameters["sykmeldingsid"] == "1" ->
                         call.respond(listOf(SykmeldingStatusEventDTO(StatusEventDTO.APEN, timestamp)))
@@ -78,8 +77,6 @@ class SyfosmregisterClientSpek : Spek({
         }
     }.start()
 
-    coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
-
     val syfosmregisterClient = SyfosmregisterStatusClient("$mockHttpServerUrl/smreg", httpClient, tokenXClient, "audience")
 
     afterGroup {
@@ -90,7 +87,7 @@ class SyfosmregisterClientSpek : Spek({
         it("Kan hente status for egen sykmelding med status APEN") {
             var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("1", "token")
+                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("1", "token")
             }
 
             sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.APEN
@@ -100,7 +97,7 @@ class SyfosmregisterClientSpek : Spek({
         it("Kan hente status for egen sykmelding med status SENDT") {
             var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("2", "token")
+                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("2", "token")
             }
 
             sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.SENDT
@@ -110,7 +107,7 @@ class SyfosmregisterClientSpek : Spek({
         it("Kan hente status for egen sykmelding med status BEKREFTET") {
             var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("3", "token")
+                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("3", "token")
             }
 
             sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET
@@ -120,7 +117,7 @@ class SyfosmregisterClientSpek : Spek({
         it("Kan hente status for egen sykmelding med status AVBRUTT") {
             var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
             runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("4", "token")
+                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("4", "token")
             }
 
             sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.AVBRUTT
@@ -130,7 +127,7 @@ class SyfosmregisterClientSpek : Spek({
         it("Henting av status for annen brukers sykmelding gir feilmelding") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    syfosmregisterClient.hentSykmeldingstatusTokenX("5", "token")
+                    syfosmregisterClient.hentSykmeldingstatus("5", "token")
                 }
             }
         }
@@ -138,7 +135,7 @@ class SyfosmregisterClientSpek : Spek({
         it("Får feilmelding hvis syfosmregister svarer med feilmelding") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    syfosmregisterClient.hentSykmeldingstatusTokenX("6", "token")
+                    syfosmregisterClient.hentSykmeldingstatus("6", "token")
                 }
             }
         }
