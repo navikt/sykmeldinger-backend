@@ -12,6 +12,8 @@ data class Environment(
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val jwkKeysUrl: String = getEnvVar("JWKKEYS_URL", "https://login.microsoftonline.com/common/discovery/keys"),
     val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
+    val stsOidcIssuer: String = getEnvVar("STS_OIDC_ISSUER"),
+    val stsUrl: String = getEnvVar("STS_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.nais.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
     val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
@@ -31,6 +33,8 @@ data class Environment(
 )
 
 data class VaultSecrets(
+    val serviceuserUsername: String = getFileAsString("/secrets/serviceuser/username"),
+    val serviceuserPassword: String = getFileAsString("/secrets/serviceuser/password"),
     val clientId: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_id"),
     val clientSecret: String = getFileAsString("/secrets/azuread/sykmeldinger-backend/client_secret"),
     val redisSecret: String = getEnvVar("REDIS_PASSWORD")

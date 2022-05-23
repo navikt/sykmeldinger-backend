@@ -21,7 +21,7 @@ class PdlClientTest : Spek({
         it("Skal få hente person fra pdl") {
             httpClient.respond(getTestData())
             runBlocking {
-                val response = pdlClient.getPersonTokenX("12345678901", "Bearer token")
+                val response = pdlClient.getPerson("12345678901", "Bearer token", "Bearer token")
                 response.data.person shouldNotBeEqualTo null
                 response.data.person?.navn?.size shouldBeEqualTo 1
                 response.data.person?.navn!![0].fornavn shouldBeEqualTo "RASK"
@@ -34,7 +34,7 @@ class PdlClientTest : Spek({
         it("Skal få hentPerson = null ved error") {
             httpClient.respond(getErrorResponse())
             runBlocking {
-                val response = pdlClient.getPersonTokenX("12345678901", "Bearer token")
+                val response = pdlClient.getPerson("12345678901", "Bearer token", "Bearer token")
                 response.data.person shouldBeEqualTo null
                 response.errors?.size shouldBeEqualTo 1
                 response.errors!![0].message shouldBeEqualTo "Ikke tilgang til å se person"
