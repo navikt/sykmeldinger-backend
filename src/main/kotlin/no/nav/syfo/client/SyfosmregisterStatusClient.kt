@@ -1,7 +1,8 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -16,10 +17,9 @@ class SyfosmregisterStatusClient(
     private val tokenXClient: TokenXClient,
     private val audience: String
 ) {
-
     suspend fun hentSykmeldingstatus(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
         try {
-            val statusliste = httpClient.get<List<SykmeldingStatusEventDTO>>("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
+            val statusliste = httpClient.get("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
                 accept(ContentType.Application.Json)
                 headers {
                     append("Authorization", token)
@@ -27,7 +27,7 @@ class SyfosmregisterStatusClient(
                 }
             }
             log.info("Hentet status for sykmeldingId {}", sykmeldingId)
-            return statusliste.first()
+            return statusliste.body<List<SykmeldingStatusEventDTO>>().first()
         } catch (e: Exception) {
             if (e is ClientRequestException && e.response.status == HttpStatusCode.Forbidden) {
                 log.warn("Bruker har ikke tilgang til sykmelding med id $sykmeldingId")
@@ -45,7 +45,7 @@ class SyfosmregisterStatusClient(
             audience = audience
         )
         try {
-            val statusliste = httpClient.get<List<SykmeldingStatusEventDTO>>("$endpointUrl/api/v3/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
+            val statusliste = httpClient.get("$endpointUrl/api/v3/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
                 accept(ContentType.Application.Json)
                 headers {
                     append("Authorization", "Bearer $token")
@@ -53,7 +53,7 @@ class SyfosmregisterStatusClient(
                 }
             }
             log.info("Hentet status for sykmeldingId {} med tokenx", sykmeldingId)
-            return statusliste.first()
+            return statusliste.body<List<SykmeldingStatusEventDTO>>().first()
         } catch (e: Exception) {
             if (e is ClientRequestException && e.response.status == HttpStatusCode.Forbidden) {
                 log.warn("Bruker har ikke tilgang til sykmelding med id $sykmeldingId (tokenx)")

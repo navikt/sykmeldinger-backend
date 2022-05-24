@@ -1,6 +1,7 @@
 package no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
@@ -37,7 +38,7 @@ class ArbeidsforholdClient(
             ) {
                 header(navPersonident, fnr)
                 header(HttpHeaders.Authorization, "Bearer $token")
-            }
+            }.body()
         } catch (e: Exception) {
             log.error("Noe gikk galt ved henting av arbeidsforhold (tokenX)", e)
             throw e

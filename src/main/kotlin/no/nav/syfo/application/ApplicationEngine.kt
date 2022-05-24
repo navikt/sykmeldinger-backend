@@ -5,30 +5,27 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.authenticate
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.features.CallId
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.jackson
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.response.respond
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.install
+import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
@@ -109,7 +106,7 @@ fun createApplicationEngine(
             setUpSykmeldingSendApiV2ExeptionHandler()
             setUpSykmeldingStatusExeptionHandler()
             setUpSykmeldingExceptionHandler()
-            exception<Throwable> { cause ->
+            exception<Throwable> { call, cause ->
                 call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
                 log.error("Caught exception ${cause.message}", cause)
                 if (cause is ExecutionException) {
@@ -121,8 +118,8 @@ fun createApplicationEngine(
         }
 
         val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-            install(JsonFeature) {
-                serializer = JacksonSerializer {
+            install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+                jackson {
                     registerKotlinModule()
                     registerModule(JavaTimeModule())
                     configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -130,12 +127,13 @@ fun createApplicationEngine(
                 }
             }
             HttpResponseValidator {
-                handleResponseException { exception ->
+                handleResponseExceptionWithRequest { exception, _ ->
                     when (exception) {
                         is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
                     }
                 }
             }
+            expectSuccess = true
         }
         val httpClient = HttpClient(Apache, config)
 

@@ -1,11 +1,11 @@
 package no.nav.syfo.brukerinformasjon.api
 
-import io.ktor.application.call
-import io.ktor.auth.authentication
 import io.ktor.http.HttpHeaders
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
+import io.ktor.server.application.call
+import io.ktor.server.auth.authentication
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService

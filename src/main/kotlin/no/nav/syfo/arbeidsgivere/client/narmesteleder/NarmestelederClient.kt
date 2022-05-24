@@ -1,6 +1,7 @@
 package no.nav.syfo.arbeidsgivere.client.narmesteleder
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -23,13 +24,13 @@ class NarmestelederClient(
             audience = audience
         )
         try {
-            return httpClient.get<List<NarmesteLeder>>("$baseUrl/user/v2/sykmeldt/narmesteledere") {
+            return httpClient.get("$baseUrl/user/v2/sykmeldt/narmesteledere") {
                 headers {
                     append(HttpHeaders.Authorization, token)
                     append("Nav-Consumer-Id", "sykmeldinger-backend")
                 }
                 accept(ContentType.Application.Json)
-            }
+            }.body<List<NarmesteLeder>>()
         } catch (e: Exception) {
             log.error("Noe gikk galt ved henting av nærmeste leder")
             throw e

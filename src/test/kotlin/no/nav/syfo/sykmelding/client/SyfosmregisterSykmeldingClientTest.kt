@@ -1,8 +1,8 @@
 package no.nav.syfo.sykmelding.client
 
 import io.kotest.core.spec.style.FunSpec
-import io.ktor.client.features.ClientRequestException
-import io.ktor.client.features.ServerResponseException
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
 import io.mockk.mockk
 import no.nav.syfo.client.TokenXClient
