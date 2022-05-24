@@ -1,18 +1,17 @@
 package no.nav.syfo.sykmeldingstatus.redis
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.application.JedisConfig
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import redis.clients.jedis.JedisPool
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class SykmeldingStatusRedisServiceTest : Spek({
+class SykmeldingStatusRedisServiceTest : FunSpec({
 
     val redisContainer: GenericContainer<Nothing> = GenericContainer("navikt/secure-redis:5.0.3-alpine-2")
     redisContainer.withExposedPorts(6379)
@@ -27,12 +26,12 @@ class SykmeldingStatusRedisServiceTest : Spek({
     val jedisPool = JedisPool(JedisConfig(), redisContainer.containerIpAddress, redisContainer.getMappedPort(6379))
     val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, "secret")
 
-    afterGroup {
+    afterSpec {
         redisContainer.stop()
     }
 
-    describe("SykmeldingStatusRedisService") {
-        it("Should update status in redis") {
+    context("SykmeldingStatusRedisService") {
+        test("Should update status in redis") {
             val status = SykmeldingStatusRedisModel(
                 OffsetDateTime.now(ZoneOffset.UTC),
                 StatusEventDTO.APEN,
@@ -46,7 +45,7 @@ class SykmeldingStatusRedisServiceTest : Spek({
             redisStatus shouldBeEqualTo status
         }
 
-        it("Get sykmelding status empty") {
+        test("Get sykmelding status empty") {
             val status = sykmeldingStatusRedisService.getStatus("1234")
             status shouldBe null
         }

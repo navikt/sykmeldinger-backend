@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
@@ -23,15 +24,13 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.net.ServerSocket
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertFailsWith
 
-class SyfosmregisterClientSpek : Spek({
+class SyfosmregisterClientSpek : FunSpec({
 
     val timestamp = OffsetDateTime.of(2020, 2, 2, 15, 0, 0, 0, ZoneOffset.UTC)
     val tokenXClient = mockk<TokenXClient>()
@@ -79,52 +78,40 @@ class SyfosmregisterClientSpek : Spek({
 
     val syfosmregisterClient = SyfosmregisterStatusClient("$mockHttpServerUrl/smreg", httpClient, tokenXClient, "audience")
 
-    afterGroup {
+    afterSpec {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
-    describe("Test av sykmeldingstatus-API") {
-        it("Kan hente status for egen sykmelding med status APEN") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
-            runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("1", "token")
-            }
+    context("Test av sykmeldingstatus-API") {
+        test("Kan hente status for egen sykmelding med status APEN") {
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("1", "token")
 
-            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.APEN
-            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.APEN
+            sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
-        it("Kan hente status for egen sykmelding med status SENDT") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
-            runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("2", "token")
-            }
+        test("Kan hente status for egen sykmelding med status SENDT") {
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("2", "token")
 
-            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.SENDT
-            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.SENDT
+            sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
-        it("Kan hente status for egen sykmelding med status BEKREFTET") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
-            runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("3", "token")
-            }
+        test("Kan hente status for egen sykmelding med status BEKREFTET") {
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("3", "token")
 
-            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET
-            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET
+            sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
-        it("Kan hente status for egen sykmelding med status AVBRUTT") {
-            var sykmeldingStatusEventDTO: SykmeldingStatusEventDTO?
-            runBlocking {
-                sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("4", "token")
-            }
+        test("Kan hente status for egen sykmelding med status AVBRUTT") {
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("4", "token")
 
-            sykmeldingStatusEventDTO?.statusEvent shouldBeEqualTo StatusEventDTO.AVBRUTT
-            sykmeldingStatusEventDTO?.timestamp shouldBeEqualTo timestamp
+            sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.AVBRUTT
+            sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
-        it("Henting av status for annen brukers sykmelding gir feilmelding") {
+        test("Henting av status for annen brukers sykmelding gir feilmelding") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     syfosmregisterClient.hentSykmeldingstatus("5", "token")
@@ -132,7 +119,7 @@ class SyfosmregisterClientSpek : Spek({
             }
         }
 
-        it("Får feilmelding hvis syfosmregister svarer med feilmelding") {
+        test("Får feilmelding hvis syfosmregister svarer med feilmelding") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
                     syfosmregisterClient.hentSykmeldingstatus("6", "token")

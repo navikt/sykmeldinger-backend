@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -35,12 +36,10 @@ import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class SykmeldingApiIntegrationTest : Spek({
+class SykmeldingApiIntegrationTest : FunSpec({
 
     val httpClient = HttpClientTest()
     httpClient.responseData = ResponseData(HttpStatusCode.NotFound, "")
@@ -54,7 +53,7 @@ class SykmeldingApiIntegrationTest : Spek({
     every { redisService.getStatus(any()) } returns null
     coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
 
-    describe("Sykmeldinger api integration test") {
+    context("Sykmeldinger api integration test") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -65,13 +64,13 @@ class SykmeldingApiIntegrationTest : Spek({
                     }
                 }
             }
-            it("Should get list of sykmeldinger OK") {
+            test("Should get list of sykmeldinger OK") {
                 httpClient.respond(emptyList<SykmeldingDTO>())
                 withGetSykmeldinger(env) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
-            it("Should get sykmeldinger with updated status from redis") {
+            test("Should get sykmeldinger with updated status from redis") {
                 val sykmeldingWithPasientInfoDTO = getSykmeldingDTO()
                 httpClient.respond(listOf(sykmeldingWithPasientInfoDTO))
                 val newSykmeldingStatus = getSykmeldingStatusRedisModel(
@@ -95,7 +94,7 @@ class SykmeldingApiIntegrationTest : Spek({
                 }
             }
 
-            it("Should get sykmeldinger with newest status in registeret") {
+            test("Should get sykmeldinger with newest status in registeret") {
                 val sykmeldingDTO = getSykmeldingModel()
                 httpClient.respond(listOf(sykmeldingDTO))
                 val redisSykmeldingStatus = getSykmeldingStatusRedisModel(
@@ -110,21 +109,21 @@ class SykmeldingApiIntegrationTest : Spek({
                         listOf(sykmeldingDTO)
                 }
             }
-            it("Should get unauthorize when register returns unauthorized") {
+            test("Should get unauthorize when register returns unauthorized") {
                 httpClient.respond(HttpStatusCode.Unauthorized, "Unauthorized")
                 withGetSykmeldinger(env) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                     response.content shouldBeEqualTo "Unauthorized"
                 }
             }
-            it("Should get forbidden when register returns forbidden") {
+            test("Should get forbidden when register returns forbidden") {
                 httpClient.respond(HttpStatusCode.Forbidden, "Forbidden")
                 withGetSykmeldinger(env) {
                     response.status() shouldBeEqualTo HttpStatusCode.Forbidden
                     response.content shouldBeEqualTo "Forbidden"
                 }
             }
-            it("Should get 500 when register returns 500") {
+            test("Should get 500 when register returns 500") {
                 httpClient.respond(HttpStatusCode.InternalServerError, "Feil i registeret")
                 withGetSykmeldinger(env) {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError

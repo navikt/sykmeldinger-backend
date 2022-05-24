@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus.api.v1
 
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -19,18 +20,16 @@ import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-class SykmeldingBekreftAvvistApiSpec : Spek({
+class SykmeldingBekreftAvvistApiSpec : FunSpec({
     val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } just Runs
     }
 
-    describe("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {
+    context("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -42,7 +41,7 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
                 }
             }
 
-            it("Bruker skal få bekrefte sin egen avviste sykmelding") {
+            test("Bruker skal få bekrefte sin egen avviste sykmelding") {
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreftAvvist") {
@@ -61,7 +60,7 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
                 }
             }
 
-            it("Bruker skal ikke få bekrefte sin egen sykmelding når den ikke kan bekreftes") {
+            test("Bruker skal ikke få bekrefte sin egen sykmelding når den ikke kan bekreftes") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
@@ -81,7 +80,7 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
                 }
             }
 
-            it("Skal ikke kunne bekrefte annen brukers sykmelding") {
+            test("Skal ikke kunne bekrefte annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
@@ -100,7 +99,7 @@ class SykmeldingBekreftAvvistApiSpec : Spek({
                 }
             }
 
-            it("Skal ikke kunne bruke apiet med token med feil audience") {
+            test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
                         addHeader(

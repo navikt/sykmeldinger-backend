@@ -1,10 +1,10 @@
 package no.nav.syfo.arbeidsgivere.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockkClass
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Ansettelsesperiode
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsavtale
@@ -22,11 +22,9 @@ import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 
-class ArbeidsgiverServiceTest : Spek({
+class ArbeidsgiverServiceTest : FunSpec({
 
     val arbeidsforholdClient = mockkClass(ArbeidsforholdClient::class)
     val organisasjonsinfoClient = mockkClass(OrganisasjonsinfoClient::class)
@@ -48,7 +46,7 @@ class ArbeidsgiverServiceTest : Spek({
 
     coEvery { stsOidcToken.oidcToken() } returns OidcToken("token", "jwt", 1L)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(
             arbeidsforholdClient,
             arbeidsgiverRedisService,
@@ -62,8 +60,8 @@ class ArbeidsgiverServiceTest : Spek({
         coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns getPdlPerson()
     }
 
-    describe("Test ArbeidsgiverService") {
-        it("arbeidsgiverService returnerer liste med arbeidsforhold") {
+    context("Test ArbeidsgiverService") {
+        test("arbeidsgiverService returnerer liste med arbeidsforhold") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforholdTokenX(
                     any(),
@@ -71,49 +69,49 @@ class ArbeidsgiverServiceTest : Spek({
                     any()
                 )
             } returns getArbeidsgiverforhold()
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo "100.0"
-                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
-                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
-                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+            arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo "100.0"
+            arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+            arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+            arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
+
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
-        it("arbeidsgiverService returnerer tom liste hvis bruker ikke har arbeidsforhold") {
+        test("arbeidsgiverService returnerer tom liste hvis bruker ikke har arbeidsforhold") {
             coEvery { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) } returns emptyList()
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 0
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 0
+
             coVerify(exactly = 0) { narmestelederClient.getNarmesteledereTokenX(any()) }
         }
-        it("arbeidsgiverService returnerer tom liste hvis bruker har diskresjonskode") {
+        test("arbeidsgiverService returnerer tom liste hvis bruker har diskresjonskode") {
             coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(
                 Navn("", "", ""),
                 "aktørid",
                 diskresjonskode = true
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 0
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 0
+
             coVerify(exactly = 0) { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) }
         }
-        it("henter arbeidsgivere fra redis") {
+        test("henter arbeidsgivere fra redis") {
             coEvery { arbeidsgiverRedisService.getArbeidsgivere(any()) } returns listOf(getArbeidsgiverInfoRedisModel())
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+
             coVerify(exactly = 0) { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) }
             coVerify(exactly = 0) { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
 
-        it("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode før dagens dato") {
+        test("Viser arbeidsforhold som ikke aktivt hvis tom er satt for ansettelsesperiode før dagens dato") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforholdTokenX(
                     any(),
@@ -128,13 +126,12 @@ class ArbeidsgiverServiceTest : Spek({
                     )
                 )
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
         }
-        it("Viser arbeidsforhold som ikke aktivt hvis fom er satt for ansettelsesperiode etter dagens dato") {
+        test("Viser arbeidsforhold som ikke aktivt hvis fom er satt for ansettelsesperiode etter dagens dato") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforholdTokenX(
                     any(),
@@ -144,13 +141,12 @@ class ArbeidsgiverServiceTest : Spek({
             } returns getArbeidsgiverforhold(
                 ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.now().plusDays(1), tom = LocalDate.now().plusDays(10)))
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo false
         }
-        it("Viser arbeidsforhold som aktivt hvis tom-dato er i fremtiden") {
+        test("Viser arbeidsforhold som aktivt hvis tom-dato er i fremtiden") {
             coEvery {
                 arbeidsforholdClient.getArbeidsforholdTokenX(
                     any(),
@@ -160,13 +156,12 @@ class ArbeidsgiverServiceTest : Spek({
             } returns getArbeidsgiverforhold(
                 ansettelsesperiode = Ansettelsesperiode(Periode(fom = LocalDate.now().minusDays(1), tom = LocalDate.now().plusDays(1)))
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
         }
-        it("Bruker stillingsprosent fra nyeste arbeidsavtale") {
+        test("Bruker stillingsprosent fra nyeste arbeidsavtale") {
             coEvery { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
@@ -193,13 +188,11 @@ class ArbeidsgiverServiceTest : Spek({
                 )
             )
 
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo "50.0"
-            }
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo "50.0"
         }
-        it("Antar 100% stilling hvis arbeidsavtale mangler") {
+        test("Antar 100% stilling hvis arbeidsavtale mangler") {
             coEvery { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
@@ -211,14 +204,12 @@ class ArbeidsgiverServiceTest : Spek({
                 )
             )
 
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo "100.0"
-            }
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo "100.0"
         }
 
-        it("arbeidsgiverService filtrerer bort duplikate arbeidsforhold for samme orgnummer") {
+        test("arbeidsgiverService filtrerer bort duplikate arbeidsforhold for samme orgnummer") {
             coEvery { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
@@ -269,18 +260,18 @@ class ArbeidsgiverServiceTest : Spek({
                     )
                 )
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 2
-                arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
-                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
-                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 2
+            arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+            arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+            arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+            arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
+
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
-        it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
+        test("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold for samme orgnummer") {
             coEvery { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
@@ -315,18 +306,18 @@ class ArbeidsgiverServiceTest : Spek({
                     )
                 )
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
-                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
-                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+            arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+            arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+            arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
+
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
-        it("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold der alle har satt tom-dato for samme orgnummer") {
+        test("arbeidsgiverService velger det aktive arbeidsforholdet ved duplikate arbeidsforhold der alle har satt tom-dato for samme orgnummer") {
             coEvery { arbeidsforholdClient.getArbeidsforholdTokenX(any(), any(), any()) } returns listOf(
                 Arbeidsforhold(
                     Arbeidsgiver("Organisasjon", "123456789"),
@@ -361,15 +352,15 @@ class ArbeidsgiverServiceTest : Spek({
                     )
                 )
             )
-            runBlocking {
-                val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId, date = LocalDate.of(2021, 8, 22))
-                arbeidsgiverinformasjon.size shouldBeEqualTo 1
-                arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
-                arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
-                arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
-                arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
-            }
+
+            val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId, date = LocalDate.of(2021, 8, 22))
+            arbeidsgiverinformasjon.size shouldBeEqualTo 1
+            arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
+            arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+            arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
+            arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
+            arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo "Navn 1"
+
             coVerify { arbeidsgiverRedisService.updateArbeidsgivere(any(), any()) }
         }
     }
