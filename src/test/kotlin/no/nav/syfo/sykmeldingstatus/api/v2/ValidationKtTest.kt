@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
@@ -7,15 +8,13 @@ import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.kafka.toSporsmalSvarListe
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import kotlin.test.assertFailsWith
 
-class ValidationKtTest : Spek({
-    describe("Validation") {
-        describe("erOpplysnigeneRiktige") {
-            it("Skal kaste exception hvis opplysningene ikke stemmer, men uriktige opplysninger er tom") {
+class ValidationKtTest : FunSpec({
+    context("Validation") {
+        context("erOpplysnigeneRiktige") {
+            test("Skal kaste exception hvis opplysningene ikke stemmer, men uriktige opplysninger er tom") {
                 val sykmeldingUserEvent = SykmeldingUserEvent(
                     erOpplysningeneRiktige = SporsmalSvar(
                         sporsmaltekst = "",
@@ -41,9 +40,9 @@ class ValidationKtTest : Spek({
             }
         }
 
-        describe("arbeidssituasjon") {
-            describe("arbeidsgiver") {
-                it("Skal kaste exception hvis arbeidssituasjon == ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder mangler") {
+        context("arbeidssituasjon") {
+            context("arbeidsgiver") {
+                test("Skal kaste exception hvis arbeidssituasjon == ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
 
                         erOpplysningeneRiktige = SporsmalSvar(
@@ -69,7 +68,7 @@ class ValidationKtTest : Spek({
                     }
                 }
 
-                it("Skal kaste exception hvis arbeidssituasjon != ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder er satt") {
+                test("Skal kaste exception hvis arbeidssituasjon != ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -102,7 +101,7 @@ class ValidationKtTest : Spek({
                     }
                 }
 
-                it("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
+                test("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -128,8 +127,8 @@ class ValidationKtTest : Spek({
                 }
             }
 
-            describe("frilanser") {
-                it("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
+            context("frilanser") {
+                test("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -159,8 +158,8 @@ class ValidationKtTest : Spek({
                 }
             }
 
-            describe("selvstendig naringsdrivende") {
-                it("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
+            context("selvstendig naringsdrivende") {
+                test("Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -190,8 +189,8 @@ class ValidationKtTest : Spek({
                 }
             }
 
-            describe("arbeidsledig") {
-                it("Skal kaste exception hvis egenmeldingsperioder er satt") {
+            context("arbeidsledig") {
+                test("Skal kaste exception hvis egenmeldingsperioder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -220,7 +219,7 @@ class ValidationKtTest : Spek({
                     }
                 }
 
-                it("Skal kaste exception hvis harForsikring er satt") {
+                test("Skal kaste exception hvis harForsikring er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -250,8 +249,8 @@ class ValidationKtTest : Spek({
                 }
             }
 
-            describe("annet") {
-                it("Skal kaste exception hvis egenmeldingsperioder er satt") {
+            context("annet") {
+                test("Skal kaste exception hvis egenmeldingsperioder er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -280,7 +279,7 @@ class ValidationKtTest : Spek({
                     }
                 }
 
-                it("Skal kaste exception hvis harForsikring er satt") {
+                test("Skal kaste exception hvis harForsikring er satt") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
@@ -312,8 +311,8 @@ class ValidationKtTest : Spek({
         }
     }
 
-    describe("SporsmalOgSvar builders") {
-        it("Skal lage SporsmalOgSvarDTO for arbeidssituasjon") {
+    context("SporsmalOgSvar builders") {
+        test("Skal lage SporsmalOgSvarDTO for arbeidssituasjon") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -347,7 +346,7 @@ class ValidationKtTest : Spek({
             sporsmalOgSvarListe shouldBeEqualTo expected
         }
 
-        it("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med aktiv arbeidsgiver") {
+        test("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med aktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -405,7 +404,7 @@ class ValidationKtTest : Spek({
             sporsmalOgSvarListe shouldBeEqualTo expected
         }
 
-        it("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med inaktiv arbeidsgiver") {
+        test("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med inaktiv arbeidsgiver") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -463,7 +462,7 @@ class ValidationKtTest : Spek({
             sporsmalOgSvarListe shouldBeEqualTo expected
         }
 
-        it("Skal lage SporsmalOgSvarDTO for fravarSporsmal") {
+        test("Skal lage SporsmalOgSvarDTO for fravarSporsmal") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -517,7 +516,7 @@ class ValidationKtTest : Spek({
             sporsmalOgSvarListe shouldBeEqualTo expected
         }
 
-        it("Skal lage SporsmalOgSvarDTO for egenmeldingsperioder") {
+        test("Skal lage SporsmalOgSvarDTO for egenmeldingsperioder") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",

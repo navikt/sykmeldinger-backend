@@ -2,11 +2,12 @@ package no.nav.syfo.sykmelding.api
 
 import com.auth0.jwt.interfaces.Payload
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.auth.authenticate
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearAllMocks
@@ -22,21 +23,19 @@ import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-class SykmeldingApiKtTest : Spek({
+class SykmeldingApiKtTest : FunSpec({
 
     val sykmeldingService = mockkClass(SykmeldingService::class)
     val mockPayload = mockk<Payload>()
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         coEvery { sykmeldingService.hentSykmelding(any(), any(), any()) } returns getSykmeldingDTO()
         coEvery { sykmeldingService.hentSykmeldinger(any(), any(), any()) } returns listOf(getSykmeldingDTO())
     }
 
-    describe("Sykmelding Api test") {
+    context("Sykmelding Api test") {
         with(TestApplicationEngine()) {
             every { mockPayload.subject } returns "123"
             setUpTestApplication()
@@ -48,7 +47,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 }
             }
-            it("Hent sykmeldinger") {
+            test("Hent sykmeldinger") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
                         addHeader(
@@ -68,7 +67,7 @@ class SykmeldingApiKtTest : Spek({
                     jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
-            it("Hent sykmeldinger med fom og tom") {
+            test("Hent sykmeldinger med fom og tom") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
                         addHeader(
@@ -88,7 +87,7 @@ class SykmeldingApiKtTest : Spek({
                     jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
-            it("Hent sykmeldinger med fom og tom og exclude") {
+            test("Hent sykmeldinger med fom og tom og exclude") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
                         addHeader(
@@ -110,7 +109,7 @@ class SykmeldingApiKtTest : Spek({
             }
         }
     }
-    describe("Sykmelding API with Authorization") {
+    context("Sykmelding API with Authorization") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -121,7 +120,7 @@ class SykmeldingApiKtTest : Spek({
                     }
                 }
             }
-            it("Sykmelding by id OK") {
+            test("Sykmelding by id OK") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger/sykmeldingid") {
                         addHeader(
@@ -140,7 +139,7 @@ class SykmeldingApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
-            it("Sykmeldinger OK") {
+            test("Sykmeldinger OK") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
                         addHeader(
@@ -159,7 +158,7 @@ class SykmeldingApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
-            it("Unauthorized, incorrect audience") {
+            test("Unauthorized, incorrect audience") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
                         addHeader(
@@ -178,7 +177,7 @@ class SykmeldingApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
-            it("Unauthorized, nivå 3") {
+            test("Unauthorized, nivå 3") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
                         addHeader(
@@ -198,7 +197,7 @@ class SykmeldingApiKtTest : Spek({
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }
-            it("Unauthorized, missing token") {
+            test("Unauthorized, missing token") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {}) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

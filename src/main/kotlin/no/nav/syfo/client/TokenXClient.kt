@@ -10,9 +10,11 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
@@ -60,17 +62,19 @@ class TokenXClient(
                         val response: AccessToken = httpClient.post(tokendingsUrl) {
                             accept(ContentType.Application.Json)
                             method = HttpMethod.Post
-                            body = FormDataContent(
-                                Parameters.build {
-                                    append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
-                                    append("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-                                    append("client_assertion", getClientAssertion().serialize())
-                                    append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
-                                    append("subject_token", subjectToken)
-                                    append("audience", audience)
-                                }
+                            setBody(
+                                FormDataContent(
+                                    Parameters.build {
+                                        append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+                                        append("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+                                        append("client_assertion", getClientAssertion().serialize())
+                                        append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
+                                        append("subject_token", subjectToken)
+                                        append("audience", audience)
+                                    }
+                                )
                             )
-                        }
+                        }.body()
                         val tokenMedExpiry = AccessTokenMedExpiry(
                             access_token = response.access_token,
                             expires_in = response.expires_in,

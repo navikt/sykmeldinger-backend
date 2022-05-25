@@ -1,11 +1,12 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
-import io.ktor.auth.authenticate
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
@@ -19,18 +20,16 @@ import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-class SykmeldingSendApiKtTest : Spek({
+class SykmeldingSendApiKtTest : FunSpec({
     val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         coEvery { sykmeldingStatusService.registrerUserEvent(any(), any(), any(), any()) } returns Unit
     }
 
-    describe("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
+    context("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -45,7 +44,7 @@ class SykmeldingSendApiKtTest : Spek({
                 }
             }
 
-            it("Bruker skal få sende sin egen sykmelding") {
+            test("Bruker skal få sende sin egen sykmelding") {
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
@@ -68,7 +67,7 @@ class SykmeldingSendApiKtTest : Spek({
                 }
             }
 
-            it("Får bad request ved empty body") {
+            test("Får bad request ved empty body") {
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
@@ -90,7 +89,7 @@ class SykmeldingSendApiKtTest : Spek({
                 }
             }
 
-            it("Får bad request ved validateringsfeil") {
+            test("Får bad request ved validateringsfeil") {
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
@@ -113,7 +112,7 @@ class SykmeldingSendApiKtTest : Spek({
                 }
             }
 
-            it("Skal ikke kunne sende annen brukers sykmelding") {
+            test("Skal ikke kunne sende annen brukers sykmelding") {
                 coEvery {
                     sykmeldingStatusService.registrerUserEvent(
                         any(),
@@ -143,7 +142,7 @@ class SykmeldingSendApiKtTest : Spek({
                 }
             }
 
-            it("Skal ikke kunne bruke apiet med token med feil audience") {
+            test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
                     handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/send") {
                         setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))

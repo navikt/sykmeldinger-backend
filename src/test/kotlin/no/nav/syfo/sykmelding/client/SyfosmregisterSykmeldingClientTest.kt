@@ -1,10 +1,10 @@
 package no.nav.syfo.sykmelding.client
 
-import io.ktor.client.features.ClientRequestException
-import io.ktor.client.features.ServerResponseException
+import io.kotest.core.spec.style.FunSpec
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.ApiFilter
@@ -12,71 +12,64 @@ import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.testutils.HttpClientTest
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import kotlin.test.assertFailsWith
 
-class SyfosmregisterSykmeldingClientTest : Spek({
+class SyfosmregisterSykmeldingClientTest : FunSpec({
 
     val httpClient = HttpClientTest()
     val endpointUrl = "url"
     val tokenXClient = mockk<TokenXClient>()
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(endpointUrl, httpClient.httpClient, tokenXClient, "audience")
 
-    describe("Test GET Sykmeldinger fra syfosmregister") {
-        it("Should get empty list of Sykmeldinger") {
+    context("Test GET Sykmeldinger fra syfosmregister") {
+        test("Should get empty list of Sykmeldinger") {
             httpClient.respond(objectMapper.writeValueAsString(emptyList<Sykmelding>()))
-            runBlocking {
-                val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                result shouldBeEqualTo emptyList()
-            }
+
+            val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
+            result shouldBeEqualTo emptyList()
         }
 
-        it("Should get list of sykmeldinger") {
+        test("Should get list of sykmeldinger") {
             httpClient.respond(objectMapper.writeValueAsString(listOf(getSykmeldingModel())))
-            runBlocking {
-                val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                result.size shouldBeEqualTo 1
-            }
+
+            val result = syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
+            result.size shouldBeEqualTo 1
         }
 
-        it("Should get InternalServerError") {
+        test("Should get InternalServerError") {
             httpClient.respond(HttpStatusCode.InternalServerError)
-            runBlocking {
-                val exception = assertFailsWith<ServerResponseException> {
-                    syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                }
-                exception.response.status shouldBeEqualTo HttpStatusCode.InternalServerError
+
+            val exception = assertFailsWith<ServerResponseException> {
+                syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
             }
+            exception.response.status shouldBeEqualTo HttpStatusCode.InternalServerError
         }
-        it("Should get Unauthorized") {
+        test("Should get Unauthorized") {
             httpClient.respond(HttpStatusCode.Unauthorized)
-            runBlocking {
-                val exception = assertFailsWith<ClientRequestException> {
-                    syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                }
-                exception.response.status shouldBeEqualTo HttpStatusCode.Unauthorized
+
+            val exception = assertFailsWith<ClientRequestException> {
+                syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
             }
+            exception.response.status shouldBeEqualTo HttpStatusCode.Unauthorized
         }
-        it("Should fail with forbidden") {
+        test("Should fail with forbidden") {
             httpClient.respond(HttpStatusCode.NotFound)
-            runBlocking {
-                val exception = assertFailsWith<ClientRequestException> {
-                    syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
-                }
-                exception.response.status shouldBeEqualTo HttpStatusCode.NotFound
+
+            val exception = assertFailsWith<ClientRequestException> {
+                syfosmregisterSykmeldingClient.getSykmeldinger("token", null)
             }
+            exception.response.status shouldBeEqualTo HttpStatusCode.NotFound
         }
     }
 
-    describe("Lager riktig request-url") {
-        it("Får riktig url uten filter") {
+    context("Lager riktig request-url") {
+        test("Får riktig url uten filter") {
             val url = syfosmregisterSykmeldingClient.getRequestUrl(ApiFilter(null, null, null, null), "$endpointUrl/api/v2")
 
             url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger"
         }
-        it("Får riktig url med fom og tom") {
+        test("Får riktig url med fom og tom") {
             val url = syfosmregisterSykmeldingClient.getRequestUrl(
                 ApiFilter(
                     LocalDate.of(2020, 4, 1),
@@ -89,7 +82,7 @@ class SyfosmregisterSykmeldingClientTest : Spek({
 
             url shouldBeEqualTo "$endpointUrl/api/v2/sykmeldinger?fom=2020-04-01&tom=2020-04-05"
         }
-        it("Får riktig url med fom og tom og exclude") {
+        test("Får riktig url med fom og tom og exclude") {
             val url = syfosmregisterSykmeldingClient.getRequestUrl(
                 ApiFilter(
                     LocalDate.of(2020, 4, 1),

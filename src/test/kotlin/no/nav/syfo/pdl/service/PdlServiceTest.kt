@@ -1,5 +1,6 @@
 package no.nav.syfo.pdl.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -26,11 +27,9 @@ import no.nav.syfo.pdl.redis.NavnRedisModel
 import no.nav.syfo.pdl.redis.PdlPersonRedisModel
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
 
-class PdlServiceTest : Spek({
+class PdlServiceTest : FunSpec({
     val pdlClient = mockkClass(PdlClient::class)
     val stsOidcClient = mockkClass(StsOidcClient::class)
     val tokenXClient = mockk<TokenXClient>()
@@ -39,39 +38,37 @@ class PdlServiceTest : Spek({
 
     coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(pdlClient, pdlPersonRedisService)
         coEvery { pdlPersonRedisService.getPerson(any()) } returns null
     }
 
-    describe("PdlService") {
-        it("hente person fra pdl") {
+    context("PdlService") {
+        test("hente person fra pdl") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse()
-            runBlocking {
-                val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
-                person.navn.fornavn shouldBeEqualTo "fornavn"
-                person.navn.mellomnavn shouldBeEqualTo null
-                person.navn.etternavn shouldBeEqualTo "etternavn"
-                person.aktorId shouldBeEqualTo "aktorId"
-                person.diskresjonskode shouldBeEqualTo false
-            }
+
+            val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
+            person.navn.fornavn shouldBeEqualTo "fornavn"
+            person.navn.mellomnavn shouldBeEqualTo null
+            person.navn.etternavn shouldBeEqualTo "etternavn"
+            person.aktorId shouldBeEqualTo "aktorId"
+            person.diskresjonskode shouldBeEqualTo false
+
             coVerify { pdlPersonRedisService.updatePerson(any(), any()) }
         }
-        it("skal ha diskresjonskode hvis gradering er strengt fortrolig") {
+        test("skal ha diskresjonskode hvis gradering er strengt fortrolig") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse(Gradering.STRENGT_FORTROLIG)
-            runBlocking {
-                val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
-                person.diskresjonskode shouldBeEqualTo true
-            }
+
+            val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
+            person.diskresjonskode shouldBeEqualTo true
         }
-        it("skal ha diskresjonskode hvis gradering er strengt fortrolig utland") {
+        test("skal ha diskresjonskode hvis gradering er strengt fortrolig utland") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse(Gradering.STRENGT_FORTROLIG_UTLAND)
-            runBlocking {
-                val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
-                person.diskresjonskode shouldBeEqualTo true
-            }
+
+            val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
+            person.diskresjonskode shouldBeEqualTo true
         }
-        it("feiler ikke hvis diskresjonskode mangler") {
+        test("feiler ikke hvis diskresjonskode mangler") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(listOf(Navn("fornavn", null, "etternavn")), adressebeskyttelse = null),
@@ -79,22 +76,21 @@ class PdlServiceTest : Spek({
                 ),
                 errors = null
             )
-            runBlocking {
-                val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
-                person.diskresjonskode shouldBeEqualTo false
-            }
+
+            val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
+            person.diskresjonskode shouldBeEqualTo false
         }
-        it("hente person fra redis") {
+        test("hente person fra redis") {
             coEvery { pdlPersonRedisService.getPerson(any()) } returns PdlPersonRedisModel(NavnRedisModel("fornavn", null, "etternavn"), "aktørid", false)
-            runBlocking {
-                val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
-                person.aktorId shouldBeEqualTo "aktørid"
-            }
+
+            val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
+            person.aktorId shouldBeEqualTo "aktørid"
+
             coVerify(exactly = 0) { pdlClient.getPerson(any(), any(), any()) }
             coVerify(exactly = 0) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
 
-        it("Skal feile når person ikke finnes") {
+        test("Skal feile når person ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
                 ResponseData(null, null),
                 listOf(
@@ -114,7 +110,7 @@ class PdlServiceTest : Spek({
             exception.message shouldBeEqualTo "Fant ikke person i PDL"
         }
 
-        it("Skal feile når navn er tom liste") {
+        test("Skal feile når navn er tom liste") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(
@@ -132,7 +128,7 @@ class PdlServiceTest : Spek({
             }
             exception.message shouldBeEqualTo "Fant ikke navn på person i PDL"
         }
-        it("Skal feile når navn ikke finnes") {
+        test("Skal feile når navn ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(
@@ -150,7 +146,7 @@ class PdlServiceTest : Spek({
             }
             exception.message shouldBeEqualTo "Fant ikke navn på person i PDL"
         }
-        it("Skal feile når aktørid ikke finnes") {
+        test("Skal feile når aktørid ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(

@@ -1,11 +1,12 @@
 package no.nav.syfo.sykmeldingstatus.api.v1
 
-import io.ktor.auth.authenticate
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.Runs
@@ -20,19 +21,17 @@ import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-class SykmeldingAvbrytApiSpek : Spek({
+class SykmeldingAvbrytApiSpek : FunSpec({
 
     val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } just Runs
     }
 
-    describe("Test SykmeldingAvbrytAPI for sluttbruker med tilgangskontroll") {
+    context("Test SykmeldingAvbrytAPI for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -45,7 +44,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                 }
             }
 
-            it("Bruker skal få avbryte sin egen sykmelding") {
+            test("Bruker skal få avbryte sin egen sykmelding") {
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/avbryt") {
@@ -65,7 +64,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                 }
             }
 
-            it("Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes") {
+            test("Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes") {
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
@@ -86,7 +85,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                 }
             }
 
-            it("Skal ikke kunne avbryte annen brukers sykmelding") {
+            test("Skal ikke kunne avbryte annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
@@ -106,7 +105,7 @@ class SykmeldingAvbrytApiSpek : Spek({
                 }
             }
 
-            it("Skal ikke kunne bruke apiet med token med feil audience") {
+            test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())

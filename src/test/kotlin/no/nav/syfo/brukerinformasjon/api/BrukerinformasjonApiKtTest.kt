@@ -1,11 +1,12 @@
 package no.nav.syfo.brukerinformasjon.api
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.auth.authenticate
+import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.server.auth.authenticate
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.mockk.clearMocks
@@ -24,15 +25,13 @@ import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-class BrukerinformasjonApiKtTest : Spek({
+class BrukerinformasjonApiKtTest : FunSpec({
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val stsOidcClient = mockkClass(StsOidcClient::class)
     val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(pdlPersonService)
         clearMocks(arbeidsgiverService)
         coEvery { stsOidcClient.oidcToken() } returns OidcToken("accesstoken", "type", 1L)
@@ -40,7 +39,7 @@ class BrukerinformasjonApiKtTest : Spek({
         coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null))
     }
 
-    describe("Test brukerinformasjon-api med tilgangskontroll") {
+    context("Test brukerinformasjon-api med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
             val env = setUpAuth()
@@ -53,7 +52,7 @@ class BrukerinformasjonApiKtTest : Spek({
                 }
             }
 
-            it("Får hentet riktig informasjon for innlogget bruker uten diskresjonskode") {
+            test("Får hentet riktig informasjon for innlogget bruker uten diskresjonskode") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
                         addHeader(
@@ -78,7 +77,7 @@ class BrukerinformasjonApiKtTest : Spek({
                 }
             }
 
-            it("Får hentet riktig informasjon for innlogget bruker med diskresjonskode") {
+            test("Får hentet riktig informasjon for innlogget bruker med diskresjonskode") {
                 coEvery { pdlPersonService.getPerson(any(), any(), any(), any()) } returns PdlPerson(Navn("Fornavn", null, "Etternavn"), "aktorId", true)
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
@@ -104,7 +103,7 @@ class BrukerinformasjonApiKtTest : Spek({
                 }
             }
 
-            it("Skal ikke kunne bruke apiet med token med feil audience") {
+            test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
                         addHeader(

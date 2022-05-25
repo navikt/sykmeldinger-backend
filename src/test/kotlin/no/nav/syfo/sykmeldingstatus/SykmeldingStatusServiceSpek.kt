@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.MockKMatcherScope
 import io.mockk.Runs
 import io.mockk.clearAllMocks
@@ -28,14 +29,12 @@ import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 
-class SykmeldingStatusServiceSpek : Spek({
+class SykmeldingStatusServiceSpek : FunSpec({
     val sykmeldingId = "id"
     val fnr = "fnr"
     val token = "token"
@@ -121,7 +120,7 @@ class SykmeldingStatusServiceSpek : Spek({
         }
     }
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
         every { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
         every { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
@@ -129,124 +128,110 @@ class SykmeldingStatusServiceSpek : Spek({
         coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1))
     }
 
-    describe("Hent nyeste status") {
-        it("Skal hente sendt status fra Redis") {
-            runBlocking {
-                val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(
-                    StatusEventDTO.SENDT,
-                    OffsetDateTime.now(ZoneOffset.UTC),
-                    erAvvist = true,
-                    erEgenmeldt = false
-                )
-                coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingSendEventDTO
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
-                    StatusEventDTO.APEN,
-                    redisSykmeldingSendEventDTO.timestamp.minusNanos(1),
-                    erAvvist = true,
-                    erEgenmeldt = false
-                )
-                val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                sisteStatusEventDTO shouldBeEqualTo SykmeldingStatusEventDTO(
-                    StatusEventDTO.SENDT,
-                    redisSykmeldingSendEventDTO.timestamp,
-                    erAvvist = true,
-                    erEgenmeldt = false
-                )
-            }
+    context("Hent nyeste status") {
+        test("Skal hente sendt status fra Redis") {
+            val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(
+                StatusEventDTO.SENDT,
+                OffsetDateTime.now(ZoneOffset.UTC),
+                erAvvist = true,
+                erEgenmeldt = false
+            )
+            coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingSendEventDTO
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
+                StatusEventDTO.APEN,
+                redisSykmeldingSendEventDTO.timestamp.minusNanos(1),
+                erAvvist = true,
+                erEgenmeldt = false
+            )
+            val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+            sisteStatusEventDTO shouldBeEqualTo SykmeldingStatusEventDTO(
+                StatusEventDTO.SENDT,
+                redisSykmeldingSendEventDTO.timestamp,
+                erAvvist = true,
+                erEgenmeldt = false
+            )
         }
 
-        it("Skal hente nyeste status fra registeret") {
-            runBlocking {
-                val redisSykmeldingStatus =
-                    getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
-                coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingStatus
-                coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
-                    StatusEventDTO.SENDT,
-                    redisSykmeldingStatus.timestamp.plusNanos(1),
-                    erAvvist = false,
-                    erEgenmeldt = true
-                )
-                val sisteStatus = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                sisteStatus shouldBeEqualTo SykmeldingStatusEventDTO(
-                    StatusEventDTO.SENDT,
-                    redisSykmeldingStatus.timestamp.plusNanos(1),
-                    erAvvist = false,
-                    erEgenmeldt = true
-                )
-            }
+        test("Skal hente nyeste status fra registeret") {
+            val redisSykmeldingStatus =
+                getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
+            coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingStatus
+            coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(
+                StatusEventDTO.SENDT,
+                redisSykmeldingStatus.timestamp.plusNanos(1),
+                erAvvist = false,
+                erEgenmeldt = true
+            )
+            val sisteStatus = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+            sisteStatus shouldBeEqualTo SykmeldingStatusEventDTO(
+                StatusEventDTO.SENDT,
+                redisSykmeldingStatus.timestamp.plusNanos(1),
+                erAvvist = false,
+                erEgenmeldt = true
+            )
         }
 
-        it("Ikke tilgang til sykmeldingstatus") {
-            runBlocking {
-                coEvery {
-                    syfosmregisterClient.hentSykmeldingstatus(
-                        any(),
-                        any()
-                    )
-                } throws RuntimeException("Ingen tilgang")
-                val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
-                    sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
-                }
-                exception.message shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+        test("Ikke tilgang til sykmeldingstatus") {
+            coEvery {
+                syfosmregisterClient.hentSykmeldingstatus(
+                    any(),
+                    any()
+                )
+            } throws RuntimeException("Ingen tilgang")
+            val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
+                sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
             }
+            exception.message shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
         }
     }
 
-    describe("Test av BEKREFT for sluttbruker") {
-        it("Happy-case") {
-            runBlocking {
-                sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
+    context("Test av BEKREFT for sluttbruker") {
+        test("Happy-case") {
+            sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
 
-                coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-                verify { sykmeldingStatusJedisService.getStatus(any()) }
-                verify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-                verify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            }
+            coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+            verify { sykmeldingStatusJedisService.getStatus(any()) }
+            verify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            verify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
-        it("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
+        test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } throws RuntimeException("Ingen tilgang")
 
-            runBlocking {
-                assertFailsWith<SykmeldingStatusNotFoundException> {
-                    sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
-                }
-
-                coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-                verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-                verify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            assertFailsWith<SykmeldingStatusNotFoundException> {
+                sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
             }
+
+            coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
+            verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
+            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            verify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
     }
 
-    describe("Test bekrefting av avvist sykmelding") {
-        it("Får bekrefte avvist sykmelding med status APEN") {
+    context("Test bekrefting av avvist sykmelding") {
+        test("Får bekrefte avvist sykmelding med status APEN") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = true
             )
 
-            runBlocking {
-                sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
-            }
+            sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
             verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
-        it("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
+        test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.BEKREFTET,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = true
             )
 
-            runBlocking {
-                assertFailsWith<InvalidSykmeldingStatusException> {
-                    sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
-                }
+            assertFailsWith<InvalidSykmeldingStatusException> {
+                sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
             }
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
@@ -254,17 +239,15 @@ class SykmeldingStatusServiceSpek : Spek({
             verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
-        it("Får ikke bekrefte sykmelding som ikke er avvist") {
+        test("Får ikke bekrefte sykmelding som ikke er avvist") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.BEKREFTET,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = false
             )
 
-            runBlocking {
-                assertFailsWith<InvalidSykmeldingStatusException> {
-                    sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
-                }
+            assertFailsWith<InvalidSykmeldingStatusException> {
+                sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
             }
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
@@ -273,8 +256,8 @@ class SykmeldingStatusServiceSpek : Spek({
         }
     }
 
-    describe("Test user event") {
-        it("Test SEND user event") {
+    context("Test user event") {
+        test("Test SEND user event") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
@@ -313,9 +296,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 harForsikring = null,
             )
 
-            runBlocking {
-                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
-            }
+            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
@@ -323,7 +304,7 @@ class SykmeldingStatusServiceSpek : Spek({
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
-        it("Test SEND user event - finner ikke riktig arbeidsgiver") {
+        test("Test SEND user event - finner ikke riktig arbeidsgiver") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
@@ -374,7 +355,7 @@ class SykmeldingStatusServiceSpek : Spek({
             verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
-        it("Test BEKREFT user event") {
+        test("Test BEKREFT user event") {
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
@@ -394,9 +375,7 @@ class SykmeldingStatusServiceSpek : Spek({
                 harForsikring = null,
             )
 
-            runBlocking {
-                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
-            }
+            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
 
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
@@ -404,7 +383,7 @@ class SykmeldingStatusServiceSpek : Spek({
             verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
-        it("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
+        test("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
@@ -442,9 +421,7 @@ class SykmeldingStatusServiceSpek : Spek({
 
             val expected = slot<SykmeldingStatusKafkaEventDTO>()
 
-            runBlocking {
-                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
-            }
+            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
@@ -458,110 +435,110 @@ class SykmeldingStatusServiceSpek : Spek({
         }
     }
 
-    describe("Test SENDT status") {
-        it("Skal kunne sende sykmelding med status APEN") {
+    context("Test SENDT status") {
+        test("Skal kunne sende sykmelding med status APEN") {
             checkStatusOk(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.APEN)
         }
-        it("Skal ikke kunne SENDE en allerede SENDT Sykmelding") {
+        test("Skal ikke kunne SENDE en allerede SENDT Sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.SENDT)
         }
-        it("Skal ikke kunne SENDE en BEKREFTET sykmelding") {
+        test("Skal ikke kunne SENDE en BEKREFTET sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.BEKREFTET)
         }
-        it("skal ikke kunne SENDE en UTGÅTT sykmelding") {
+        test("skal ikke kunne SENDE en UTGÅTT sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.UTGATT)
         }
-        it("SKal ikke kunne SENDE en AVBRUTT sykmelding") {
+        test("SKal ikke kunne SENDE en AVBRUTT sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.AVBRUTT)
         }
     }
 
-    describe("Test BEKREFT status") {
-        it("Bruker skal få BEKREFTET sykmelding med status APEN") {
+    context("Test BEKREFT status") {
+        test("Bruker skal få BEKREFTET sykmelding med status APEN") {
             checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN)
         }
-        it("Bruker skal ikke få BEKREFTET en sykmelding med status BEKREFTET") {
+        test("Bruker skal ikke få BEKREFTET en sykmelding med status BEKREFTET") {
             checkStatusFails(StatusEventDTO.BEKREFTET, StatusEventDTO.BEKREFTET)
         }
 
-        it("Bruker skal ikke få bekrefte sin egen sykmelding med status AVBRUTT") {
+        test("Bruker skal ikke få bekrefte sin egen sykmelding med status AVBRUTT") {
             checkStatusFails(newStatus = StatusEventDTO.BEKREFTET, oldStatus = StatusEventDTO.AVBRUTT)
         }
 
-        it("Skal ikke kunne BEKREFTE når siste status er SENDT") {
+        test("Skal ikke kunne BEKREFTE når siste status er SENDT") {
             checkStatusFails(newStatus = StatusEventDTO.BEKREFTET, oldStatus = StatusEventDTO.SENDT)
         }
 
-        it("Skal ikke kunne bekrefte når siste status er UTGATT") {
+        test("Skal ikke kunne bekrefte når siste status er UTGATT") {
             checkStatusFails(newStatus = StatusEventDTO.BEKREFTET, oldStatus = StatusEventDTO.UTGATT)
         }
     }
 
-    describe("Test APEN status") {
-        it("Bruker skal kunne APNE en sykmelding med statsu BEKREFTET") {
+    context("Test APEN status") {
+        test("Bruker skal kunne APNE en sykmelding med statsu BEKREFTET") {
             checkStatusOk(StatusEventDTO.APEN, StatusEventDTO.BEKREFTET)
         }
-        it("Bruker skal kunne APNE en sykmeldimg med Status APEN") {
+        test("Bruker skal kunne APNE en sykmeldimg med Status APEN") {
             checkStatusOk(StatusEventDTO.APEN, StatusEventDTO.APEN)
         }
-        it("Skal kunne endre status til APEN fra AVBRUTT") {
+        test("Skal kunne endre status til APEN fra AVBRUTT") {
             checkStatusOk(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT)
         }
-        it("Skal ikke kunne endre status til APEN fra UTGATT") {
+        test("Skal ikke kunne endre status til APEN fra UTGATT") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.UTGATT)
         }
-        it("Skal ikke kunne endre status til APEN fra SENDT") {
+        test("Skal ikke kunne endre status til APEN fra SENDT") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.SENDT)
         }
     }
 
-    describe("Test AVBRUTT status") {
-        it("Skal ikke kunne endre status til AVBRUTT om sykmeldingen er sendt") {
+    context("Test AVBRUTT status") {
+        test("Skal ikke kunne endre status til AVBRUTT om sykmeldingen er sendt") {
             checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.SENDT)
         }
-        it("Skal kunne avbryte en APEN sykmelding") {
+        test("Skal kunne avbryte en APEN sykmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.APEN)
         }
-        it("Skal kunne avbryte en BEKREFTET sykmelding") {
+        test("Skal kunne avbryte en BEKREFTET sykmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.BEKREFTET)
         }
-        it("Skal ikke kunne avbryte en allerede AVBRUTT sykmelding") {
+        test("Skal ikke kunne avbryte en allerede AVBRUTT sykmelding") {
             checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.AVBRUTT)
         }
-        it("Skal kunne avbryte en UTGATT sykmelding") {
+        test("Skal kunne avbryte en UTGATT sykmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.UTGATT)
         }
     }
 
-    describe("Test statusendring for avviste sykmeldinger") {
-        it("Skal kunne bekrefte en APEN avvist sykmelding") {
+    context("Test statusendring for avviste sykmeldinger") {
+        test("Skal kunne bekrefte en APEN avvist sykmelding") {
             checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN, erAvvist = true)
         }
-        it("Skal ikke kunne gjenåpne en bekreftet avvist sykmelding") {
+        test("Skal ikke kunne gjenåpne en bekreftet avvist sykmelding") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.BEKREFTET, erAvvist = true)
         }
-        it("Skal ikke kunne sende en avvist sykmelding") {
+        test("Skal ikke kunne sende en avvist sykmelding") {
             checkStatusFails(StatusEventDTO.SENDT, StatusEventDTO.APEN, erAvvist = true)
         }
-        it("Skal ikke kunne avbryte en avvist sykmelding") {
+        test("Skal ikke kunne avbryte en avvist sykmelding") {
             checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.APEN, erAvvist = true)
         }
     }
 
-    describe("Test statusendring for egenmeldinger") {
-        it("Skal kunne bekrefte en APEN egenmelding") {
+    context("Test statusendring for egenmeldinger") {
+        test("Skal kunne bekrefte en APEN egenmelding") {
             checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN, erEgenmeldt = true)
         }
-        it("Skal ikke kunne gjenåpne en bekreftet egenmelding") {
+        test("Skal ikke kunne gjenåpne en bekreftet egenmelding") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.BEKREFTET, erEgenmeldt = true)
         }
-        it("Skal ikke kunne sende en egenmelding") {
+        test("Skal ikke kunne sende en egenmelding") {
             checkStatusFails(StatusEventDTO.SENDT, StatusEventDTO.APEN, erEgenmeldt = true)
         }
-        it("Skal kunne avbryte en egenmelding") {
+        test("Skal kunne avbryte en egenmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.APEN, erEgenmeldt = true)
         }
-        it("Skal ikke kunne gjenåpne en avbrutt egenmelding") {
+        test("Skal ikke kunne gjenåpne en avbrutt egenmelding") {
             checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT, erEgenmeldt = true)
         }
     }

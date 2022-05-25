@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmelding.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -23,7 +24,7 @@ class SyfosmregisterSykmeldingClient(
                 headers {
                     append("Authorization", token)
                 }
-            }
+            }.body()
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmelding $sykmeldingid", e)
             throw e
@@ -41,7 +42,7 @@ class SyfosmregisterSykmeldingClient(
                 headers {
                     append("Authorization", "Bearer $token")
                 }
-            }
+            }.body()
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmelding $sykmeldingid (tokenx)", e)
             throw e
@@ -55,7 +56,7 @@ class SyfosmregisterSykmeldingClient(
                 headers {
                     append("Authorization", token)
                 }
-            }
+            }.body()
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmeldinger", e)
             throw e
@@ -73,7 +74,7 @@ class SyfosmregisterSykmeldingClient(
                 headers {
                     append("Authorization", "Bearer $token")
                 }
-            }
+            }.body()
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmeldinger (tokenx)", e)
             throw e
