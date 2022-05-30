@@ -65,7 +65,7 @@ spec:
     - secret: sykmeldinger-backend-redis-password
   env:
     - name: EREG_URL
-      value: https://ereg-services-q1.dev.intern.nav.no
+      value: https://ereg-services-q1.dev-fss-pub.nais.io
     - name: AAREG_URL
       value: https://aareg-services-q1.dev-fss-pub.nais.io
     - name: PDL_GRAPHQL_PATH
