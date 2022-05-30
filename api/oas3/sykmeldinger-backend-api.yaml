@@ -5,7 +5,7 @@ info:
   description: API for sykmeldinger-backend.
   version: 1.0.0
 servers:
-  - url: 'https://sykmeldinger-backend.nais.preprod.local'
+  - url: 'https://sykmeldinger-backend.dev.nav.no'
 paths:
   /api/v1/sykmeldinger:
     get:

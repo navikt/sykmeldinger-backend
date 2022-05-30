@@ -32,7 +32,7 @@ class SykmeldingSendApiKtTest : FunSpec({
     context("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
-            val env = setUpAuth()
+            setUpAuth()
 
             application.routing {
                 authenticate("jwt") {
@@ -57,7 +57,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -79,7 +79,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -102,7 +102,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -132,7 +132,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "00000000000",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -154,7 +154,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                                 "client",
                                 "annenservice",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )

@@ -26,7 +26,7 @@ class SykmeldingService(
         return if (erTokenX) {
             syfosmregisterSykmeldingClient.getSykmeldingTokenX(subjectToken = token, sykmeldingid = sykmeldingid)
                 ?.run(this::getSykmeldingWithLatestStatus)
-                ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId, erTokenX = erTokenX))
+                ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
         } else {
             syfosmregisterSykmeldingClient.getSykmelding(token = token, sykmeldingid = sykmeldingid)
                 ?.run(this::getSykmeldingWithLatestStatus)
@@ -39,7 +39,7 @@ class SykmeldingService(
         return if (erTokenX) {
             syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
                 .map(this::getSykmeldingWithLatestStatus)
-                .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId, erTokenX = erTokenX)) }
+                .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
         } else {
             syfosmregisterSykmeldingClient.getSykmeldinger(token = token, apiFilter = apiFilter)
                 .map(this::getSykmeldingWithLatestStatus)

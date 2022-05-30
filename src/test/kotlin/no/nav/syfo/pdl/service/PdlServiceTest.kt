@@ -7,8 +7,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.OidcToken
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.Adressebeskyttelse
@@ -31,12 +29,11 @@ import kotlin.test.assertFailsWith
 
 class PdlServiceTest : FunSpec({
     val pdlClient = mockkClass(PdlClient::class)
-    val stsOidcClient = mockkClass(StsOidcClient::class)
     val tokenXClient = mockk<TokenXClient>()
     val pdlPersonRedisService = mockkClass(PdlPersonRedisService::class, relaxed = true)
-    val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService, tokenXClient, "audience")
+    val pdlService = PdlPersonService(pdlClient, pdlPersonRedisService, tokenXClient, "audience")
 
-    coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
+    coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
 
     beforeTest {
         clearMocks(pdlClient, pdlPersonRedisService)
@@ -45,7 +42,7 @@ class PdlServiceTest : FunSpec({
 
     context("PdlService") {
         test("hente person fra pdl") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse()
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns getPdlResponse()
 
             val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
             person.navn.fornavn shouldBeEqualTo "fornavn"
@@ -57,19 +54,19 @@ class PdlServiceTest : FunSpec({
             coVerify { pdlPersonRedisService.updatePerson(any(), any()) }
         }
         test("skal ha diskresjonskode hvis gradering er strengt fortrolig") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse(Gradering.STRENGT_FORTROLIG)
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns getPdlResponse(Gradering.STRENGT_FORTROLIG)
 
             val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
             person.diskresjonskode shouldBeEqualTo true
         }
         test("skal ha diskresjonskode hvis gradering er strengt fortrolig utland") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns getPdlResponse(Gradering.STRENGT_FORTROLIG_UTLAND)
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns getPdlResponse(Gradering.STRENGT_FORTROLIG_UTLAND)
 
             val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
             person.diskresjonskode shouldBeEqualTo true
         }
         test("feiler ikke hvis diskresjonskode mangler") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(listOf(Navn("fornavn", null, "etternavn")), adressebeskyttelse = null),
                     identer = IdentResponse(listOf(Ident("aktorId", AKTORID_GRUPPE)))
@@ -86,12 +83,12 @@ class PdlServiceTest : FunSpec({
             val person = pdlService.getPerson("01245678901", "Bearer token", "callId")
             person.aktorId shouldBeEqualTo "aktørid"
 
-            coVerify(exactly = 0) { pdlClient.getPerson(any(), any(), any()) }
+            coVerify(exactly = 0) { pdlClient.getPersonTokenX(any(), any()) }
             coVerify(exactly = 0) { pdlPersonRedisService.updatePerson(any(), any()) }
         }
 
         test("Skal feile når person ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns GetPersonResponse(
                 ResponseData(null, null),
                 listOf(
                     ResponseError(
@@ -111,7 +108,7 @@ class PdlServiceTest : FunSpec({
         }
 
         test("Skal feile når navn er tom liste") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(
                         navn = emptyList(),
@@ -129,7 +126,7 @@ class PdlServiceTest : FunSpec({
             exception.message shouldBeEqualTo "Fant ikke navn på person i PDL"
         }
         test("Skal feile når navn ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(
                         navn = null,
@@ -147,7 +144,7 @@ class PdlServiceTest : FunSpec({
             exception.message shouldBeEqualTo "Fant ikke navn på person i PDL"
         }
         test("Skal feile når aktørid ikke finnes") {
-            coEvery { pdlClient.getPerson(any(), any(), any()) } returns GetPersonResponse(
+            coEvery { pdlClient.getPersonTokenX(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     person = PersonResponse(
                         navn = listOf(Navn("fornavn", null, "etternavn")),

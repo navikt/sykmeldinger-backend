@@ -32,7 +32,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
     context("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
-            val env = setUpAuth()
+            setUpAuth()
             application.routing {
                 authenticate("jwt") {
                     route("/api/v1") {
@@ -51,7 +51,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }
@@ -71,7 +71,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }
@@ -90,7 +90,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "00000000000",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }
@@ -108,7 +108,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
                                 "client",
                                 "annenservice",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }

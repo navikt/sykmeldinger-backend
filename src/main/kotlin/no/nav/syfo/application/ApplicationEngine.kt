@@ -11,6 +11,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
@@ -22,6 +23,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.route
@@ -38,7 +40,6 @@ import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApiV2
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
@@ -116,6 +117,17 @@ fun createApplicationEngine(
                 }
             }
         }
+        install(CORS) {
+            allowMethod(HttpMethod.Get)
+            allowMethod(HttpMethod.Post)
+            allowMethod(HttpMethod.Options)
+            env.allowedOrigin.forEach {
+                hosts.add("https://$it")
+            }
+            allowHeader("nav_csrf_protection")
+            allowCredentials = true
+            allowNonSimpleContentTypes = true
+        }
 
         val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
             install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
@@ -137,11 +149,6 @@ fun createApplicationEngine(
         }
         val httpClient = HttpClient(Apache, config)
 
-        val stsOidcClient = StsOidcClient(
-            username = vaultSecrets.serviceuserUsername,
-            password = vaultSecrets.serviceuserPassword,
-            stsUrl = env.stsUrl
-        )
         val tokenXClient = TokenXClient(
             tokendingsUrl = tokendingsUrl,
             tokenXClientId = env.clientIdTokenX,
@@ -161,17 +168,17 @@ fun createApplicationEngine(
         )
 
         val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
-        val pdlService = PdlPersonService(pdlClient, stsOidcClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
+        val pdlService = PdlPersonService(pdlClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
 
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
-        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, stsOidcClient, arbeidsgiverRedisService)
+        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, syfosmregisterClient, arbeidsgiverService)
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
-            if (env.cluster == "dev-fss") {
+            if (env.cluster == "dev-gcp") {
                 setupSwaggerDocApi()
             }
             authenticate("jwt") {
@@ -180,7 +187,7 @@ fun createApplicationEngine(
                     registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
                     registerSykmeldingAvbrytApi(sykmeldingStatusService)
                     registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService, stsOidcClient)
+                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService)
                 }
                 route("/api/v2") {
                     registrerSykmeldingSendApiV2(sykmeldingStatusService)

@@ -12,7 +12,6 @@ import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.redis.toArbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.redis.toArbeidsgiverinfoRedisModel
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import java.time.LocalDate
@@ -22,22 +21,16 @@ class ArbeidsgiverService(
     private val organisasjonsinfoClient: OrganisasjonsinfoClient,
     private val narmestelederClient: NarmestelederClient,
     private val pdlPersonService: PdlPersonService,
-    private val stsOidcClient: StsOidcClient,
     private val arbeidsgiverRedisService: ArbeidsgiverRedisService
 ) {
-    suspend fun getArbeidsgivere(fnr: String, token: String, sykmeldingId: String, date: LocalDate = LocalDate.now(), erTokenX: Boolean = false): List<Arbeidsgiverinfo> {
+    suspend fun getArbeidsgivere(fnr: String, token: String, sykmeldingId: String, date: LocalDate = LocalDate.now()): List<Arbeidsgiverinfo> {
         val arbeidsgivereFraRedis = getArbeidsgivereFromRedis(fnr)
         if (arbeidsgivereFraRedis != null) {
             log.debug("Fant arbeidsgivere i redis")
             return arbeidsgivereFraRedis
         }
 
-        val person = if (erTokenX) {
-            pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = null, erTokenX = true)
-        } else {
-            val stsToken = stsOidcClient.oidcToken()
-            pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId, stsToken = stsToken.access_token)
-        }
+        val person = pdlPersonService.getPerson(fnr = fnr, userToken = token, callId = sykmeldingId)
         if (person.diskresjonskode) {
             return emptyList() // personer med diskresjonskode skal ikke få hentet arbeidsforhold
         }

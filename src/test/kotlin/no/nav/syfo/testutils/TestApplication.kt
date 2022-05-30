@@ -24,8 +24,6 @@ val testAudience = listOf("loginserviceId1", "loginserviceId2")
 
 fun getTestEnvironment(audience: List<String> = testAudience): Environment =
     Environment(
-        jwtIssuer = "issuer",
-        stsOidcIssuer = "https://security-token-service.nais.preprod.local",
         eregUrl = "https://ereg",
         aaregUrl = "https://aareg",
         pdlGraphqlPath = "http://graphql",
@@ -39,7 +37,9 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         syfosmregisterAudience = "smreg",
         pdlAudience = "pdl",
         aaregAudience = "aareg",
-        narmestelederAudience = "nl"
+        narmestelederAudience = "nl",
+        syfosmregisterUrl = "smregister",
+        allowedOrigin = emptyList()
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
@@ -69,6 +69,6 @@ fun TestApplicationEngine.setUpAuth(): Environment {
     val jwkProvider = JwkProviderBuilder(uri).build()
     val testEnvironment = getTestEnvironment()
 
-    application.setupAuth(testAudience, jwkProvider, testEnvironment.jwtIssuer, jwkProvider, testEnvironment.jwtIssuer, testEnvironment.clientIdTokenX)
+    application.setupAuth(testAudience, jwkProvider, "issuer", jwkProvider, "tokenxissuer", testEnvironment.clientIdTokenX)
     return testEnvironment
 }

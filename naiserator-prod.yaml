@@ -13,19 +13,19 @@ spec:
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
-    path: /is_alive
+    path: /internal/is_alive
     initialDelay: 10
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
-    path: /is_ready
+    path: /internal/is_ready
     initialDelay: 30
     periodSeconds: 5
     timeout: 5
   prometheus:
     enabled: true
-    path: /prometheus
+    path: /internal/prometheus
   resources:
     limits:
       cpu: 2560m
@@ -43,35 +43,34 @@ spec:
         - application: sykmeldinger
           namespace: teamsykmelding
           cluster: prod-gcp
+    outbound:
+      rules:
+        - application: sykmeldinger-backend-redis
+        - application: narmesteleder
+      external:
+        - host: pdl-api.prod-fss-pub.nais.io
+        - host: ereg-services.prod-fss-pub.nais.io
+        - host: aareg-services.prod-fss-pub.nais.io
+        - host: syfosmregister.prod-fss-pub.nais.io
   vault:
-    enabled: true
-    paths:
-      - kvPath: /azuread/data/prod/creds/sykmeldinger-backend
-        mountPath: /secrets/azuread/sykmeldinger-backend
-      - kvPath: serviceuser/data/prod/srvsykm-backend
-        mountPath: /secrets/serviceuser
-      - kvPath: /kv/prod/fss/sykmeldinger-backend/teamsykmelding
-        mountPath: /var/run/secrets/nais.io/vault
+    enabled: false
   ingresses:
-    - "https://sykmeldinger-backend.nais.adeo.no"
-    - "https://sykmeldinger-backend.intern.nav.no"
+    - "https://sykmeldinger-backend.nav.no"
   webproxy: true
   envFrom:
     - configmap: loginservice-idporten
     - secret: sykmeldinger-backend-redis-password
   env:
-    - name: JWT_ISSUER
-      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
-    - name: STS_OIDC_ISSUER
-      value: https://security-token-service.nais.adeo.no
     - name: EREG_URL
-      value: https://ereg-services.intern.nav.no
+      value: https://ereg-services.prod-fss-pub.nais.io
     - name: AAREG_URL
-      value: https://aareg-services.intern.nav.no
+      value: https://aareg-services.prod-fss-pub.nais.io
     - name: PDL_GRAPHQL_PATH
-      value: https://pdl-api.nais.adeo.no/graphql
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: NARMESTELEDER_URL
-      value: https://narmesteleder.intern.nav.no
+      value: https://narmesteleder.nav.no
+    - name: SYFOSMREGISTER_URL
+      value: https://syfosmregister.prod-fss-pub.nais.io
     - name: SYFOSMREGISTER_AUDIENCE
       value: prod-fss:teamsykmelding:syfosmregister
     - name: PDL_AUDIENCE
@@ -80,3 +79,5 @@ spec:
       value: prod-fss:arbeidsforhold:aareg-services-nais
     - name: NARMESTELEDER_AUDIENCE
       value: prod-gcp:teamsykmelding:narmesteleder
+    - name: ALLOWED_ORIGIN
+      value: www.nav.no
