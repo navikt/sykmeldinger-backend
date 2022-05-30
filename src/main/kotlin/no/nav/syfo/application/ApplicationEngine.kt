@@ -178,7 +178,7 @@ fun createApplicationEngine(
         val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlService)
         routing {
             registerNaisApi(applicationState)
-            if (env.cluster == "dev-fss") {
+            if (env.cluster == "dev-gcp") {
                 setupSwaggerDocApi()
             }
             authenticate("jwt") {
