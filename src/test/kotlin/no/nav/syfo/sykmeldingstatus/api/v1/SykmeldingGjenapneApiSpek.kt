@@ -34,7 +34,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
     context("Test SykmeldingGjenapneAPI for sluttbruker med tilgangskontroll") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
-            val env = setUpAuth()
+            setUpAuth()
 
             application.routing {
                 authenticate("jwt") {
@@ -55,7 +55,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }
@@ -76,7 +76,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }
@@ -96,7 +96,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "loginserviceId2",
                                 subject = "00000000000",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }
@@ -115,7 +115,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "annenservice",
                                 subject = "12345678910",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )}"
                         )
                     }

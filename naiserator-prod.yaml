@@ -44,14 +44,7 @@ spec:
           namespace: teamsykmelding
           cluster: prod-gcp
   vault:
-    enabled: true
-    paths:
-      - kvPath: /azuread/data/prod/creds/sykmeldinger-backend
-        mountPath: /secrets/azuread/sykmeldinger-backend
-      - kvPath: serviceuser/data/prod/srvsykm-backend
-        mountPath: /secrets/serviceuser
-      - kvPath: /kv/prod/fss/sykmeldinger-backend/teamsykmelding
-        mountPath: /var/run/secrets/nais.io/vault
+    enabled: false
   ingresses:
     - "https://sykmeldinger-backend.nais.adeo.no"
     - "https://sykmeldinger-backend.intern.nav.no"
@@ -60,10 +53,6 @@ spec:
     - configmap: loginservice-idporten
     - secret: sykmeldinger-backend-redis-password
   env:
-    - name: JWT_ISSUER
-      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0
-    - name: STS_OIDC_ISSUER
-      value: https://security-token-service.nais.adeo.no
     - name: EREG_URL
       value: https://ereg-services.intern.nav.no
     - name: AAREG_URL

@@ -39,7 +39,7 @@ class SykmeldingApiKtTest : FunSpec({
         with(TestApplicationEngine()) {
             every { mockPayload.subject } returns "123"
             setUpTestApplication()
-            val env = setUpAuth()
+            setUpAuth()
             application.routing {
                 authenticate("jwt") {
                     route("/api/v1") {
@@ -57,7 +57,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId1",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -77,7 +77,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId1",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -97,7 +97,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId1",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -112,7 +112,7 @@ class SykmeldingApiKtTest : FunSpec({
     context("Sykmelding API with Authorization") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
-            val env = setUpAuth()
+            setUpAuth()
             application.routing {
                 authenticate("jwt") {
                     route("/api/v1") {
@@ -130,7 +130,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId1",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -149,7 +149,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId1",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -168,7 +168,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginservice2",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer
+                                issuer = "issuer"
                             )
                             }"
                         )
@@ -187,7 +187,7 @@ class SykmeldingApiKtTest : FunSpec({
                                 "client",
                                 "loginserviceId1",
                                 subject = "12345678901",
-                                issuer = env.jwtIssuer,
+                                issuer = "issuer",
                                 level = "Level3"
                             )
                             }"

@@ -15,7 +15,6 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
-import no.nav.syfo.Environment
 import no.nav.syfo.arbeidsgivere.service.getPdlPerson
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.objectMapper
@@ -56,7 +55,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
     context("Sykmeldinger api integration test") {
         with(TestApplicationEngine()) {
             setUpTestApplication()
-            val env = setUpAuth()
+            setUpAuth()
             application.routing {
                 authenticate("jwt") {
                     route("/api/v1") {
@@ -66,7 +65,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
             }
             test("Should get list of sykmeldinger OK") {
                 httpClient.respond(emptyList<SykmeldingDTO>())
-                withGetSykmeldinger(env) {
+                withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
@@ -78,7 +77,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
                 )
                 every { redisService.getStatus(any()) } returns newSykmeldingStatus
 
-                withGetSykmeldinger(env) {
+                withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     objectMapper.readValue<List<SykmeldingDTO>>(response.content!!) shouldBeEqualTo
                         listOf(
@@ -103,7 +102,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
                 )
                 every { redisService.getStatus(any()) } returns redisSykmeldingStatus
 
-                withGetSykmeldinger(env) {
+                withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     objectMapper.readValue<List<Sykmelding>>(response.content!!) shouldBeEqualTo
                         listOf(sykmeldingDTO)
@@ -111,21 +110,21 @@ class SykmeldingApiIntegrationTest : FunSpec({
             }
             test("Should get unauthorize when register returns unauthorized") {
                 httpClient.respond(HttpStatusCode.Unauthorized, "Unauthorized")
-                withGetSykmeldinger(env) {
+                withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                     response.content shouldBeEqualTo "Unauthorized"
                 }
             }
             test("Should get forbidden when register returns forbidden") {
                 httpClient.respond(HttpStatusCode.Forbidden, "Forbidden")
-                withGetSykmeldinger(env) {
+                withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.Forbidden
                     response.content shouldBeEqualTo "Forbidden"
                 }
             }
             test("Should get 500 when register returns 500") {
                 httpClient.respond(HttpStatusCode.InternalServerError, "Feil i registeret")
-                withGetSykmeldinger(env) {
+                withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                     response.content shouldBeEqualTo "Feil i registeret"
                 }
@@ -134,24 +133,24 @@ class SykmeldingApiIntegrationTest : FunSpec({
     }
 })
 
-private fun TestApplicationEngine.withGetSykmeldinger(env: Environment, block: TestApplicationCall.() -> Unit) {
+private fun TestApplicationEngine.withGetSykmeldinger(block: TestApplicationCall.() -> Unit) {
     with(
         handleRequest(HttpMethod.Get, "api/v1/sykmeldinger") {
-            setUpAuthHeader(env)
+            setUpAuthHeader()
         }
     ) {
         block()
     }
 }
 
-fun TestApplicationRequest.setUpAuthHeader(env: Environment) {
+fun TestApplicationRequest.setUpAuthHeader() {
     addHeader(
         "Authorization",
         "Bearer ${generateJWT(
             "client",
             "loginserviceId1",
             subject = "12345678901",
-            issuer = env.jwtIssuer
+            issuer = "issuer"
         )}"
     )
 }

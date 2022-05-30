@@ -51,7 +51,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 erAvvist = erAvvist,
                 erEgenmeldt = erEgenmeldt
             )
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
                     juridiskOrgnummer = "",
@@ -93,7 +93,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
     fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
                     juridiskOrgnummer = "",
