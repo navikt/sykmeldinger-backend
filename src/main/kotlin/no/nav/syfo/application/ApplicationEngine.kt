@@ -11,6 +11,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
@@ -22,6 +23,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.route
@@ -114,6 +116,17 @@ fun createApplicationEngine(
                     applicationState.alive = false
                 }
             }
+        }
+        install(CORS) {
+            allowMethod(HttpMethod.Get)
+            allowMethod(HttpMethod.Post)
+            allowMethod(HttpMethod.Options)
+            env.allowedOrigin.forEach {
+                hosts.add("https://$it")
+            }
+            allowHeader("nav_csrf_protection")
+            allowCredentials = true
+            allowNonSimpleContentTypes = true
         }
 
         val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {

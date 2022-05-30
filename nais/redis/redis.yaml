@@ -24,6 +24,11 @@ spec:
   service:
     port: 6379
     protocol: redis
+  accessPolicy:
+    inbound:
+      rules:
+        - application: sykmeldinger-backend
+        - application: sykmeldinger-backend-redisexporter
   envFrom:
     - secret: sykmeldinger-backend-redis-password
 
@@ -52,6 +57,10 @@ spec:
       memory: 100Mi
   liveness:
     path: /health
+  accessPolicy:
+    inbound:
+      rules:
+        - application: sykmeldinger-backend-redis
   env:
     - name: REDIS_ADDR
       value: sykmeldinger-backend-redis:6379

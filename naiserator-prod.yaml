@@ -43,24 +43,34 @@ spec:
         - application: sykmeldinger
           namespace: teamsykmelding
           cluster: prod-gcp
+    outbound:
+      rules:
+        - application: sykmeldinger-backend-redis
+      external:
+        - host: pdl-api.prod-fss-pub.nais.io
+        - host: ereg-services.prod-fss-pub.nais.io
+        - host: aareg-services.prod-fss-pub.nais.io
+        - host: syfosmregister.prod-fss-pub.nais.io
+        - host: narmesteleder.nav.no
   vault:
     enabled: false
   ingresses:
-    - "https://sykmeldinger-backend.nais.adeo.no"
-    - "https://sykmeldinger-backend.intern.nav.no"
+    - "https://sykmeldinger-backend.nav.no"
   webproxy: true
   envFrom:
     - configmap: loginservice-idporten
     - secret: sykmeldinger-backend-redis-password
   env:
     - name: EREG_URL
-      value: https://ereg-services.intern.nav.no
+      value: https://ereg-services.prod-fss-pub.nais.io
     - name: AAREG_URL
-      value: https://aareg-services.intern.nav.no
+      value: https://aareg-services.prod-fss-pub.nais.io
     - name: PDL_GRAPHQL_PATH
-      value: https://pdl-api.nais.adeo.no/graphql
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: NARMESTELEDER_URL
-      value: https://narmesteleder.intern.nav.no
+      value: https://narmesteleder.nav.no
+    - name: SYFOSMREGISTER_URL
+      value: https://syfosmregister.prod-fss-pub.nais.io
     - name: SYFOSMREGISTER_AUDIENCE
       value: prod-fss:teamsykmelding:syfosmregister
     - name: PDL_AUDIENCE
@@ -69,3 +79,5 @@ spec:
       value: prod-fss:arbeidsforhold:aareg-services-nais
     - name: NARMESTELEDER_AUDIENCE
       value: prod-gcp:teamsykmelding:narmesteleder
+    - name: ALLOWED_ORIGIN
+      value: www.nav.no

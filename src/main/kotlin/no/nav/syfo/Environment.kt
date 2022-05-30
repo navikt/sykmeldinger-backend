@@ -9,7 +9,7 @@ data class Environment(
     val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.nais.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
-    val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL", "http://syfosmregister"),
+    val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val eregUrl: String = getEnvVar("EREG_URL"),
     val aaregUrl: String = getEnvVar("AAREG_URL"),
@@ -22,7 +22,8 @@ data class Environment(
     val syfosmregisterAudience: String = getEnvVar("SYFOSMREGISTER_AUDIENCE"),
     val pdlAudience: String = getEnvVar("PDL_AUDIENCE"),
     val aaregAudience: String = getEnvVar("AAREG_AUDIENCE"),
-    val narmestelederAudience: String = getEnvVar("NARMESTELEDER_AUDIENCE")
+    val narmestelederAudience: String = getEnvVar("NARMESTELEDER_AUDIENCE"),
+    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(",")
 )
 
 data class VaultSecrets(
