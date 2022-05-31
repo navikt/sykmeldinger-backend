@@ -7,7 +7,7 @@ data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "sykmeldinger-backend"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
-    val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.nais.local"),
+    val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.cluster.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
     val syfosmregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
