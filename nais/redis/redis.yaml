@@ -58,7 +58,7 @@ spec:
   liveness:
     path: /health
   accessPolicy:
-    inbound:
+    outbound:
       rules:
         - application: sykmeldinger-backend-redis
   env:
