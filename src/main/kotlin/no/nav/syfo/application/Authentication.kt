@@ -24,6 +24,12 @@ fun Application.setupAuth(
 ) {
     install(Authentication) {
         jwt(name = "jwt") {
+            authHeader {
+                if (it.getToken() == null) {
+                    return@authHeader null
+                }
+                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
+            }
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
