@@ -1,6 +1,5 @@
 package no.nav.syfo.brukerinformasjon.api
 
-import io.ktor.http.HttpHeaders
 import io.ktor.server.application.call
 import io.ktor.server.auth.authentication
 import io.ktor.server.response.respond
@@ -16,7 +15,7 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
     get("/brukerinformasjon") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val token = call.request.headers[HttpHeaders.Authorization]!!
+        val token = principal.token
 
         val person = pdlPersonService.getPerson(
             fnr = fnr,
@@ -43,18 +42,17 @@ fun Route.registrerBrukerinformasjonApiV2(arbeidsgiverService: ArbeidsgiverServi
     get("/brukerinformasjon") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val token = call.request.headers[HttpHeaders.Authorization]!!
-        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+        val token = principal.token
 
         val person = pdlPersonService.getPerson(
             fnr = fnr,
-            userToken = tokenUtenPrefiks,
+            userToken = token,
             callId = UUID.randomUUID().toString()
         )
 
         val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
             fnr = fnr,
-            token = tokenUtenPrefiks,
+            token = token,
             sykmeldingId = UUID.randomUUID().toString()
         )
 

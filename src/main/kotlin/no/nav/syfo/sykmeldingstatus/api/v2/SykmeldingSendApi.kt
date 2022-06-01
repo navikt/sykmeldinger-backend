@@ -15,8 +15,8 @@ import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
+        val token = principal.token
         val fnr = principal.fnr
 
         val sykmeldingUserEvent = call.safeReceiveOrNull<SykmeldingUserEvent>()
@@ -36,10 +36,9 @@ fun Route.registrerSykmeldingSendApiV2(sykmeldingStatusService: SykmeldingStatus
 fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+        val token = principal.token
 
         val sykmeldingUserEvent = call.safeReceiveOrNull<SykmeldingUserEvent>()
 
@@ -47,7 +46,7 @@ fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatus
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
                 sykmeldingUserEvent.validate()
-                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, sykmeldingId, fnr, tokenUtenPrefiks, erTokenX = true)
+                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, sykmeldingId, fnr, token, erTokenX = true)
 
                 call.respond(HttpStatusCode.Accepted)
             }

@@ -28,7 +28,7 @@ class PdlPersonService(
         }
 
         val token = tokenXClient.getAccessToken(
-            subjectToken = userToken.removePrefix("Bearer "),
+            subjectToken = userToken,
             audience = audience
         )
         val pdlResponse = pdlClient.getPersonTokenX(fnr, token)

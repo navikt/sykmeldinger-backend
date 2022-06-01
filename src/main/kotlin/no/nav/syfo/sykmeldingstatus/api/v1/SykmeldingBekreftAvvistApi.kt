@@ -13,8 +13,8 @@ import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
+        val token = principal.token
         val fnr = principal.fnr
 
         sykmeldingStatusService.registrerBekreftetAvvist(
@@ -32,16 +32,15 @@ fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: Sykmelding
 fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+        val token = principal.token
 
         sykmeldingStatusService.registrerBekreftetAvvist(
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,
-            token = tokenUtenPrefiks,
+            token = token,
             erTokenX = true
         )
 
