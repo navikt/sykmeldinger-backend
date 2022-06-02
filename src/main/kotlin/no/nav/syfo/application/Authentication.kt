@@ -24,6 +24,12 @@ fun Application.setupAuth(
 ) {
     install(Authentication) {
         jwt(name = "jwt") {
+            authHeader {
+                when (val token: String? = it.getToken()) {
+                    null -> return@authHeader null
+                    else -> return@authHeader HttpAuthHeader.Single("Bearer", token)
+                }
+            }
             verifier(jwkProvider, issuer)
             validate { credentials ->
                 when {
@@ -31,7 +37,8 @@ fun Application.setupAuth(
                         val principal = JWTPrincipal(credentials.payload)
                         BrukerPrincipal(
                             fnr = finnFnrFraToken(principal),
-                            principal = principal
+                            principal = principal,
+                            token = this.getToken()!!
                         )
                     }
                     else -> unauthorized(credentials)
@@ -40,10 +47,10 @@ fun Application.setupAuth(
         }
         jwt(name = "tokenx") {
             authHeader {
-                if (it.getToken() == null) {
-                    return@authHeader null
+                when (val token: String? = it.getToken()) {
+                    null -> return@authHeader null
+                    else -> return@authHeader HttpAuthHeader.Single("Bearer", token)
                 }
-                return@authHeader HttpAuthHeader.Single("Bearer", it.getToken()!!)
             }
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
@@ -53,7 +60,8 @@ fun Application.setupAuth(
                             val principal = JWTPrincipal(credentials.payload)
                             BrukerPrincipal(
                                 fnr = finnFnrFraToken(principal),
-                                principal = principal
+                                principal = principal,
+                                token = this.getToken()!!
                             )
                         }
                     else -> unauthorized(credentials)
@@ -64,10 +72,10 @@ fun Application.setupAuth(
 }
 
 fun ApplicationCall.getToken(): String? {
-    if (request.header("Authorization") != null) {
-        return request.header("Authorization")!!.removePrefix("Bearer ")
+    return when (val authHeader = request.header("Authorization")) {
+        null -> request.cookies.get(name = "selvbetjening-idtoken")
+        else -> authHeader.removePrefix("Bearer ")
     }
-    return request.cookies.get(name = "selvbetjening-idtoken")
 }
 
 fun hasClientIdAudience(credentials: JWTCredential, clientId: String): Boolean {
@@ -103,5 +111,6 @@ fun finnFnrFraToken(principal: JWTPrincipal): String {
 
 data class BrukerPrincipal(
     val fnr: String,
-    val principal: JWTPrincipal
+    val principal: JWTPrincipal,
+    val token: String
 ) : Principal

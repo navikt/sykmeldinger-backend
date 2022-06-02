@@ -14,8 +14,8 @@ import java.time.LocalDate
 
 fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
+        val token = principal.token
         val fnr = principal.fnr
         val fom = call.parameters["fom"]?.let { LocalDate.parse(it) }
         val tom = call.parameters["tom"]?.let { LocalDate.parse(it) }
@@ -31,8 +31,8 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
 
     get("/sykmeldinger/{sykmeldingid}") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
+        val token = principal.token
         val fnr = principal.fnr
 
         if (sykmeldingId == "null") {
@@ -51,9 +51,8 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
 
 fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
-        val token = call.request.headers["Authorization"]!!
-        val tokenUtenPrefiks = token.removePrefix("Bearer ")
         val principal: BrukerPrincipal = call.authentication.principal()!!
+        val token = principal.token
         val fnr = principal.fnr
         val fom = call.parameters["fom"]?.let { LocalDate.parse(it) }
         val tom = call.parameters["tom"]?.let { LocalDate.parse(it) }
@@ -63,22 +62,21 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
             checkExcludeInclude(exclude, include) -> call.respond(HttpStatusCode.BadRequest, "Can not use both include and exclude")
             checkFomAndTomDate(fom, tom) -> call.respond(HttpStatusCode.BadRequest, "FOM should be before or equal to TOM")
             hasInvalidStatus(exclude ?: include) -> call.respond(HttpStatusCode.BadRequest, "include or exclude can only contain ${StatusEventDTO.values().joinToString()}")
-            else -> call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr, token = tokenUtenPrefiks, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include), erTokenX = true))
+            else -> call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr, token = token, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include), erTokenX = true))
         }
     }
 
     get("/sykmeldinger/{sykmeldingid}") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val token = call.request.headers["Authorization"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val tokenUtenPrefiks = token.removePrefix("Bearer ")
+        val token = principal.token
 
         if (sykmeldingId == "null") {
             log.warn("Mottok kall for å hente sykmelding med id null")
             call.respond(HttpStatusCode.NotFound)
         } else {
-            val sykmelding = sykmeldingService.hentSykmelding(fnr, tokenUtenPrefiks, sykmeldingId, erTokenX = true)
+            val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId, erTokenX = true)
 
             when (sykmelding) {
                 null -> call.respond(HttpStatusCode.NotFound)

@@ -158,6 +158,25 @@ class SykmeldingApiKtTest : FunSpec({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
+            test("Sykmeldinger OK, with cookie") {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                        addHeader(
+                            "Cookie",
+                            "selvbetjening-idtoken=${
+                            generateJWT(
+                                "client",
+                                "loginserviceId1",
+                                subject = "12345678901",
+                                issuer = "issuer"
+                            )
+                            }"
+                        )
+                    }
+                ) {
+                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                }
+            }
             test("Unauthorized, incorrect audience") {
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {

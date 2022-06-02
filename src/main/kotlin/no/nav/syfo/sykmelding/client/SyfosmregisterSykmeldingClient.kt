@@ -22,7 +22,7 @@ class SyfosmregisterSykmeldingClient(
             return httpClient.get("$endpointUrl/api/v2/sykmeldinger/$sykmeldingid") {
                 accept(ContentType.Application.Json)
                 headers {
-                    append("Authorization", token)
+                    append("Authorization", "Bearer $token")
                 }
             }.body()
         } catch (e: Exception) {
@@ -54,7 +54,7 @@ class SyfosmregisterSykmeldingClient(
             return httpClient.get(getRequestUrl(apiFilter, "$endpointUrl/api/v2")) {
                 accept(ContentType.Application.Json)
                 headers {
-                    append("Authorization", token)
+                    append("Authorization", "Bearer $token")
                 }
             }.body()
         } catch (e: Exception) {

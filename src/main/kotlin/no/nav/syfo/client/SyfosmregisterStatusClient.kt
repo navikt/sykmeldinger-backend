@@ -22,7 +22,7 @@ class SyfosmregisterStatusClient(
             val statusliste = httpClient.get("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
                 accept(ContentType.Application.Json)
                 headers {
-                    append("Authorization", token)
+                    append("Authorization", "Bearer $token")
                     append("Nav-CallId", sykmeldingId)
                 }
             }
