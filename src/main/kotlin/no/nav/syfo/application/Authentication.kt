@@ -10,7 +10,6 @@ import io.ktor.server.auth.Principal
 import io.ktor.server.auth.jwt.JWTCredential
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.request.authorization
 import io.ktor.server.request.header
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
@@ -39,7 +38,7 @@ fun Application.setupAuth(
                         BrukerPrincipal(
                             fnr = finnFnrFraToken(principal),
                             principal = principal,
-                            token = this.request.authorization()!!
+                            token = this.getToken()!!
                         )
                     }
                     else -> unauthorized(credentials)
@@ -62,7 +61,7 @@ fun Application.setupAuth(
                             BrukerPrincipal(
                                 fnr = finnFnrFraToken(principal),
                                 principal = principal,
-                                token = this.request.authorization()!!
+                                token = this.getToken()!!
                             )
                         }
                     else -> unauthorized(credentials)
