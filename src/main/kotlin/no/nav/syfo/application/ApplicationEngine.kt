@@ -39,7 +39,6 @@ import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoCli
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
-import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApiV2
 import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
@@ -199,7 +198,7 @@ fun createApplicationEngine(
                     registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService)
                     registerSykmeldingAvbrytApiV2(sykmeldingStatusService)
                     registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
-                    registrerBrukerinformasjonApiV2(arbeidsgiverService, pdlService)
+                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService)
                 }
                 route("/api/v3") {
                     registrerSykmeldingSendApiV3(sykmeldingStatusService)
