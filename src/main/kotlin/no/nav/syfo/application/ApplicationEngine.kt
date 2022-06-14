@@ -40,7 +40,6 @@ import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.client.SyfosmregisterStatusClient
-import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.pdl.client.PdlClient
@@ -64,6 +63,8 @@ import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandl
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import no.nav.syfo.tokenx.TokenXClient
+import no.nav.syfo.tokenx.redis.TokenXRedisService
 import redis.clients.jedis.JedisPool
 import java.util.UUID
 import java.util.concurrent.ExecutionException
@@ -148,9 +149,11 @@ fun createApplicationEngine(
         }
         val httpClient = HttpClient(Apache, config)
 
+        val tokenXRedisService = TokenXRedisService(jedisPool, vaultSecrets.redisSecret)
         val tokenXClient = TokenXClient(
             tokendingsUrl = tokendingsUrl,
             tokenXClientId = env.clientIdTokenX,
+            tokenXRedisService = tokenXRedisService,
             httpClient = httpClient,
             privateKey = env.tokenXPrivateJwk
         )

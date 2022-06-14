@@ -16,7 +16,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
 import no.nav.syfo.arbeidsgivere.service.getPdlPerson
-import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
@@ -34,6 +33,7 @@ import no.nav.syfo.testutils.ResponseData
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.tokenx.TokenXClient
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.OffsetDateTime
 import java.time.ZoneOffset

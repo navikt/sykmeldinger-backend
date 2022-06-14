@@ -5,12 +5,12 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
 import io.mockk.mockk
-import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
 import no.nav.syfo.testutils.HttpClientTest
+import no.nav.syfo.tokenx.TokenXClient
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import kotlin.test.assertFailsWith

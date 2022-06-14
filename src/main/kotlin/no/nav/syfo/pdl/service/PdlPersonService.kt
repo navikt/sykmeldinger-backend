@@ -1,6 +1,5 @@
 package no.nav.syfo.pdl.service
 
-import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.Gradering
@@ -10,6 +9,7 @@ import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
 import no.nav.syfo.pdl.redis.toPdlPerson
 import no.nav.syfo.pdl.redis.toPdlPersonRedisModel
+import no.nav.syfo.tokenx.TokenXClient
 
 const val AKTORID_GRUPPE = "AKTORID"
 
