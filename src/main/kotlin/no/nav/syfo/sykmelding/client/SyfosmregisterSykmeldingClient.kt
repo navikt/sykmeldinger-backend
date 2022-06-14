@@ -8,6 +8,7 @@ import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.model.Sykmelding
 
@@ -18,6 +19,7 @@ class SyfosmregisterSykmeldingClient(
     private val audience: String
 ) {
     suspend fun getSykmelding(token: String, sykmeldingid: String): Sykmelding? {
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$endpointUrl/api/v2/sykmeldinger/:sykmeldingid").startTimer()
         try {
             return httpClient.get("$endpointUrl/api/v2/sykmeldinger/$sykmeldingid") {
                 accept(ContentType.Application.Json)
@@ -28,6 +30,8 @@ class SyfosmregisterSykmeldingClient(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmelding $sykmeldingid", e)
             throw e
+        } finally {
+            timer.observeDuration()
         }
     }
 
@@ -36,6 +40,7 @@ class SyfosmregisterSykmeldingClient(
             subjectToken = subjectToken,
             audience = audience
         )
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$endpointUrl/api/v3/sykmeldinger/:sykmeldingid").startTimer()
         try {
             return httpClient.get("$endpointUrl/api/v3/sykmeldinger/$sykmeldingid") {
                 accept(ContentType.Application.Json)
@@ -46,10 +51,13 @@ class SyfosmregisterSykmeldingClient(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmelding $sykmeldingid (tokenx)", e)
             throw e
+        } finally {
+            timer.observeDuration()
         }
     }
 
     suspend fun getSykmeldinger(token: String, apiFilter: ApiFilter?): List<Sykmelding> {
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$endpointUrl/api/v2").startTimer()
         try {
             return httpClient.get(getRequestUrl(apiFilter, "$endpointUrl/api/v2")) {
                 accept(ContentType.Application.Json)
@@ -60,6 +68,8 @@ class SyfosmregisterSykmeldingClient(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmeldinger", e)
             throw e
+        } finally {
+            timer.observeDuration()
         }
     }
 
@@ -68,6 +78,7 @@ class SyfosmregisterSykmeldingClient(
             subjectToken = subjectToken,
             audience = audience
         )
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$endpointUrl/api/v3").startTimer()
         try {
             return httpClient.get(getRequestUrl(apiFilter, "$endpointUrl/api/v3")) {
                 accept(ContentType.Application.Json)
@@ -78,6 +89,8 @@ class SyfosmregisterSykmeldingClient(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved kall getSykmeldinger (tokenx)", e)
             throw e
+        } finally {
+            timer.observeDuration()
         }
     }
 

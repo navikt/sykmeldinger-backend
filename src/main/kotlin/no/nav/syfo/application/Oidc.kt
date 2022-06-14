@@ -14,10 +14,8 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
-import java.net.ProxySelector
 
-val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
     install(ContentNegotiation) {
         jackson {
             registerKotlinModule()
@@ -26,15 +24,10 @@ val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
     }
-    engine {
-        customizeClient {
-            setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-        }
-    }
 }
 
 fun getWellKnown(wellKnownUrl: String) =
-    runBlocking { HttpClient(Apache, proxyConfig).get(wellKnownUrl).body<WellKnown>() }
+    runBlocking { HttpClient(Apache, config).get(wellKnownUrl).body<WellKnown>() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(
@@ -45,7 +38,7 @@ data class WellKnown(
 )
 
 fun getWellKnownTokenX(wellKnownUrl: String) =
-    runBlocking { HttpClient(Apache, proxyConfig).get(wellKnownUrl).body<WellKnownTokenX>() }
+    runBlocking { HttpClient(Apache, config).get(wellKnownUrl).body<WellKnownTokenX>() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnownTokenX(

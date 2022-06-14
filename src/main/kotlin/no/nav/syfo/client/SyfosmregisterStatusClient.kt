@@ -9,6 +9,7 @@ import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import no.nav.syfo.log
+import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 
 class SyfosmregisterStatusClient(
@@ -18,6 +19,7 @@ class SyfosmregisterStatusClient(
     private val audience: String
 ) {
     suspend fun hentSykmeldingstatus(sykmeldingId: String, token: String): SykmeldingStatusEventDTO {
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$endpointUrl/sykmeldinger/:sykmeldingId/status").startTimer()
         try {
             val statusliste = httpClient.get("$endpointUrl/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
                 accept(ContentType.Application.Json)
@@ -36,6 +38,8 @@ class SyfosmregisterStatusClient(
                 log.error("Noe gikk galt ved sjekking av status eller tilgang for sykmeldingId {}", sykmeldingId)
                 throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId")
             }
+        } finally {
+            timer.observeDuration()
         }
     }
 
@@ -44,6 +48,7 @@ class SyfosmregisterStatusClient(
             subjectToken = subjectToken,
             audience = audience
         )
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$endpointUrl/api/v3/sykmeldinger/:sykmeldingId/status").startTimer()
         try {
             val statusliste = httpClient.get("$endpointUrl/api/v3/sykmeldinger/$sykmeldingId/status?filter=LATEST") {
                 accept(ContentType.Application.Json)
@@ -62,6 +67,8 @@ class SyfosmregisterStatusClient(
                 log.error("Noe gikk galt ved sjekking av status eller tilgang for sykmeldingId $sykmeldingId (tokenx)")
                 throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId (tokenx)")
             }
+        } finally {
+            timer.observeDuration()
         }
     }
 }

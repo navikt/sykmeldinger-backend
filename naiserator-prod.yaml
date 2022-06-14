@@ -56,7 +56,7 @@ spec:
     enabled: false
   ingresses:
     - "https://sykmeldinger-backend.nav.no"
-  webproxy: true
+  webproxy: false
   envFrom:
     - configmap: loginservice-idporten
     - secret: sykmeldinger-backend-redis-password
