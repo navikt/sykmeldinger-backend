@@ -9,6 +9,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -23,6 +24,7 @@ class NarmestelederClient(
             subjectToken = subjectToken,
             audience = audience
         )
+        val timer = HTTP_CLIENT_HISTOGRAM.labels("$baseUrl/user/v2/sykmeldt/narmesteledere").startTimer()
         try {
             return httpClient.get("$baseUrl/user/v2/sykmeldt/narmesteledere") {
                 headers {
@@ -34,6 +36,8 @@ class NarmestelederClient(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved henting av nærmeste leder")
             throw e
+        } finally {
+            timer.observeDuration()
         }
     }
 }

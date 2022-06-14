@@ -21,6 +21,8 @@ import io.ktor.http.Parameters
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import no.nav.syfo.log
+import no.nav.syfo.metrics.CLIENT_ASSERTION_HISTOGRAM
+import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
@@ -59,36 +61,48 @@ class TokenXClient(
                     ?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
                     ?: run {
                         log.debug("Henter nytt token fra TokenX")
-                        val response: AccessToken = httpClient.post(tokendingsUrl) {
-                            accept(ContentType.Application.Json)
-                            method = HttpMethod.Post
-                            setBody(
-                                FormDataContent(
-                                    Parameters.build {
-                                        append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
-                                        append("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-                                        append("client_assertion", getClientAssertion().serialize())
-                                        append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
-                                        append("subject_token", subjectToken)
-                                        append("audience", audience)
-                                    }
+                        val timer = HTTP_CLIENT_HISTOGRAM.labels(tokendingsUrl).startTimer()
+                        try {
+                            val response: AccessToken = httpClient.post(tokendingsUrl) {
+                                accept(ContentType.Application.Json)
+                                method = HttpMethod.Post
+                                setBody(
+                                    FormDataContent(
+                                        Parameters.build {
+                                            append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+                                            append(
+                                                "client_assertion_type",
+                                                "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+                                            )
+                                            append("client_assertion", getClientAssertion().serialize())
+                                            append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
+                                            append("subject_token", subjectToken)
+                                            append("audience", audience)
+                                        }
+                                    )
                                 )
+                            }.body()
+                            val tokenMedExpiry = AccessTokenMedExpiry(
+                                access_token = response.access_token,
+                                expires_in = response.expires_in,
+                                expiresOn = Instant.now().plusSeconds(response.expires_in.toLong())
                             )
-                        }.body()
-                        val tokenMedExpiry = AccessTokenMedExpiry(
-                            access_token = response.access_token,
-                            expires_in = response.expires_in,
-                            expiresOn = Instant.now().plusSeconds(response.expires_in.toLong())
-                        )
-                        tokenMap[key] = tokenMedExpiry
-                        log.debug("Har hentet accesstoken")
-                        return@run tokenMedExpiry
+                            tokenMap[key] = tokenMedExpiry
+                            log.debug("Har hentet accesstoken")
+                            return@run tokenMedExpiry
+                        } catch (e: Exception) {
+                            log.error("Noe gikk galt ved henting av token fra tokendings", e)
+                            throw e
+                        } finally {
+                            timer.observeDuration()
+                        }
                     }
                 ).access_token
         }
     }
 
     private fun getClientAssertion(): SignedJWT {
+        val timer = CLIENT_ASSERTION_HISTOGRAM.startTimer()
         val jwtClaimSet = JWTClaimsSet.Builder()
             .audience(tokendingsUrl)
             .subject(tokenXClientId)
@@ -100,6 +114,7 @@ class TokenXClient(
             .build()
         val signedJwt = SignedJWT(jwsHeader, jwtClaimSet)
         signedJwt.sign(jwsSigner)
+        timer.observeDuration()
         return signedJwt
     }
 

@@ -8,6 +8,7 @@ import io.ktor.http.HttpHeaders
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
+import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
 import java.time.LocalDate
 
 class ArbeidsforholdClient(
@@ -29,6 +30,7 @@ class ArbeidsforholdClient(
             audience = audience
         )
         val iMorgen = LocalDate.now().plusDays(1).toString()
+        val timer = HTTP_CLIENT_HISTOGRAM.labels(arbeidsforholdPath).startTimer()
         try {
             return httpClient.get(
                 "$arbeidsforholdPath?" +
@@ -42,6 +44,8 @@ class ArbeidsforholdClient(
         } catch (e: Exception) {
             log.error("Noe gikk galt ved henting av arbeidsforhold (tokenX)", e)
             throw e
+        } finally {
+            timer.observeDuration()
         }
     }
 }
