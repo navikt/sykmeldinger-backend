@@ -56,7 +56,7 @@ class TokenXClient(
             tokenXRedisService.getToken(key)
                 ?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
                 ?: run {
-                    log.info("Henter nytt token fra TokenX")
+                    log.debug("Henter nytt token fra TokenX")
                     val timer = HTTP_CLIENT_HISTOGRAM.labels(tokendingsUrl).startTimer()
                     try {
                         val response: AccessToken = httpClient.post(tokendingsUrl) {
@@ -84,7 +84,7 @@ class TokenXClient(
                             expiresOn = Instant.now().plusSeconds(response.expires_in.toLong())
                         )
                         tokenXRedisService.updateToken(key, tokenMedExpiry)
-                        log.info("Har hentet accesstoken")
+                        log.debug("Har hentet accesstoken")
                         return@run tokenMedExpiry
                     } catch (e: Exception) {
                         log.error("Noe gikk galt ved henting av token fra tokendings", e)
