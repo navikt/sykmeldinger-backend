@@ -7,7 +7,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.Adressebeskyttelse
 import no.nav.syfo.pdl.client.model.ErrorDetails
@@ -24,6 +23,7 @@ import no.nav.syfo.pdl.error.PersonNotFoundInPdl
 import no.nav.syfo.pdl.redis.NavnRedisModel
 import no.nav.syfo.pdl.redis.PdlPersonRedisModel
 import no.nav.syfo.pdl.redis.PdlPersonRedisService
+import no.nav.syfo.tokenx.TokenXClient
 import org.amshove.kluent.shouldBeEqualTo
 import kotlin.test.assertFailsWith
 

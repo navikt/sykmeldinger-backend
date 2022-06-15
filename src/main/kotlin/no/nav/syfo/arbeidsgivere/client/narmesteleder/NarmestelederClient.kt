@@ -7,9 +7,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import no.nav.syfo.client.TokenXClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
+import no.nav.syfo.tokenx.TokenXClient
 import java.time.LocalDate
 import java.time.OffsetDateTime
 

@@ -11,6 +11,7 @@ import io.ktor.http.HttpStatusCode
 import no.nav.syfo.log
 import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.tokenx.TokenXClient
 
 class SyfosmregisterStatusClient(
     private val endpointUrl: String,

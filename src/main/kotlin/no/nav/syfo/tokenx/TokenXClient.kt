@@ -1,4 +1,4 @@
-package no.nav.syfo.client
+package no.nav.syfo.tokenx
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.nimbusds.jose.JOSEObjectType
@@ -18,11 +18,10 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import no.nav.syfo.log
 import no.nav.syfo.metrics.CLIENT_ASSERTION_HISTOGRAM
 import no.nav.syfo.metrics.HTTP_CLIENT_HISTOGRAM
+import no.nav.syfo.tokenx.redis.TokenXRedisService
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
@@ -33,16 +32,13 @@ import java.util.UUID
 class TokenXClient(
     private val tokendingsUrl: String,
     private val tokenXClientId: String,
+    private val tokenXRedisService: TokenXRedisService,
     private val httpClient: HttpClient,
     privateKey: RSAKey
 ) {
     private val jwsSigner: JWSSigner
     private val algorithm: JWSAlgorithm = JWSAlgorithm.RS256
     private val jwsHeader: JWSHeader
-    private val mutex = Mutex()
-
-    @Volatile
-    private var tokenMap = HashMap<String, AccessTokenMedExpiry>()
 
     init {
         jwsSigner = RSASSASigner(privateKey)
@@ -55,50 +51,49 @@ class TokenXClient(
     suspend fun getAccessToken(subjectToken: String, audience: String): String {
         val omToMinutter = Instant.now().plusSeconds(120L)
         val key = subjectToken + audience
-        return mutex.withLock {
-            (
-                tokenMap[key]
-                    ?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
-                    ?: run {
-                        log.debug("Henter nytt token fra TokenX")
-                        val timer = HTTP_CLIENT_HISTOGRAM.labels(tokendingsUrl).startTimer()
-                        try {
-                            val response: AccessToken = httpClient.post(tokendingsUrl) {
-                                accept(ContentType.Application.Json)
-                                method = HttpMethod.Post
-                                setBody(
-                                    FormDataContent(
-                                        Parameters.build {
-                                            append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
-                                            append(
-                                                "client_assertion_type",
-                                                "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-                                            )
-                                            append("client_assertion", getClientAssertion().serialize())
-                                            append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
-                                            append("subject_token", subjectToken)
-                                            append("audience", audience)
-                                        }
-                                    )
+
+        return (
+            tokenXRedisService.getToken(key)
+                ?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
+                ?: run {
+                    log.debug("Henter nytt token fra TokenX")
+                    val timer = HTTP_CLIENT_HISTOGRAM.labels(tokendingsUrl).startTimer()
+                    try {
+                        val response: AccessToken = httpClient.post(tokendingsUrl) {
+                            accept(ContentType.Application.Json)
+                            method = HttpMethod.Post
+                            setBody(
+                                FormDataContent(
+                                    Parameters.build {
+                                        append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
+                                        append(
+                                            "client_assertion_type",
+                                            "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+                                        )
+                                        append("client_assertion", getClientAssertion().serialize())
+                                        append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
+                                        append("subject_token", subjectToken)
+                                        append("audience", audience)
+                                    }
                                 )
-                            }.body()
-                            val tokenMedExpiry = AccessTokenMedExpiry(
-                                access_token = response.access_token,
-                                expires_in = response.expires_in,
-                                expiresOn = Instant.now().plusSeconds(response.expires_in.toLong())
                             )
-                            tokenMap[key] = tokenMedExpiry
-                            log.debug("Har hentet accesstoken")
-                            return@run tokenMedExpiry
-                        } catch (e: Exception) {
-                            log.error("Noe gikk galt ved henting av token fra tokendings", e)
-                            throw e
-                        } finally {
-                            timer.observeDuration()
-                        }
+                        }.body()
+                        val tokenMedExpiry = AccessTokenMedExpiry(
+                            access_token = response.access_token,
+                            expires_in = response.expires_in,
+                            expiresOn = Instant.now().plusSeconds(response.expires_in.toLong())
+                        )
+                        tokenXRedisService.updateToken(key, tokenMedExpiry)
+                        log.debug("Har hentet accesstoken")
+                        return@run tokenMedExpiry
+                    } catch (e: Exception) {
+                        log.error("Noe gikk galt ved henting av token fra tokendings", e)
+                        throw e
+                    } finally {
+                        timer.observeDuration()
                     }
-                ).access_token
-        }
+                }
+            ).access_token
     }
 
     private fun getClientAssertion(): SignedJWT {
