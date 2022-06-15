@@ -146,6 +146,15 @@ fun createApplicationEngine(
                 }
             }
             expectSuccess = true
+            engine {
+                socketTimeout = 5_000
+                connectTimeout = 5_000
+                connectionRequestTimeout = 10_000
+                customizeClient {
+                    setMaxConnTotal(100)
+                    setMaxConnPerRoute(10)
+                }
+            }
         }
         val httpClient = HttpClient(Apache, config)
 
