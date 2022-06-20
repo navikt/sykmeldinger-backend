@@ -152,7 +152,7 @@ fun createApplicationEngine(
                 connectionRequestTimeout = 10_000
                 customizeClient {
                     setMaxConnTotal(300)
-                    setMaxConnPerRoute(30)
+                    setMaxConnPerRoute(100)
                 }
             }
         }
