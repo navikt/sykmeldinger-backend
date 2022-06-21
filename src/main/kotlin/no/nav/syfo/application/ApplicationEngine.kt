@@ -147,11 +147,11 @@ fun createApplicationEngine(
             }
             expectSuccess = true
             engine {
-                socketTimeout = 5_000
-                connectTimeout = 5_000
-                connectionRequestTimeout = 10_000
+                socketTimeout = 10_000
+                connectTimeout = 10_000
+                connectionRequestTimeout = 20_000
                 customizeClient {
-                    setMaxConnTotal(300)
+                    setMaxConnTotal(400)
                     setMaxConnPerRoute(100)
                 }
             }
