@@ -62,7 +62,7 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
             checkExcludeInclude(exclude, include) -> call.respond(HttpStatusCode.BadRequest, "Can not use both include and exclude")
             checkFomAndTomDate(fom, tom) -> call.respond(HttpStatusCode.BadRequest, "FOM should be before or equal to TOM")
             hasInvalidStatus(exclude ?: include) -> call.respond(HttpStatusCode.BadRequest, "include or exclude can only contain ${StatusEventDTO.values().joinToString()}")
-            else -> call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr, token = token, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include), erTokenX = true))
+            else -> call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr, token = token, apiFilter = ApiFilter(fom = fom, tom = tom, exclude = exclude, include = include)))
         }
     }
 
@@ -76,7 +76,7 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
             log.warn("Mottok kall for å hente sykmelding med id null")
             call.respond(HttpStatusCode.NotFound)
         } else {
-            val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId, erTokenX = true)
+            val sykmelding = sykmeldingService.hentSykmelding(fnr, token, sykmeldingId)
 
             when (sykmelding) {
                 null -> call.respond(HttpStatusCode.NotFound)
