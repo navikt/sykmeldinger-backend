@@ -17,6 +17,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -58,7 +59,7 @@ class SyfosmregisterClientSpek : FunSpec({
             }
         }
         routing {
-            get("/smreg/sykmeldinger/{sykmeldingsid}/status") {
+            get("/smreg/api/v3/sykmeldinger/{sykmeldingsid}/status") {
                 when {
                     call.parameters["sykmeldingsid"] == "1" ->
                         call.respond(listOf(SykmeldingStatusEventDTO(StatusEventDTO.APEN, timestamp)))
@@ -78,34 +79,36 @@ class SyfosmregisterClientSpek : FunSpec({
 
     val syfosmregisterClient = SyfosmregisterStatusClient("$mockHttpServerUrl/smreg", httpClient, tokenXClient, "audience")
 
+    coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
+
     afterSpec {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
     context("Test av sykmeldingstatus-API") {
         test("Kan hente status for egen sykmelding med status APEN") {
-            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("1", "token")
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("1", "token")
 
             sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.APEN
             sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
         test("Kan hente status for egen sykmelding med status SENDT") {
-            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("2", "token")
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("2", "token")
 
             sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.SENDT
             sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
         test("Kan hente status for egen sykmelding med status BEKREFTET") {
-            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("3", "token")
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("3", "token")
 
             sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET
             sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
         }
 
         test("Kan hente status for egen sykmelding med status AVBRUTT") {
-            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatus("4", "token")
+            val sykmeldingStatusEventDTO = syfosmregisterClient.hentSykmeldingstatusTokenX("4", "token")
 
             sykmeldingStatusEventDTO.statusEvent shouldBeEqualTo StatusEventDTO.AVBRUTT
             sykmeldingStatusEventDTO.timestamp shouldBeEqualTo timestamp
@@ -114,7 +117,7 @@ class SyfosmregisterClientSpek : FunSpec({
         test("Henting av status for annen brukers sykmelding gir feilmelding") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    syfosmregisterClient.hentSykmeldingstatus("5", "token")
+                    syfosmregisterClient.hentSykmeldingstatusTokenX("5", "token")
                 }
             }
         }
@@ -122,7 +125,7 @@ class SyfosmregisterClientSpek : FunSpec({
         test("Får feilmelding hvis syfosmregister svarer med feilmelding") {
             assertFailsWith<RuntimeException> {
                 runBlocking {
-                    syfosmregisterClient.hentSykmeldingstatus("6", "token")
+                    syfosmregisterClient.hentSykmeldingstatusTokenX("6", "token")
                 }
             }
         }

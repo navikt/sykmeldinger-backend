@@ -51,6 +51,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
 
     every { redisService.getStatus(any()) } returns null
     coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
+    coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
 
     context("Sykmeldinger api integration test") {
         with(TestApplicationEngine()) {
