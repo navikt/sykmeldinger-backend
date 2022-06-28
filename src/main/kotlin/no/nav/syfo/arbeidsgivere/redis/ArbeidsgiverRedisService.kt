@@ -1,6 +1,8 @@
 package no.nav.syfo.arbeidsgivere.redis
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.application.jedisObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,7 +17,7 @@ class ArbeidsgiverRedisService(private val jedisPool: JedisPool, private val red
         private const val prefix = "ARB"
     }
 
-    fun updateArbeidsgivere(arbeidsgiverinfoRedisModelListe: List<ArbeidsgiverinfoRedisModel>, fnr: String) {
+    suspend fun updateArbeidsgivere(arbeidsgiverinfoRedisModelListe: List<ArbeidsgiverinfoRedisModel>, fnr: String) = withContext(Dispatchers.IO) {
         var jedis: Jedis? = null
         try {
             jedis = jedisPool.resource
@@ -28,9 +30,9 @@ class ArbeidsgiverRedisService(private val jedisPool: JedisPool, private val red
         }
     }
 
-    fun getArbeidsgivere(fnr: String): List<ArbeidsgiverinfoRedisModel>? {
+    suspend fun getArbeidsgivere(fnr: String): List<ArbeidsgiverinfoRedisModel>? = withContext(Dispatchers.IO) {
         var jedis: Jedis? = null
-        return try {
+        try {
             jedis = jedisPool.resource
             jedis.auth(redisSecret)
             when (val stringValue = jedis.get("$prefix$fnr")) {

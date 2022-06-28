@@ -12,7 +12,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
 import no.nav.syfo.arbeidsgivere.service.getPdlPerson
@@ -49,7 +48,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient, tokenXClient, "audience")
     val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
 
-    every { redisService.getStatus(any()) } returns null
+    coEvery { redisService.getStatus(any()) } returns null
     coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
 
     context("Sykmeldinger api integration test") {
@@ -75,7 +74,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
                 val newSykmeldingStatus = getSykmeldingStatusRedisModel(
                     StatusEventDTO.SENDT, sykmeldingWithPasientInfoDTO.sykmeldingStatus.timestamp.plusSeconds(1)
                 )
-                every { redisService.getStatus(any()) } returns newSykmeldingStatus
+                coEvery { redisService.getStatus(any()) } returns newSykmeldingStatus
 
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -100,7 +99,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
                     StatusEventDTO.BEKREFTET,
                     OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
                 )
-                every { redisService.getStatus(any()) } returns redisSykmeldingStatus
+                coEvery { redisService.getStatus(any()) } returns redisSykmeldingStatus
 
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK

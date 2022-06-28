@@ -64,6 +64,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Accepted
+                    response.headers
                 }
             }
 

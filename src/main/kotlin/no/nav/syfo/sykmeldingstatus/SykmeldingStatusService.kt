@@ -133,7 +133,7 @@ class SykmeldingStatusService(
         }
     }
 
-    private fun getLatestStatus(sykmeldingId: String): SykmeldingStatusEventDTO? {
+    private suspend fun getLatestStatus(sykmeldingId: String): SykmeldingStatusEventDTO? {
         return sykmeldingStatusJedisService.getStatus(sykmeldingId)?.toSykmeldingStatusDTO()
     }
 

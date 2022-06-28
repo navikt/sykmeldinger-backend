@@ -1,5 +1,7 @@
 package no.nav.syfo.arbeidsgivere.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsavtale
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
@@ -126,7 +128,7 @@ class ArbeidsgiverService(
         )
     }
 
-    private fun getArbeidsgivereFromRedis(fnr: String): List<Arbeidsgiverinfo>? {
-        return arbeidsgiverRedisService.getArbeidsgivere(fnr)?.map { it.toArbeidsgiverinfo() }
+    private suspend fun getArbeidsgivereFromRedis(fnr: String): List<Arbeidsgiverinfo>? = withContext(Dispatchers.IO) {
+        arbeidsgiverRedisService.getArbeidsgivere(fnr)?.map { it.toArbeidsgiverinfo() }
     }
 }

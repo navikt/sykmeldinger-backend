@@ -3,7 +3,6 @@ package no.nav.syfo.sykmelding
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockkClass
 import no.nav.syfo.arbeidsgivere.service.getPdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
@@ -36,7 +35,7 @@ class SykmeldingServiceTest : FunSpec({
             val sykmelding = getSykmeldingModel(timestamps = now)
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
             coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
-            every { sykmeldingStatusRedisService.getStatus(any()) } returns null
+            coEvery { sykmeldingStatusRedisService.getStatus(any()) } returns null
 
             val returndSykmelding = sykmeldingService.hentSykmeldinger("12345678901", "token", null)
             returndSykmelding shouldBeEqualTo listOf(expected)
@@ -51,7 +50,7 @@ class SykmeldingServiceTest : FunSpec({
             )
             coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
             coEvery { syfosmregisterSykmeldingClient.getSykmeldinger("token", null) } returns listOf(sykmelding)
-            every { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
+            coEvery { sykmeldingStatusRedisService.getStatus(any()) } returns statusFromRedis
 
             val returndSykmelding = sykmeldingService.hentSykmeldinger("fnr", "token", null)
             returndSykmelding shouldNotBeEqualTo listOf(sykmelding)

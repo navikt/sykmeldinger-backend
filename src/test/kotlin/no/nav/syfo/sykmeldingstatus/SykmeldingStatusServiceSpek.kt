@@ -6,11 +6,9 @@ import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
-import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -115,16 +113,16 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr, token)
             }
 
-            verify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
     }
 
     beforeTest {
         clearAllMocks()
-        every { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
-        every { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
-        every { sykmeldingStatusJedisService.getStatus(any()) } returns null
+        coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
+        coEvery { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
+        coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns null
         coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1))
     }
 
@@ -190,9 +188,9 @@ class SykmeldingStatusServiceSpek : FunSpec({
             sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
 
             coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-            verify { sykmeldingStatusJedisService.getStatus(any()) }
-            verify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-            verify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            coVerify { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
         test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
             coEvery { syfosmregisterClient.hentSykmeldingstatus(any(), any()) } throws RuntimeException("Ingen tilgang")
@@ -202,9 +200,9 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify { syfosmregisterClient.hentSykmeldingstatus(any(), any()) }
-            verify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
-            verify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+            coVerify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
     }
 
@@ -219,8 +217,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
@@ -235,8 +233,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         test("Får ikke bekrefte sykmelding som ikke er avvist") {
@@ -251,8 +249,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
     }
 
@@ -300,8 +298,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         test("Test SEND user event - finner ikke riktig arbeidsgiver") {
@@ -351,8 +349,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         test("Test BEKREFT user event") {
@@ -379,8 +377,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
         }
 
         test("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
@@ -425,8 +423,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
-            verify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            verify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
 
             val nlSvar = expected.captured.sporsmals?.filter { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER }
 
