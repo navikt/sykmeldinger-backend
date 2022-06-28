@@ -24,18 +24,18 @@ class SykmeldingService(
     suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String): SykmeldingDTO? {
         val callId = UUID.randomUUID().toString()
         return syfosmregisterSykmeldingClient.getSykmeldingTokenX(subjectToken = token, sykmeldingid = sykmeldingid)
-            ?.run(this::getSykmeldingWithLatestStatus)
+            ?.run { getSykmeldingWithLatestStatus(this) }
             ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
     }
 
     suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
         val callId = UUID.randomUUID().toString()
         return syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
-            .map(this::getSykmeldingWithLatestStatus)
+            .map { getSykmeldingWithLatestStatus(it) }
             .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
     }
 
-    private fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {
+    private suspend fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {
         val redisStatus = sykmeldingStatusRedisService.getStatus(sykmelding.id)
         return when {
             redisStatus != null && redisStatus.timestamp.isAfter(sykmelding.sykmeldingStatus.timestamp) ->

@@ -126,7 +126,7 @@ class ArbeidsgiverService(
         )
     }
 
-    private fun getArbeidsgivereFromRedis(fnr: String): List<Arbeidsgiverinfo>? {
+    private suspend fun getArbeidsgivereFromRedis(fnr: String): List<Arbeidsgiverinfo>? {
         return arbeidsgiverRedisService.getArbeidsgivere(fnr)?.map { it.toArbeidsgiverinfo() }
     }
 }

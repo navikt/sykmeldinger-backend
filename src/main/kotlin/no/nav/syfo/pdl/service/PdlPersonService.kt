@@ -67,7 +67,7 @@ class PdlPersonService(
         return Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn)
     }
 
-    private fun getPersonFromRedis(fnr: String): PdlPerson? {
+    private suspend fun getPersonFromRedis(fnr: String): PdlPerson? {
         return pdlPersonRedisService.getPerson(fnr)?.toPdlPerson()
     }
 }
