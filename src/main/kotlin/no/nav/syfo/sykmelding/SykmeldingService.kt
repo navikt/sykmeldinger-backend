@@ -62,8 +62,8 @@ class SykmeldingService(
             log.info("Sykmeldinger fra GCP og OnPrem er like, returnerer bare GCP")
             sykmeldingerGCP
         } else {
-            log.info("Sykmeldinger fra GCP og OnPrem er ikke like, returnerer bare OnPrem")
-            sykmeldingerOnPrem
+            log.info("Sykmeldinger fra GCP og OnPrem er ikke like, returnerer bare GCP")
+            sykmeldingerGCP
         }
     }
 
