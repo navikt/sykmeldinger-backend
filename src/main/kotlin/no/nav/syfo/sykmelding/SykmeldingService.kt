@@ -55,15 +55,15 @@ class SykmeldingService(
             }
         }
 
-        val sykmeldingerOnPrem = sykmeldingerOnPremAsync.await().also { log.info("got ${it.size} sykmeldinger from onprem") }
-        val sykmeldingerGCP = sykmeldingerGCPAsync.await().also { log.info("got ${it.size} sykmeldinger from gcp") }
+        val sykmeldingerOnPrem = sykmeldingerOnPremAsync.await()
+        val sykmeldingerGCP = sykmeldingerGCPAsync.await()
 
         if (sykmeldingerGCP == sykmeldingerOnPrem) {
             log.info("Sykmeldinger fra GCP og OnPrem er like, returnerer bare GCP")
             sykmeldingerGCP
         } else {
-            log.info("Sykmeldinger fra GCP og OnPrem er ikke like, returnerer bare GCP")
-            sykmeldingerGCP
+            log.info("Sykmeldinger fra GCP og OnPrem er ikke like, returnerer bare ONPREM")
+            sykmeldingerOnPrem
         }
     }
 
