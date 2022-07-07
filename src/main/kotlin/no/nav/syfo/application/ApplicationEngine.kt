@@ -169,7 +169,7 @@ fun createApplicationEngine(
         val syfosmregisterClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.syfosmregisterAudience)
         val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.syfosmregisterAudience)
 
-        val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
+        val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.smregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
         val smregisterStatusClient = SyfosmregisterStatusClient(env.syfosmregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
 
         val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
