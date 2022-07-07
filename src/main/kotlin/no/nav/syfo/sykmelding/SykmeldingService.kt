@@ -41,12 +41,14 @@ class SykmeldingService(
             syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
                 .map { getSykmeldingWithLatestStatus(it) }
                 .map { it.toSykmeldingDTO(fnr, person) }
+                .sortedBy { it.id }
         }
         val sykmeldingerGCPAsync = async(Dispatchers.IO) {
             try {
                 smregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
                     .map { getSykmeldingWithLatestStatus(it) }
                     .map { it.toSykmeldingDTO(fnr, person) }
+                    .sortedBy { it.id }
             } catch (ex: Exception) {
                 log.error("Klarte ikke hente sykmeldinger fra GCP", ex)
                 emptyList()
