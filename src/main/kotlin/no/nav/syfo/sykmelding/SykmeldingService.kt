@@ -1,5 +1,9 @@
 package no.nav.syfo.sykmelding
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
+import no.nav.syfo.log
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.api.ApiFilter
 import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
@@ -19,20 +23,46 @@ import java.util.UUID
 class SykmeldingService(
     private val syfosmregisterSykmeldingClient: SyfosmregisterSykmeldingClient,
     private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
-    private val pdlPersonService: PdlPersonService
+    private val pdlPersonService: PdlPersonService,
+    private val smregisterSykmeldingClient: SyfosmregisterSykmeldingClient
 ) {
-    suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String): SykmeldingDTO? {
+    suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String): SykmeldingDTO? = withContext(Dispatchers.IO) {
         val callId = UUID.randomUUID().toString()
-        return syfosmregisterSykmeldingClient.getSykmeldingTokenX(subjectToken = token, sykmeldingid = sykmeldingid)
+        syfosmregisterSykmeldingClient.getSykmeldingTokenX(subjectToken = token, sykmeldingid = sykmeldingid)
             ?.run { getSykmeldingWithLatestStatus(this) }
             ?.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId))
     }
 
-    suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> {
+    suspend fun hentSykmeldinger(fnr: String, token: String, apiFilter: ApiFilter?): List<SykmeldingDTO> = withContext(Dispatchers.IO) {
         val callId = UUID.randomUUID().toString()
-        return syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
-            .map { getSykmeldingWithLatestStatus(it) }
-            .map { it.toSykmeldingDTO(fnr, pdlPersonService.getPerson(fnr, token, callId)) }
+        val person = pdlPersonService.getPerson(fnr, token, callId)
+
+        val sykmeldingerOnPremAsync = async(Dispatchers.IO) {
+            syfosmregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
+                .map { getSykmeldingWithLatestStatus(it) }
+                .map { it.toSykmeldingDTO(fnr, person) }
+        }
+        val sykmeldingerGCPAsync = async(Dispatchers.IO) {
+            try {
+                smregisterSykmeldingClient.getSykmeldingerTokenX(subjectToken = token, apiFilter = apiFilter)
+                    .map { getSykmeldingWithLatestStatus(it) }
+                    .map { it.toSykmeldingDTO(fnr, person) }
+            } catch (ex: Exception) {
+                log.error("Klarte ikke hente sykmeldinger fra GCP", ex)
+                emptyList()
+            }
+        }
+
+        val sykmeldingerOnPrem = sykmeldingerOnPremAsync.await()
+        val sykmeldingerGCP = sykmeldingerGCPAsync.await()
+
+        if (sykmeldingerGCP == sykmeldingerOnPrem) {
+            log.info("Sykmeldinger fra GCP og OnPrem er like, returnerer bare GCP")
+            sykmeldingerGCP
+        } else {
+            log.info("Sykmeldinger fra GCP og OnPrem er ikke like, returnerer bare OnPrem")
+            sykmeldingerOnPrem
+        }
     }
 
     private suspend fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {

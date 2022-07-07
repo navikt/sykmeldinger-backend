@@ -46,7 +46,12 @@ class SykmeldingApiIntegrationTest : FunSpec({
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val tokenXClient = mockk<TokenXClient>()
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient, tokenXClient, "audience")
-    val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, redisService, pdlPersonService)
+    val sykmeldingService = SykmeldingService(
+        syfosmregisterSykmeldingClient,
+        redisService,
+        pdlPersonService,
+        syfosmregisterSykmeldingClient
+    )
 
     coEvery { redisService.getStatus(any()) } returns null
     coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()

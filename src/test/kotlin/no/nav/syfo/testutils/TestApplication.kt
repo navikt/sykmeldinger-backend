@@ -39,7 +39,9 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         aaregAudience = "aareg",
         narmestelederAudience = "nl",
         syfosmregisterUrl = "smregister",
-        allowedOrigin = emptyList()
+        allowedOrigin = emptyList(),
+        smregisterUrl = "smregistergcp",
+        smregisterAudience = "smregaudience"
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
