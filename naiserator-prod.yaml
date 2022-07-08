@@ -83,6 +83,6 @@ spec:
     - name: ALLOWED_ORIGIN
       value: www.nav.no
     - name: SMREGISTER_URL
-      value: https://smregister.internal.nav.no
+      value: https://smregister.intern.nav.no
     - name: SMREGISTER_AUDIENCE
       value: prod-gcp:teamsykmelding:syfosmregister
