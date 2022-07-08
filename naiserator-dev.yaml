@@ -50,6 +50,7 @@ spec:
       rules:
         - application: sykmeldinger-backend-redis
         - application: narmesteleder
+        - application: syfosmregister
       external:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: ereg-services-q1.dev-fss-pub.nais.io
@@ -84,3 +85,7 @@ spec:
       value: dev-gcp:teamsykmelding:narmesteleder
     - name: ALLOWED_ORIGIN
       value: www-gcp.dev.nav.no,sykmeldinger-backend.dev.nav.no
+    - name: SMREGISTER_URL
+      value: https://smregister.dev.nav.no
+    - name: SMREGISTER_AUDIENCE
+      value: dev-gcp:teamsykmelding:syfosmregister

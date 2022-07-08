@@ -22,7 +22,12 @@ class SykmeldingServiceTest : FunSpec({
     val sykmeldingStatusRedisService = mockkClass(SykmeldingStatusRedisService::class)
     val syfosmregisterSykmeldingClient = mockkClass(SyfosmregisterSykmeldingClient::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
-    val sykmeldingService = SykmeldingService(syfosmregisterSykmeldingClient, sykmeldingStatusRedisService, pdlPersonService)
+    val sykmeldingService = SykmeldingService(
+        syfosmregisterSykmeldingClient,
+        sykmeldingStatusRedisService,
+        pdlPersonService,
+        syfosmregisterSykmeldingClient
+    )
 
     beforeTest {
         clearAllMocks()
