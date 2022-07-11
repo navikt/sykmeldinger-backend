@@ -46,6 +46,12 @@ spec:
         - application: debug-dings
           namespace: plattformsikkerhet
           cluster: dev-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: dev-gcp
+        - application: sykepengesoknad
+          namespace: flex
+          cluster: dev-gcp
     outbound:
       rules:
         - application: sykmeldinger-backend-redis

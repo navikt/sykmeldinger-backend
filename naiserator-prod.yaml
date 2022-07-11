@@ -43,6 +43,12 @@ spec:
         - application: sykmeldinger
           namespace: teamsykmelding
           cluster: prod-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: prod-gcp
+        - application: sykepengesoknad
+          namespace: flex
+          cluster: prod-gcp
     outbound:
       rules:
         - application: sykmeldinger-backend-redis
