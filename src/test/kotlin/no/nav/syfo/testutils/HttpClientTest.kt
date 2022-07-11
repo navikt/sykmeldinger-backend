@@ -42,7 +42,7 @@ class HttpClientTest {
         expectSuccess = true
         engine {
             addHandler { _ ->
-                respond(responseData!!.content, responseData!!.httpStatusCode, responseData!!.headers)
+                respond(responseData!!.content.toByteArray(), responseData!!.httpStatusCode, responseData!!.headers)
             }
         }
     }

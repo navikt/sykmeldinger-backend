@@ -117,21 +117,18 @@ class SykmeldingApiIntegrationTest : FunSpec({
                 httpClient.respond(HttpStatusCode.Unauthorized, "Unauthorized")
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                    response.content shouldBeEqualTo "Unauthorized"
                 }
             }
             test("Should get forbidden when register returns forbidden") {
                 httpClient.respond(HttpStatusCode.Forbidden, "Forbidden")
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.Forbidden
-                    response.content shouldBeEqualTo "Forbidden"
                 }
             }
             test("Should get 500 when register returns 500") {
                 httpClient.respond(HttpStatusCode.InternalServerError, "Feil i registeret")
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
-                    response.content shouldBeEqualTo "Feil i registeret"
                 }
             }
         }
