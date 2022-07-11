@@ -9,6 +9,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -65,6 +66,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.tokenx.TokenXClient
 import no.nav.syfo.tokenx.redis.TokenXRedisService
+import org.apache.http.ConnectionClosedException
 import redis.clients.jedis.JedisPool
 import java.util.UUID
 import java.util.concurrent.ExecutionException
@@ -144,6 +146,21 @@ fun createApplicationEngine(
                         is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
                     }
                 }
+            }
+            install(HttpRequestRetry) {
+                retryOnExceptionIf(maxRetries = 3) { _, throwable ->
+                    when (throwable) {
+                        is ConnectionClosedException -> {
+                            log.error("Connection closed, retrying")
+                            true
+                        }
+                        else -> {
+                            log.error("Exception something else, not retrying", throwable)
+                            false
+                        }
+                    }
+                }
+                constantDelay(100)
             }
             expectSuccess = true
         }
