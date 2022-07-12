@@ -47,7 +47,6 @@ class SykmeldingApiIntegrationTest : FunSpec({
     val tokenXClient = mockk<TokenXClient>()
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient, tokenXClient, "audience")
     val sykmeldingService = SykmeldingService(
-        syfosmregisterSykmeldingClient,
         redisService,
         pdlPersonService,
         syfosmregisterSykmeldingClient

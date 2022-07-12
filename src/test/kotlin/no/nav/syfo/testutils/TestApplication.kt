@@ -34,11 +34,9 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         tokenXWellKnownUrl = "https://tokenx",
         clientIdTokenX = "clientId",
         tokenXPrivateJwk = getDefaultRSAKey(),
-        syfosmregisterAudience = "smreg",
         pdlAudience = "pdl",
         aaregAudience = "aareg",
         narmestelederAudience = "nl",
-        syfosmregisterUrl = "smregister",
         allowedOrigin = emptyList(),
         smregisterUrl = "smregistergcp",
         smregisterAudience = "smregaudience"
