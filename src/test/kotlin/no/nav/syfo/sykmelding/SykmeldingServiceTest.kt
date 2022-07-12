@@ -23,7 +23,6 @@ class SykmeldingServiceTest : FunSpec({
     val syfosmregisterSykmeldingClient = mockkClass(SyfosmregisterSykmeldingClient::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val sykmeldingService = SykmeldingService(
-        syfosmregisterSykmeldingClient,
         sykmeldingStatusRedisService,
         pdlPersonService,
         syfosmregisterSykmeldingClient

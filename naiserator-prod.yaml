@@ -63,7 +63,6 @@ spec:
     enabled: false
   ingresses:
     - "https://sykmeldinger-backend.nav.no"
-  webproxy: false
   envFrom:
     - configmap: loginservice-idporten
     - secret: sykmeldinger-backend-redis-password
@@ -76,10 +75,6 @@ spec:
       value: https://pdl-api.prod-fss-pub.nais.io/graphql
     - name: NARMESTELEDER_URL
       value: https://narmesteleder.nav.no
-    - name: SYFOSMREGISTER_URL
-      value: https://syfosmregister.prod-fss-pub.nais.io
-    - name: SYFOSMREGISTER_AUDIENCE
-      value: prod-fss:teamsykmelding:syfosmregister
     - name: PDL_AUDIENCE
       value: prod-fss:pdl:pdl-api
     - name: AAREG_AUDIENCE
