@@ -151,7 +151,7 @@ fun createApplicationEngine(
                 retryOnExceptionIf(maxRetries = 3) { _, throwable ->
                     when (throwable) {
                         is ConnectionClosedException -> {
-                            log.error("Connection closed, retrying")
+                            log.error("Connection closed, retrying", throwable)
                             true
                         }
                         else -> {
