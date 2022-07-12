@@ -11,9 +11,11 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.request.request
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
@@ -148,6 +150,15 @@ fun createApplicationEngine(
                 }
             }
             install(HttpRequestRetry) {
+                retryIf(3) { _, response ->
+                    when(response.status.isSuccess()) {
+                        true -> false
+                        false -> {
+                            log.warn("Response status is not success, retrying: ${response.status}")
+                            true
+                        }
+                    }
+                }
                 retryOnExceptionIf(maxRetries = 3) { _, throwable ->
                     when (throwable) {
                         is ConnectionClosedException -> {
