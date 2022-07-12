@@ -7,15 +7,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.request.request
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.isSuccess
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
@@ -68,7 +65,6 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.tokenx.TokenXClient
 import no.nav.syfo.tokenx.redis.TokenXRedisService
-import org.apache.http.ConnectionClosedException
 import redis.clients.jedis.JedisPool
 import java.util.UUID
 import java.util.concurrent.ExecutionException
@@ -133,7 +129,7 @@ fun createApplicationEngine(
             allowNonSimpleContentTypes = true
         }
 
-        val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        val config: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
             install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
                 jackson {
                     registerKotlinModule()
@@ -149,33 +145,9 @@ fun createApplicationEngine(
                     }
                 }
             }
-            install(HttpRequestRetry) {
-                retryIf(3) { _, response ->
-                    when(response.status.isSuccess()) {
-                        true -> false
-                        false -> {
-                            log.warn("Response status is not success, retrying: ${response.status}")
-                            true
-                        }
-                    }
-                }
-                retryOnExceptionIf(maxRetries = 3) { _, throwable ->
-                    when (throwable) {
-                        is ConnectionClosedException -> {
-                            log.error("Connection closed, retrying", throwable)
-                            true
-                        }
-                        else -> {
-                            log.error("Exception something else, not retrying", throwable)
-                            false
-                        }
-                    }
-                }
-                constantDelay(100)
-            }
             expectSuccess = true
         }
-        val httpClient = HttpClient(Apache, config)
+        val httpClient = HttpClient(CIO, config)
 
         val tokenXRedisService = TokenXRedisService(jedisPool, vaultSecrets.redisSecret)
         val tokenXClient = TokenXClient(
