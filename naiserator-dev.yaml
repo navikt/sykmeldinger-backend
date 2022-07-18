@@ -90,3 +90,7 @@ spec:
       value: https://smregister.dev.nav.no
     - name: SMREGISTER_AUDIENCE
       value: dev-gcp:teamsykmelding:syfosmregister
+    - name: SYFOSMREGISTER_URL
+      value: https://syfosmregister.dev-fss-pub.nais.io
+    - name: SYFOSMREGISTER_AUDIENCE
+      value: dev-fss:teamsykmelding:syfosmregister
