@@ -9,7 +9,7 @@ data class Environment(
     val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.cluster.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
-    val smregisterUrl: String = getEnvVar("SYFOSMREGISTER_URL"),
+    val smregisterUrl: String = getEnvVar("SMREGISTER_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val eregUrl: String = getEnvVar("EREG_URL"),
     val aaregUrl: String = getEnvVar("AAREG_URL"),
@@ -19,11 +19,11 @@ data class Environment(
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val clientIdTokenX: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val tokenXPrivateJwk: RSAKey = RSAKey.parse(getEnvVar("TOKEN_X_PRIVATE_JWK")),
-    val smregisterAudience: String = getEnvVar("SYFOSMREGISTER_AUDIENCE"),
+    val smregisterAudience: String = getEnvVar("SMREGISTER_AUDIENCE"),
     val pdlAudience: String = getEnvVar("PDL_AUDIENCE"),
     val aaregAudience: String = getEnvVar("AAREG_AUDIENCE"),
     val narmestelederAudience: String = getEnvVar("NARMESTELEDER_AUDIENCE"),
-    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(","),
+    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(",")
 )
 
 data class VaultSecrets(

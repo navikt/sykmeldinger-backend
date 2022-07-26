@@ -87,7 +87,3 @@ spec:
       value: https://smregister.intern.nav.no
     - name: SMREGISTER_AUDIENCE
       value: prod-gcp:teamsykmelding:syfosmregister
-    - name: SYFOSMREGISTER_URL
-      value: https://syfosmregister.prod-fss-pub.nais.io
-    - name: SYFOSMREGISTER_AUDIENCE
-      value: prod-fss:teamsykmelding:syfosmregister
