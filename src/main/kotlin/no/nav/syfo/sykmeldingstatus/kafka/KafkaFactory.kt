@@ -15,7 +15,7 @@ class KafkaFactory private constructor() {
             val kafkaStatusProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
                 "${environment.applicationName}-producer", JacksonKafkaSerializer::class
             )
-            kafkaStatusProducerConfig[ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG] = "10000"
+            kafkaStatusProducerConfig[ProducerConfig.RETRIES_CONFIG] = "10"
             val kafkaProducer = KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>(kafkaStatusProducerConfig)
             return SykmeldingStatusKafkaProducer(kafkaProducer, environment.sykmeldingStatusTopic)
         }
