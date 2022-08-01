@@ -41,7 +41,7 @@ class SyfosmregisterStatusClient(
                 throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId (tokenx)")
             } else {
                 log.error("Noe gikk galt ved sjekking av status eller tilgang for sykmeldingId $sykmeldingId (tokenx)")
-                throw RuntimeException("Sykmeldingsregister svarte med feilmelding for $sykmeldingId (tokenx)")
+                throw e
             }
         } finally {
             timer.observeDuration()

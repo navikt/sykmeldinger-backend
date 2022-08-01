@@ -11,6 +11,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.CIOEngineConfig
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -198,8 +199,23 @@ fun createApplicationEngine(
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
 
-private fun getCioClient(): HttpClient {
+fun getCioClient(): HttpClient {
     val config: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
+        install(HttpRequestRetry) {
+            constantDelay(100, 0, false)
+            retryOnExceptionIf(3) { httpRequestBuilder, throwable ->
+                log.warn("Caught exception ${throwable.message}")
+                true
+            }
+            retryIf(maxRetries) { _, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}")
+                    true
+                } else {
+                    false
+                }
+            }
+        }
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
             jackson {
                 registerKotlinModule()
@@ -219,6 +235,7 @@ private fun getCioClient(): HttpClient {
     }
     return HttpClient(CIO, config)
 }
+
 private fun getApacheClient(): HttpClient {
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
