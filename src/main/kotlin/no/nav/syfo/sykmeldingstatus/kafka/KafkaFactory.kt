@@ -7,6 +7,7 @@ import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaMessageDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerConfig
 
 class KafkaFactory private constructor() {
     companion object {
@@ -14,6 +15,7 @@ class KafkaFactory private constructor() {
             val kafkaStatusProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
                 "${environment.applicationName}-producer", JacksonKafkaSerializer::class
             )
+            kafkaStatusProducerConfig[ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG] = "10000"
             val kafkaProducer = KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>(kafkaStatusProducerConfig)
             return SykmeldingStatusKafkaProducer(kafkaProducer, environment.sykmeldingStatusTopic)
         }
