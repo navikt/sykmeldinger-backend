@@ -6,6 +6,22 @@ metadata:
   labels:
     team: teamsykmelding
 spec:
+  gcp:
+    sqlInstances:
+      - name: sykmeldinger-db-instance
+        type: POSTGRES_14
+        diskSize: 10
+        tier: db-custom-1-3840
+        databases:
+          - name: sykmeldinger
+            envVarPrefix: DB
+            users:
+              - name: sykmeldinger-kafka-user
+        diskAutoresize: true
+        highAvailability: true
+        diskType: SSD
+        insights:
+          enabled: true
   image: {{ image }}
   replicas:
     min: 5
