@@ -23,8 +23,17 @@ data class Environment(
     val pdlAudience: String = getEnvVar("PDL_AUDIENCE"),
     val aaregAudience: String = getEnvVar("AAREG_AUDIENCE"),
     val narmestelederAudience: String = getEnvVar("NARMESTELEDER_AUDIENCE"),
-    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(",")
-)
+    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(","),
+    val databaseUsername: String = getEnvVar("DB_USERNAME"),
+    val databasePassword: String = getEnvVar("DB_PASSWORD"),
+    val dbHost: String = getEnvVar("DB_HOST"),
+    val dbPort: String = getEnvVar("DB_PORT"),
+    val dbName: String = getEnvVar("DB_DATABASE"),
+) {
+    fun jdbcUrl(): String {
+        return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
+    }
+}
 
 data class VaultSecrets(
     val redisSecret: String = getEnvVar("REDIS_PASSWORD")

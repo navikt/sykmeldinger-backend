@@ -20,6 +20,9 @@ val kotestVersion = "5.3.0"
 val testcontainersVersion = "1.17.1"
 val swaggerUiVersion = "4.10.3"
 val kotlinVersion = "1.6.21"
+val flywayVersion = "8.5.10"
+val postgresVersion = "42.3.4"
+val hikariVersion = "5.0.1"
 
 plugins {
     kotlin("jvm") version "1.6.21"
@@ -79,6 +82,10 @@ dependencies {
 
     implementation("redis.clients:jedis:$jedisVersion")
     implementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
+
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.postgresql:postgresql:$postgresVersion")
 
     swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
 
