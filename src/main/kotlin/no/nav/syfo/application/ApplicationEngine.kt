@@ -253,6 +253,21 @@ private fun getApacheClient(): HttpClient {
                 }
             }
         }
+        install(HttpRequestRetry) {
+            constantDelay(100, 0, false)
+            retryOnExceptionIf(3) { httpRequestBuilder, throwable ->
+                log.warn("Caught exception ${throwable.message}")
+                true
+            }
+            retryIf(maxRetries) { _, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}")
+                    true
+                } else {
+                    false
+                }
+            }
+        }
         expectSuccess = true
     }
     val httpClient = HttpClient(Apache, config)
