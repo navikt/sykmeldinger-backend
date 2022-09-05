@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.1"
+val coroutinesVersion = "1.6.4"
 val ktorVersion = "2.0.3"
 val logbackVersion = "1.2.11"
 val logstashEncoderVersion = "7.1.1"
@@ -21,7 +21,7 @@ val testcontainersVersion = "1.17.1"
 val swaggerUiVersion = "4.10.3"
 val kotlinVersion = "1.6.21"
 val flywayVersion = "8.5.10"
-val postgresVersion = "42.3.4"
+val postgresVersion = "42.4.1"
 val hikariVersion = "5.0.1"
 
 plugins {
