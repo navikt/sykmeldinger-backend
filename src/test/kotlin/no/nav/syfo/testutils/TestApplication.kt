@@ -39,7 +39,12 @@ fun getTestEnvironment(audience: List<String> = testAudience): Environment =
         narmestelederAudience = "nl",
         allowedOrigin = emptyList(),
         smregisterUrl = "smregistergcp",
-        smregisterAudience = "smregaudience"
+        smregisterAudience = "smregaudience",
+        dbHost = "",
+        dbPort = "",
+        dbName = "",
+        databasePassword = "",
+        databaseUsername = "",
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
