@@ -6,26 +6,26 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val ktorVersion = "2.0.3"
+val ktorVersion = "2.1.0"
 val logbackVersion = "1.2.11"
-val logstashEncoderVersion = "7.1.1"
-val prometheusVersion = "0.15.0"
+val logstashEncoderVersion = "7.2"
+val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.f132f2b"
 val jacksonVersion = "2.13.3"
 val kluentVersion = "1.68"
-val mockkVersion = "1.12.4"
+val mockkVersion = "1.12.7"
 val nimbusdsVersion = "9.22"
 val jedisVersion = "4.2.3"
-val kotestVersion = "5.3.0"
-val testcontainersVersion = "1.17.1"
+val kotestVersion = "5.4.2"
+val testcontainersVersion = "1.17.3"
 val swaggerUiVersion = "4.10.3"
-val kotlinVersion = "1.6.21"
+val kotlinVersion = "1.7.10"
 val flywayVersion = "8.5.10"
-val postgresVersion = "42.4.1"
+val postgresVersion = "42.5.0"
 val hikariVersion = "5.0.1"
 
 plugins {
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.7.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
@@ -62,7 +62,6 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -87,7 +86,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
 
-    swaggerUI( "org.webjars:swagger-ui:$swaggerUiVersion")
+    swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
