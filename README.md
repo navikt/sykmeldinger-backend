@@ -7,7 +7,7 @@ Backend-app for sykmeldinger-frontend
 * Kotlin
 * Ktor
 * Gradle
-* Spek
+* Kotest
 * Jackson
 * Redis
 
@@ -16,7 +16,21 @@ Backend-app for sykmeldinger-frontend
 * JDK 17
 
 ## Deploy redis to dev:
-Deploying redis can be done with the following command: `kubectl apply --context dev-fss --namespace default -f redis.yaml`
+Deploying redis can be done with the following command: `kubectl apply --context dev-gcp --namespace teamsykmelding -f redis.yaml`
 
 ## Deploy redis to prod:
-Deploying redis can be done with the following command: `kubectl apply --context prod-fss --namespace default -f redis.yaml`
+Deploying redis can be done with the following command: `kubectl apply --context prod-gcp --namespace teamsykmelding -f redis.yaml`
+
+### Upgrading the gradle wrapper
+Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+
+```./gradlew wrapper --gradle-version $gradleVersjon```
+
+### Contact
+
+This project is maintained by navikt/teamsykmelding
+
+Questions and/or feature requests? Please create an [issue](https://github.com/navikt/sykmeldinger-backend/issues).
+
+If you work in [@navikt](https://github.com/navikt) you can reach us at the Slack
+channel [#team-sykmelding](https://nav-it.slack.com/archives/CMA3XV997).
