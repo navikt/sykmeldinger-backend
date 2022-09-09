@@ -7,8 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
@@ -132,26 +130,25 @@ fun createApplicationEngine(
             allowNonSimpleContentTypes = true
         }
 
-        val httpClient = getApacheClient()
         val cioClient = getCioClient()
         val tokenXRedisService = TokenXRedisService(jedisPool, vaultSecrets.redisSecret)
         val tokenXClient = TokenXClient(
             tokendingsUrl = tokendingsUrl,
             tokenXClientId = env.clientIdTokenX,
             tokenXRedisService = tokenXRedisService,
-            httpClient = httpClient,
+            httpClient = cioClient,
             privateKey = env.tokenXPrivateJwk
         )
 
         val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.smregisterUrl, cioClient, tokenXClient, env.smregisterAudience)
         val smregisterStatusClient = SyfosmregisterStatusClient(env.smregisterUrl, cioClient, tokenXClient, env.smregisterAudience)
 
-        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
-        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
-        val narmestelederClient = NarmestelederClient(httpClient, env.narmesteLederBasePath, tokenXClient, env.narmestelederAudience)
+        val arbeidsforholdClient = ArbeidsforholdClient(cioClient, env.aaregUrl, tokenXClient, env.aaregAudience)
+        val organisasjonsinfoClient = OrganisasjonsinfoClient(cioClient, env.eregUrl)
+        val narmestelederClient = NarmestelederClient(cioClient, env.narmesteLederBasePath, tokenXClient, env.narmestelederAudience)
 
         val pdlClient = PdlClient(
-            httpClient,
+            cioClient,
             env.pdlGraphqlPath,
             PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
         )
@@ -203,7 +200,7 @@ fun getCioClient(): HttpClient {
     val config: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
         install(HttpRequestRetry) {
             constantDelay(100, 0, false)
-            retryOnExceptionIf(3) { httpRequestBuilder, throwable ->
+            retryOnExceptionIf(3) { _, throwable ->
                 log.warn("Caught exception ${throwable.message}")
                 true
             }
@@ -234,42 +231,4 @@ fun getCioClient(): HttpClient {
         expectSuccess = true
     }
     return HttpClient(CIO, config)
-}
-
-private fun getApacheClient(): HttpClient {
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
-                when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
-                }
-            }
-        }
-        install(HttpRequestRetry) {
-            constantDelay(100, 0, false)
-            retryOnExceptionIf(3) { httpRequestBuilder, throwable ->
-                log.warn("Caught exception ${throwable.message}")
-                true
-            }
-            retryIf(maxRetries) { _, response ->
-                if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}")
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-        expectSuccess = true
-    }
-    val httpClient = HttpClient(Apache, config)
-    return httpClient
 }
