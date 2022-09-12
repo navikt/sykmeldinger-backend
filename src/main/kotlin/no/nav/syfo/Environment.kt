@@ -9,7 +9,7 @@ data class Environment(
     val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
     val redisHost: String = getEnvVar("REDIS_HOST", "sykmeldinger-backend-redis.teamsykmelding.svc.cluster.local"),
     val redisPort: Int = getEnvVar("REDIS_PORT_SYKMELDINGER", "6379").toInt(),
-    val smregisterUrl: String = getEnvVar("SMREGISTER_URL"),
+    val smregisterUrl: String = getEnvVar("SMREGISTER_URL", "http://syfosmregister"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val eregUrl: String = getEnvVar("EREG_URL"),
     val aaregUrl: String = getEnvVar("AAREG_URL"),

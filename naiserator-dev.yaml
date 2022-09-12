@@ -101,7 +101,5 @@ spec:
       value: dev-gcp:teamsykmelding:narmesteleder
     - name: ALLOWED_ORIGIN
       value: www-gcp.dev.nav.no,sykmeldinger-backend.dev.nav.no
-    - name: SMREGISTER_URL
-      value: http://syfosmregister
     - name: SMREGISTER_AUDIENCE
       value: dev-gcp:teamsykmelding:syfosmregister
