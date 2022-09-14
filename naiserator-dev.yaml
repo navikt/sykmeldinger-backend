@@ -91,8 +91,6 @@ spec:
       value: https://aareg-services-q1.dev-fss-pub.nais.io
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
-    - name: NARMESTELEDER_URL
-      value: https://narmesteleder.dev.nav.no
     - name: PDL_AUDIENCE
       value: dev-fss:pdl:pdl-api
     - name: AAREG_AUDIENCE
