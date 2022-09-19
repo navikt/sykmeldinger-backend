@@ -16,7 +16,7 @@ spec:
           - name: sykmeldinger
             envVarPrefix: DB
             users:
-              - name: sykmeldinger-kafka-user
+              - name: kafka
         diskAutoresize: true
         highAvailability: true
         diskType: SSD
