@@ -47,7 +47,7 @@ fun main() {
         .build()
 
     val applicationState = ApplicationState()
-    //val database = Database(env)
+    val database = Database(env)
 
     DefaultExports.initialize()
 
