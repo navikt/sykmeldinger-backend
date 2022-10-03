@@ -11,4 +11,4 @@ CREATE TABLE narmesteleder
     timestamp                    TIMESTAMP with time zone not null
 );
 
-create index narmeste_leder_fnr_idx on narmeste_leder (bruker_fnr);
+create index narmeste_leder_fnr_idx on narmesteleder (bruker_fnr);
