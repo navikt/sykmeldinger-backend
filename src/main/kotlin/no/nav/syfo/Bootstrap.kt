@@ -65,7 +65,8 @@ fun main() {
         jedisPool = jedisPool,
         jwkProviderTokenX = jwkProviderTokenX,
         tokenXIssuer = wellKnownTokenX.issuer,
-        tokendingsUrl = wellKnownTokenX.token_endpoint
+        tokendingsUrl = wellKnownTokenX.token_endpoint,
+        database = database,
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

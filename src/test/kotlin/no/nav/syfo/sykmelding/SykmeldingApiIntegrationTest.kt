@@ -23,10 +23,10 @@ import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingModel
-import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusRedisModel
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import no.nav.syfo.sykmeldingstatus.getSykmeldingStatusDbModel
 import no.nav.syfo.testutils.HttpClientTest
 import no.nav.syfo.testutils.ResponseData
 import no.nav.syfo.testutils.generateJWT
@@ -42,17 +42,16 @@ class SykmeldingApiIntegrationTest : FunSpec({
     val httpClient = HttpClientTest()
     httpClient.responseData = ResponseData(HttpStatusCode.NotFound, "")
 
-    val redisService = mockkClass(SykmeldingStatusRedisService::class)
+    val sykmeldingDb = mockkClass(SykmeldingStatusDb::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val tokenXClient = mockk<TokenXClient>()
     val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient, tokenXClient, "audience")
     val sykmeldingService = SykmeldingService(
-        redisService,
         pdlPersonService,
-        syfosmregisterSykmeldingClient
+        syfosmregisterSykmeldingClient,
+        sykmeldingDb
     )
 
-    coEvery { redisService.getStatus(any()) } returns null
     coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
     coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
 
@@ -73,13 +72,13 @@ class SykmeldingApiIntegrationTest : FunSpec({
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
             }
-            test("Should get sykmeldinger with updated status from redis") {
+            test("Should get sykmeldinger with updated status from db") {
                 val sykmeldingWithPasientInfoDTO = getSykmeldingDTO()
                 httpClient.respond(listOf(sykmeldingWithPasientInfoDTO))
-                val newSykmeldingStatus = getSykmeldingStatusRedisModel(
+                val newSykmeldingStatus = getSykmeldingStatusDbModel(
                     StatusEventDTO.SENDT, sykmeldingWithPasientInfoDTO.sykmeldingStatus.timestamp.plusSeconds(1)
                 )
-                coEvery { redisService.getStatus(any()) } returns newSykmeldingStatus
+                coEvery { sykmeldingDb.getLatesSykmeldingStatus(any()) } returns newSykmeldingStatus
 
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
@@ -88,7 +87,7 @@ class SykmeldingApiIntegrationTest : FunSpec({
                             sykmeldingWithPasientInfoDTO.copy(
                                 sykmeldingStatus = SykmeldingStatusDTO(
                                     timestamp = newSykmeldingStatus.timestamp,
-                                    statusEvent = newSykmeldingStatus.statusEvent.name,
+                                    statusEvent = newSykmeldingStatus.statusEvent,
                                     arbeidsgiver = null,
                                     sporsmalOgSvarListe = emptyList()
                                 )
@@ -100,11 +99,11 @@ class SykmeldingApiIntegrationTest : FunSpec({
             test("Should get sykmeldinger with newest status in registeret") {
                 val sykmeldingDTO = getSykmeldingModel()
                 httpClient.respond(listOf(sykmeldingDTO))
-                val redisSykmeldingStatus = getSykmeldingStatusRedisModel(
+                val sykmeldingStatusDbModel = getSykmeldingStatusDbModel(
                     StatusEventDTO.BEKREFTET,
                     OffsetDateTime.now(ZoneOffset.UTC).minusHours(1)
                 )
-                coEvery { redisService.getStatus(any()) } returns redisSykmeldingStatus
+                coEvery { sykmeldingDb.getLatesSykmeldingStatus(any()) } returns sykmeldingStatusDbModel
 
                 withGetSykmeldinger {
                     response.status() shouldBeEqualTo HttpStatusCode.OK

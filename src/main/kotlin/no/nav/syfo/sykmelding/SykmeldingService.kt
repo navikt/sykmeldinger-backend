@@ -14,14 +14,14 @@ import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.toSykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDbModel
 import java.util.UUID
 
 class SykmeldingService(
-    private val sykmeldingStatusRedisService: SykmeldingStatusRedisService,
     private val pdlPersonService: PdlPersonService,
-    private val smregisterSykmeldingClient: SyfosmregisterSykmeldingClient
+    private val smregisterSykmeldingClient: SyfosmregisterSykmeldingClient,
+    private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
     suspend fun hentSykmelding(fnr: String, token: String, sykmeldingid: String): SykmeldingDTO? = withContext(Dispatchers.IO) {
         val callId = UUID.randomUUID().toString()
@@ -41,19 +41,19 @@ class SykmeldingService(
     }
 
     private suspend fun getSykmeldingWithLatestStatus(sykmelding: Sykmelding): Sykmelding {
-        val redisStatus = sykmeldingStatusRedisService.getStatus(sykmelding.id)
+        val sykmeldingStatus = sykmeldingStatusDb.getLatesSykmeldingStatus(sykmelding.id)
         return when {
-            redisStatus != null && redisStatus.timestamp.isAfter(sykmelding.sykmeldingStatus.timestamp) ->
-                sykmelding.copy(sykmeldingStatus = redisStatus.toSykmeldingStatusDto())
+            sykmeldingStatus != null && sykmeldingStatus.timestamp.isAfter(sykmelding.sykmeldingStatus.timestamp) ->
+                sykmelding.copy(sykmeldingStatus = sykmeldingStatus.toSykmeldingStatusDto())
             else -> sykmelding
         }
     }
 }
 
-private fun SykmeldingStatusRedisModel.toSykmeldingStatusDto(): SykmeldingStatusDTO {
+private fun SykmeldingStatusDbModel.toSykmeldingStatusDto(): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         timestamp = timestamp,
-        statusEvent = statusEvent.name,
+        statusEvent = statusEvent,
         arbeidsgiver = arbeidsgiver,
         sporsmalOgSvarListe = sporsmals?.map { it.toSporsmalDTO() } ?: emptyList()
     )

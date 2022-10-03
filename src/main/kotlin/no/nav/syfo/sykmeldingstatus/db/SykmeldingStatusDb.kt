@@ -6,9 +6,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import org.postgresql.util.PGobject
 import java.sql.Timestamp
 import java.time.ZoneOffset
@@ -25,7 +26,7 @@ fun toPGObject(jsonObject: Any) = PGobject().also {
 }
 
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
-    fun updateSykmeldingStatus(statusEvent: SykmeldingStatusKafkaEventDTO) {
+    suspend fun updateSykmeldingStatus(statusEvent: SykmeldingStatusKafkaEventDTO) = withContext(Dispatchers.IO) {
         databaseInterface.connection.use { connection ->
             connection.prepareStatement(
                 """
@@ -35,17 +36,17 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
             ).use { ps ->
                 var index = 1
                 ps.setString(index++, statusEvent.sykmeldingId)
-                ps.setObject(index++, toPGObject(statusEvent))
+                ps.setString(index++, statusEvent.statusEvent)
                 ps.setTimestamp(index++, Timestamp.from(statusEvent.timestamp.toInstant()))
                 ps.setObject(index++, statusEvent.arbeidsgiver?.let { toPGObject(it) })
                 ps.setObject(index, statusEvent.sporsmals?.let { toPGObject(it) })
-                ps.executeUpdate()
+                ps.executeUpdate().also { connection.commit() }
             }
         }
     }
 
-    fun getLatesSykmeldingStatus(sykmeldingId: String): SykmeldingStatusDTO? {
-        return databaseInterface.connection.use { connection ->
+    suspend fun getLatesSykmeldingStatus(sykmeldingId: String): SykmeldingStatusDbModel? = withContext(Dispatchers.IO) {
+        databaseInterface.connection.use { connection ->
             connection.prepareStatement(
                 """
                     select * from sykmeldingstatus where sykmelding_id = ? order by timestamp desc limit 1;
@@ -54,11 +55,11 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                 ps.setString(1, sykmeldingId)
                 ps.executeQuery().use { rs ->
                     if (rs.next()) {
-                        SykmeldingStatusDTO(
+                        SykmeldingStatusDbModel(
                             statusEvent = rs.getString("event"),
                             timestamp = rs.getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
                             arbeidsgiver = rs.getString("arbeidsgiver")?.let { arbeidsgiver -> objectMapper.readValue(arbeidsgiver) },
-                            sporsmalOgSvarListe = rs.getString("sporsmal")?.let { sporsmal -> objectMapper.readValue(sporsmal) } ?: emptyList()
+                            sporsmals = rs.getString("sporsmal")?.let { sporsmal -> objectMapper.readValue(sporsmal) }
                         )
                     } else {
                         null

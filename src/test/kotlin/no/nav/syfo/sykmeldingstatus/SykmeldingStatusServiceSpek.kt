@@ -22,10 +22,10 @@ import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -37,10 +37,10 @@ class SykmeldingStatusServiceSpek : FunSpec({
     val fnr = "fnr"
     val token = "token"
     val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
-    val sykmeldingStatusJedisService = mockkClass(SykmeldingStatusRedisService::class)
+    val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
     val syfosmregisterClient = mockkClass(SyfosmregisterStatusClient::class)
     val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
-    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusJedisService, syfosmregisterClient, arbeidsgiverService)
+    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, syfosmregisterClient, arbeidsgiverService, sykmeldingStatusDb)
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
@@ -48,6 +48,9 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 oldStatus,
                 erAvvist = erAvvist,
                 erEgenmeldt = erEgenmeldt
+            )
+            coEvery { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) } returns getSykmeldingStatusDbModel(
+                oldStatus
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -91,6 +94,9 @@ class SykmeldingStatusServiceSpek : FunSpec({
     fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
             coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
+            coEvery { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) } returns getSykmeldingStatusDbModel(
+                oldStatus
+            )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
@@ -114,56 +120,56 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
     }
 
     beforeTest {
         clearAllMocks()
         coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
-        coEvery { sykmeldingStatusJedisService.updateStatus(any(), any()) } just Runs
-        coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns null
+        coEvery { sykmeldingStatusDb.updateSykmeldingStatus(any()) } returns 1
+        coEvery { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) } returns null
         coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1))
     }
 
     context("Hent nyeste status") {
-        test("Skal hente sendt status fra Redis") {
-            val redisSykmeldingSendEventDTO = getSykmeldingStatusRedisModel(
+        test("Skal hente sendt status fra db") {
+            val sykmeldingStatusModel = getSykmeldingStatusDbModel(
                 StatusEventDTO.SENDT,
                 OffsetDateTime.now(ZoneOffset.UTC),
                 erAvvist = true,
                 erEgenmeldt = false
             )
-            coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingSendEventDTO
+            coEvery { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) } returns sykmeldingStatusModel
             coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(
                 StatusEventDTO.APEN,
-                redisSykmeldingSendEventDTO.timestamp.minusNanos(1),
+                sykmeldingStatusModel.timestamp.minusNanos(1),
                 erAvvist = true,
                 erEgenmeldt = false
             )
             val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
             sisteStatusEventDTO shouldBeEqualTo SykmeldingStatusEventDTO(
                 StatusEventDTO.SENDT,
-                redisSykmeldingSendEventDTO.timestamp,
+                sykmeldingStatusModel.timestamp,
                 erAvvist = true,
                 erEgenmeldt = false
             )
         }
 
         test("Skal hente nyeste status fra registeret") {
-            val redisSykmeldingStatus =
-                getSykmeldingStatusRedisModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
-            coEvery { sykmeldingStatusJedisService.getStatus(any()) } returns redisSykmeldingStatus
+            val sykmeldingStatus =
+                getSykmeldingStatusDbModel(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC))
+            coEvery { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) } returns sykmeldingStatus
             coEvery { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) } returns getSykmeldingStatus(
                 StatusEventDTO.SENDT,
-                redisSykmeldingStatus.timestamp.plusNanos(1),
+                sykmeldingStatus.timestamp.plusNanos(1),
                 erAvvist = false,
                 erEgenmeldt = true
             )
             val sisteStatus = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
             sisteStatus shouldBeEqualTo SykmeldingStatusEventDTO(
                 StatusEventDTO.SENDT,
-                redisSykmeldingStatus.timestamp.plusNanos(1),
+                sykmeldingStatus.timestamp.plusNanos(1),
                 erAvvist = false,
                 erEgenmeldt = true
             )
@@ -188,8 +194,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
 
             coVerify { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) }
-            coVerify { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
             coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
         test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
@@ -200,8 +206,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify { syfosmregisterClient.hentSykmeldingstatusTokenX(any(), any()) }
-            coVerify(exactly = 0) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 0) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
     }
@@ -217,8 +223,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr, token)
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
 
         test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
@@ -233,8 +239,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
 
         test("Får ikke bekrefte sykmelding som ikke er avvist") {
@@ -249,8 +255,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
     }
 
@@ -298,8 +304,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
 
         test("Test SEND user event - finner ikke riktig arbeidsgiver") {
@@ -349,8 +355,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 0) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 0) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
 
         test("Test BEKREFT user event") {
@@ -377,8 +383,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
         }
 
         test("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
@@ -423,8 +429,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.getStatus(any()) }
-            coVerify(exactly = 1) { sykmeldingStatusJedisService.updateStatus(any(), any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.getLatesSykmeldingStatus(any()) }
+            coVerify(exactly = 1) { sykmeldingStatusDb.updateSykmeldingStatus(any()) }
 
             val nlSvar = expected.captured.sporsmals?.filter { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER }
 

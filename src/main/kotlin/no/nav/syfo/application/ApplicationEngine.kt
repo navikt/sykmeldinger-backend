@@ -33,6 +33,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
@@ -61,9 +62,9 @@ import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.tokenx.TokenXClient
 import no.nav.syfo.tokenx.redis.TokenXRedisService
 import redis.clients.jedis.JedisPool
@@ -80,7 +81,8 @@ fun createApplicationEngine(
     jedisPool: JedisPool,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
-    tokendingsUrl: String
+    tokendingsUrl: String,
+    database: DatabaseInterface
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -158,10 +160,9 @@ fun createApplicationEngine(
 
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, arbeidsgiverRedisService)
-
-        val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, smregisterStatusClient, arbeidsgiverService)
-        val sykmeldingService = SykmeldingService(sykmeldingStatusRedisService, pdlService, smregisterSykmeldingClient)
+        val sykmelidngStatusDb = SykmeldingStatusDb(database)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, smregisterStatusClient, arbeidsgiverService, sykmelidngStatusDb)
+        val sykmeldingService = SykmeldingService(pdlService, smregisterSykmeldingClient, sykmelidngStatusDb)
 
         routing {
             registerNaisApi(applicationState)

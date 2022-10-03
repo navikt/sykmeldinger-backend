@@ -17,7 +17,7 @@ import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDbModel
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -26,8 +26,8 @@ fun getSykmeldingStatus(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime
     return SykmeldingStatusEventDTO(statusEventDTO, dateTime, erAvvist, erEgenmeldt)
 }
 
-fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean = false, erEgenmeldt: Boolean? = null): SykmeldingStatusRedisModel {
-    return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null, erAvvist, erEgenmeldt)
+fun getSykmeldingStatusDbModel(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean = false, erEgenmeldt: Boolean? = null): SykmeldingStatusDbModel {
+    return SykmeldingStatusDbModel(dateTime, statusEventDTO.name, null, null)
 }
 
 fun getSykmeldingModel(merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): Sykmelding {
