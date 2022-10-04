@@ -10,6 +10,7 @@ import io.prometheus.client.hotspot.DefaultExports
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.sykmeldingstatus.kafka.KafkaFactory.Companion.getSykmeldingStatusKafkaProducer
@@ -46,7 +47,7 @@ fun main() {
         .build()
 
     val applicationState = ApplicationState()
-    // val database = Database(env)
+    val database = Database(env)
 
     DefaultExports.initialize()
 
