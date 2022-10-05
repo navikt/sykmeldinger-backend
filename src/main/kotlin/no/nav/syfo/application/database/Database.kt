@@ -11,12 +11,12 @@ import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
 
-class Database(private val env: Environment, retries: Long = 30, sleepTime: Long = 1_000) : DatabaseInterface {
-    private val dataSource: HikariDataSource
+class Database(private val env: Environment, private val retries: Long = 30, private val sleepTime: Long = 1_000) : DatabaseInterface {
+    private lateinit var dataSource: HikariDataSource
     override val connection: Connection
         get() = dataSource.connection
 
-    init {
+    fun initializeDatasource(): Database {
         var current = 0
         var connected = false
         var tempDatasource: HikariDataSource? = null
@@ -52,13 +52,18 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
             throw RuntimeException("Could not connect to DB")
         }
         dataSource = tempDatasource
-        runFlywayMigrations()
+
+        return this
     }
 
-    private fun runFlywayMigrations() = Flyway.configure().run {
-        locations("db")
-        dataSource(env.jdbcUrl(), env.databaseUsername, env.databasePassword)
-        load().migrate()
+    fun runFlywayMigrations(): Database {
+        Flyway.configure().run {
+            locations("db")
+            dataSource(env.jdbcUrl(), env.databaseUsername, env.databasePassword)
+            load().migrate()
+        }
+
+        return this
     }
 }
 
