@@ -47,7 +47,10 @@ fun main() {
         .build()
 
     val applicationState = ApplicationState()
-    val database = Database(env)
+
+    Database(env)
+        .initializeDatasource()
+        .runFlywayMigrations()
 
     DefaultExports.initialize()
 

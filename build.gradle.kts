@@ -17,7 +17,7 @@ val mockkVersion = "1.12.8"
 val nimbusdsVersion = "9.24.4"
 val jedisVersion = "4.2.3"
 val kotestVersion = "5.4.2"
-val testcontainersVersion = "1.17.3"
+val testcontainersVersion = "1.17.4"
 val swaggerUiVersion = "4.14.0"
 val kotlinVersion = "1.7.10"
 val flywayVersion = "9.3.0"
@@ -98,6 +98,7 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
 }
 
 swaggerSources {
