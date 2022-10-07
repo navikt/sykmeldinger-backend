@@ -13,8 +13,8 @@ import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsgiver
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Gyldighetsperiode
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Opplysningspliktig
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Periode
-import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
@@ -26,7 +26,7 @@ class ArbeidsgiverServiceTest : FunSpec({
 
     val arbeidsforholdClient = mockkClass(ArbeidsforholdClient::class)
     val organisasjonsinfoClient = mockkClass(OrganisasjonsinfoClient::class)
-    val narmestelederClient = mockkClass(NarmestelederClient::class)
+    val narmestelederDb = mockkClass(NarmestelederDb::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val arbeidsgiverRedisService = mockkClass(ArbeidsgiverRedisService::class, relaxed = true)
 
@@ -35,7 +35,7 @@ class ArbeidsgiverServiceTest : FunSpec({
     val arbeidsgiverService = ArbeidsgiverService(
         arbeidsforholdClient,
         organisasjonsinfoClient,
-        narmestelederClient,
+        narmestelederDb,
         pdlPersonService,
         arbeidsgiverRedisService
     )
@@ -44,12 +44,12 @@ class ArbeidsgiverServiceTest : FunSpec({
         clearMocks(
             arbeidsforholdClient,
             arbeidsgiverRedisService,
-            narmestelederClient,
+            narmestelederDb,
             organisasjonsinfoClient,
             pdlPersonService
         )
         coEvery { arbeidsgiverRedisService.getArbeidsgivere(any()) } returns null
-        coEvery { narmestelederClient.getNarmesteledereTokenX(any()) } returns getNarmesteledere()
+        coEvery { narmestelederDb.getNarmesteleder(any()) } returns getNarmesteledere()
         coEvery { organisasjonsinfoClient.getOrginfo(any()) } returns getOrganisasjonsinfo()
         coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns getPdlPerson()
     }
@@ -81,7 +81,7 @@ class ArbeidsgiverServiceTest : FunSpec({
             val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901", "token", sykmeldingId)
             arbeidsgiverinformasjon.size shouldBeEqualTo 0
 
-            coVerify(exactly = 0) { narmestelederClient.getNarmesteledereTokenX(any()) }
+            coVerify(exactly = 0) { narmestelederDb.getNarmesteleder(any()) }
         }
         test("arbeidsgiverService returnerer tom liste hvis bruker har diskresjonskode") {
             coEvery { pdlPersonService.getPerson(any(), any(), any()) } returns PdlPerson(

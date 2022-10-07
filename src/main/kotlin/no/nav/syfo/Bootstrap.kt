@@ -13,6 +13,7 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.application.getWellKnownTokenX
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.sykmeldingstatus.kafka.KafkaFactory.Companion.getSykmeldingStatusKafkaProducer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,7 +49,7 @@ fun main() {
 
     val applicationState = ApplicationState()
 
-    Database(env)
+    val database = Database(env)
         .initializeDatasource()
         .runFlywayMigrations()
 
@@ -57,6 +58,8 @@ fun main() {
     val jedisPool = JedisPool(JedisPoolConfig(), env.redisHost, env.redisPort)
 
     val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(env)
+
+    val narmestelederDb = NarmestelederDb(database)
 
     val applicationEngine = createApplicationEngine(
         env = env,
@@ -68,7 +71,8 @@ fun main() {
         jedisPool = jedisPool,
         jwkProviderTokenX = jwkProviderTokenX,
         tokenXIssuer = wellKnownTokenX.issuer,
-        tokendingsUrl = wellKnownTokenX.token_endpoint
+        tokendingsUrl = wellKnownTokenX.token_endpoint,
+        narmestelederDb = narmestelederDb
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

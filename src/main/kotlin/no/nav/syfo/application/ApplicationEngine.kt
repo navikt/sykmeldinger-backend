@@ -35,8 +35,8 @@ import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
-import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
@@ -80,7 +80,8 @@ fun createApplicationEngine(
     jedisPool: JedisPool,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
-    tokendingsUrl: String
+    tokendingsUrl: String,
+    narmestelederDb: NarmestelederDb
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -145,7 +146,6 @@ fun createApplicationEngine(
 
         val arbeidsforholdClient = ArbeidsforholdClient(cioClient, env.aaregUrl, tokenXClient, env.aaregAudience)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(cioClient, env.eregUrl)
-        val narmestelederClient = NarmestelederClient(cioClient, env.narmesteLederBasePath, tokenXClient, env.narmestelederAudience)
 
         val pdlClient = PdlClient(
             cioClient,
@@ -157,7 +157,7 @@ fun createApplicationEngine(
         val pdlService = PdlPersonService(pdlClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
 
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
-        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederClient, pdlService, arbeidsgiverRedisService)
+        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederDb, pdlService, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, smregisterStatusClient, arbeidsgiverService)

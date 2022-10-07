@@ -7,15 +7,16 @@ import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsgiver
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Gyldighetsperiode
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Opplysningspliktig
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Periode
-import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Organisasjonsinfo
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverinfoRedisModel
 import no.nav.syfo.arbeidsgivere.redis.NarmesteLederRedisModel
 import no.nav.syfo.pdl.model.PdlPerson
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.UUID
 
 fun getArbeidsgiverforhold(
     ansettelsesperiode: Ansettelsesperiode = Ansettelsesperiode(
@@ -56,37 +57,23 @@ fun getPdlPerson(): PdlPerson {
     )
 }
 
-fun getNarmesteledere(): List<NarmesteLeder> {
+fun getNarmesteledere(): List<NarmestelederDbModel> {
     return listOf(
-        NarmesteLeder(
+        NarmestelederDbModel(
+            narmestelederId = UUID.randomUUID().toString(),
             orgnummer = "123456789",
-            narmesteLederTelefonnummer = "90909090",
-            narmesteLederEpost = "epost@nav.no",
-            aktivFom = LocalDate.now().minusYears(1),
-            aktivTom = null,
-            arbeidsgiverForskutterer = true,
-            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
-            navn = "Leder Ledersen"
+            brukerFnr = "12345678901",
+            lederFnr = "01987654321",
+            navn = "Leder Ledersen",
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
         ),
-        NarmesteLeder(
-            orgnummer = "123456789",
-            narmesteLederTelefonnummer = "99999999",
-            narmesteLederEpost = "epost2@nav.no",
-            aktivFom = LocalDate.now().minusYears(2),
-            aktivTom = LocalDate.now().minusYears(1),
-            arbeidsgiverForskutterer = true,
-            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
-            navn = "Forrige Ledersen"
-        ),
-        NarmesteLeder(
+        NarmestelederDbModel(
+            narmestelederId = UUID.randomUUID().toString(),
             orgnummer = "123456777",
-            narmesteLederTelefonnummer = "40404040",
-            narmesteLederEpost = "epost3@nav.no",
-            aktivFom = LocalDate.now().minusYears(2),
-            aktivTom = null,
-            arbeidsgiverForskutterer = true,
-            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
-            navn = "Annen Ledersen"
+            brukerFnr = "12345678901",
+            lederFnr = "01987654321",
+            navn = "Annen Ledersen",
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2)
         )
     )
 }
