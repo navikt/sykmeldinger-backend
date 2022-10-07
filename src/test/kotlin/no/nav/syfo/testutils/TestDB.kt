@@ -6,7 +6,6 @@ import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
 import org.testcontainers.containers.PostgreSQLContainer
-import java.sql.Connection
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
 
