@@ -3,12 +3,13 @@ package no.nav.syfo.arbeidsgivere.service
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsavtale
 import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.model.Arbeidsforhold
-import no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmestelederClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Navn
 import no.nav.syfo.arbeidsgivere.client.organisasjon.model.Organisasjonsinfo
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.redis.toArbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.redis.toArbeidsgiverinfoRedisModel
@@ -19,7 +20,7 @@ import java.time.LocalDate
 class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
     private val organisasjonsinfoClient: OrganisasjonsinfoClient,
-    private val narmestelederClient: NarmestelederClient,
+    private val narmestelederDb: NarmestelederDb,
     private val pdlPersonService: PdlPersonService,
     private val arbeidsgiverRedisService: ArbeidsgiverRedisService
 ) {
@@ -40,8 +41,7 @@ class ArbeidsgiverService(
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
         }
-        val aktiveNarmesteledere = narmestelederClient.getNarmesteledereTokenX(token)
-            .filter { it.aktivTom == null }
+        val aktiveNarmesteledere = narmestelederDb.getNarmesteleder(fnr)
 
         val arbeidsgiverList = ArrayList<Arbeidsgiverinfo>()
         arbeidsgivere.filter {
@@ -73,7 +73,7 @@ class ArbeidsgiverService(
         organisasjonsinfo: Organisasjonsinfo,
         arbeidsavtale: Arbeidsavtale?,
         arbeidsforhold: Arbeidsforhold,
-        narmesteLederRelasjon: no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder?,
+        narmestelederDbModel: NarmestelederDbModel?,
         date: LocalDate
     ) {
         val orgnavn = getName(organisasjonsinfo.navn)
@@ -86,7 +86,7 @@ class ArbeidsgiverService(
                 stillingsprosent = arbeidsavtale?.stillingsprosent?.toString() ?: "100.0",
                 aktivtArbeidsforhold = arbeidsforhold.ansettelsesperiode.periode.tom == null ||
                     !date.isAfter(arbeidsforhold.ansettelsesperiode.periode.tom) && !date.isBefore(arbeidsforhold.ansettelsesperiode.periode.fom),
-                naermesteLeder = narmesteLederRelasjon?.tilNarmesteLeder(orgnavn)
+                naermesteLeder = narmestelederDbModel?.tilNarmesteLeder(orgnavn)
             )
         )
     }
@@ -113,16 +113,16 @@ class ArbeidsgiverService(
         }.joinToString(separator = ",")
     }
 
-    private fun no.nav.syfo.arbeidsgivere.client.narmesteleder.NarmesteLeder.tilNarmesteLeder(orgnavn: String): NarmesteLeder {
+    private fun NarmestelederDbModel.tilNarmesteLeder(orgnavn: String): NarmesteLeder {
         return NarmesteLeder(
             aktoerId = "", // brukes ikke i frontend
-            navn = navn ?: "",
-            epost = narmesteLederEpost,
-            mobil = narmesteLederTelefonnummer,
+            navn = navn,
+            epost = "", // brukes ikke i frontend
+            mobil = "", // brukes ikke i frontend
             orgnummer = orgnummer,
             organisasjonsnavn = orgnavn,
-            aktivTom = aktivTom,
-            arbeidsgiverForskuttererLoenn = arbeidsgiverForskutterer
+            aktivTom = null, // brukes ikke i frontend
+            arbeidsgiverForskuttererLoenn = null // brukes ikke i frontend
         )
     }
 

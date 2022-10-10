@@ -70,7 +70,6 @@ spec:
     outbound:
       rules:
         - application: sykmeldinger-backend-redis
-        - application: narmesteleder
         - application: syfosmregister
       external:
         - host: pdl-api.dev-fss-pub.nais.io
@@ -95,8 +94,6 @@ spec:
       value: dev-fss:pdl:pdl-api
     - name: AAREG_AUDIENCE
       value: dev-fss:arbeidsforhold:aareg-services-nais-q1
-    - name: NARMESTELEDER_AUDIENCE
-      value: dev-gcp:teamsykmelding:narmesteleder
     - name: ALLOWED_ORIGIN
       value: www-gcp.dev.nav.no,sykmeldinger-backend.dev.nav.no
     - name: SMREGISTER_AUDIENCE
