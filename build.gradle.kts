@@ -6,7 +6,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val ktorVersion = "2.1.1"
+val ktorVersion = "2.1.2"
 val logbackVersion = "1.4.0"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
@@ -19,13 +19,13 @@ val jedisVersion = "4.2.3"
 val kotestVersion = "5.4.2"
 val testcontainersVersion = "1.17.4"
 val swaggerUiVersion = "4.14.0"
-val kotlinVersion = "1.7.10"
+val kotlinVersion = "1.7.20"
 val flywayVersion = "9.3.0"
 val postgresVersion = "42.5.0"
 val hikariVersion = "5.0.1"
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.10.0"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
@@ -61,7 +61,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
