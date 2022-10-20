@@ -8,6 +8,20 @@ import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import java.sql.ResultSet
 
 class SykmeldingDb(private val database: DatabaseInterface) {
+
+    fun getSykmeldt(fnr: String) {
+        return database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+               select fornavn, mellomnavn, etternavn from sykmeldt where fnr = ?
+            """
+            ).use { preparedStatement ->
+                preparedStatement.setString(1, fnr)
+                preparedStatement.executeQuery().toSykmeldt()
+            }
+        }
+    }
+
     fun getSykmeldinger(fnr: String) {
         return database.connection.use { connection ->
             connection.prepareStatement(
@@ -31,6 +45,9 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             }
         }
     }
+}
+
+private fun ResultSet.toSykmeldt() {
 }
 
 private fun ResultSet.toSykmelding(): SykmeldingDbModel {
