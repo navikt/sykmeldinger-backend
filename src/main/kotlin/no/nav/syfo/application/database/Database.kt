@@ -59,6 +59,7 @@ class Database(private val env: Environment, private val retries: Long = 30, pri
     fun runFlywayMigrations(): Database {
         Flyway.configure().run {
             locations("db")
+            configuration(mapOf("flyway.postgresql.transactional.lock" to "false"))
             dataSource(env.jdbcUrl(), env.databaseUsername, env.databasePassword)
             load().migrate()
         }
