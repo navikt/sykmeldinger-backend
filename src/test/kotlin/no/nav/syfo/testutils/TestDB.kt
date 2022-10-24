@@ -5,6 +5,8 @@ import io.mockk.mockk
 import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.objectMapper
+import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
@@ -28,4 +30,9 @@ class TestDB private constructor() {
             database = Database(mockEnv).initializeDatasource().runFlywayMigrations()
         }
     }
+}
+
+fun Any.toPGObject() = PGobject().also {
+    it.type = "json"
+    it.value = objectMapper.writeValueAsString(this)
 }

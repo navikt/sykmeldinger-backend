@@ -141,9 +141,6 @@ fun createApplicationEngine(
             privateKey = env.tokenXPrivateJwk
         )
 
-        val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.smregisterUrl, cioClient, tokenXClient, env.smregisterAudience)
-        val smregisterStatusClient = SyfosmregisterStatusClient(env.smregisterUrl, cioClient, tokenXClient, env.smregisterAudience)
-
         val arbeidsforholdClient = ArbeidsforholdClient(cioClient, env.aaregUrl, tokenXClient, env.aaregAudience)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(cioClient, env.eregUrl)
 
@@ -160,8 +157,8 @@ fun createApplicationEngine(
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederDb, pdlService, arbeidsgiverRedisService)
 
         val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, smregisterStatusClient, arbeidsgiverService)
-        val sykmeldingService = SykmeldingService(sykmeldingStatusRedisService, pdlService, smregisterSykmeldingClient)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, arbeidsgiverService)
+        val sykmeldingService = SykmeldingService(sykmeldingStatusRedisService, pdlService)
 
         routing {
             registerNaisApi(applicationState)
