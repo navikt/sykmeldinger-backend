@@ -11,6 +11,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -131,24 +132,24 @@ fun createApplicationEngine(
             allowNonSimpleContentTypes = true
         }
 
-        val cioClient = getCioClient()
+        val httpClient = getHttpClient()
         val tokenXRedisService = TokenXRedisService(jedisPool, vaultSecrets.redisSecret)
         val tokenXClient = TokenXClient(
             tokendingsUrl = tokendingsUrl,
             tokenXClientId = env.clientIdTokenX,
             tokenXRedisService = tokenXRedisService,
-            httpClient = cioClient,
+            httpClient = httpClient,
             privateKey = env.tokenXPrivateJwk
         )
 
-        val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.smregisterUrl, cioClient, tokenXClient, env.smregisterAudience)
-        val smregisterStatusClient = SyfosmregisterStatusClient(env.smregisterUrl, cioClient, tokenXClient, env.smregisterAudience)
+        val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.smregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
+        val smregisterStatusClient = SyfosmregisterStatusClient(env.smregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
 
-        val arbeidsforholdClient = ArbeidsforholdClient(cioClient, env.aaregUrl, tokenXClient, env.aaregAudience)
-        val organisasjonsinfoClient = OrganisasjonsinfoClient(cioClient, env.eregUrl)
+        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
+        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
 
         val pdlClient = PdlClient(
-            cioClient,
+            httpClient,
             env.pdlGraphqlPath,
             PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
         )
@@ -196,10 +197,10 @@ fun createApplicationEngine(
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
 
-fun getCioClient(): HttpClient {
+fun getHttpClient(): HttpClient {
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(HttpRequestRetry) {
-            constantDelay(100, 0, false)
+            constantDelay(50, 0, false)
             retryOnExceptionIf(3) { _, throwable ->
                 log.warn("Caught exception ${throwable.message}")
                 true
@@ -212,6 +213,11 @@ fun getCioClient(): HttpClient {
                     false
                 }
             }
+        }
+        install(HttpTimeout) {
+            socketTimeoutMillis = 40_000
+            connectTimeoutMillis = 40_000
+            requestTimeoutMillis = 40_000
         }
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
             jackson {

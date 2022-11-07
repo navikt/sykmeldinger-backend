@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.plugins.ServerResponseException
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.call
@@ -19,7 +18,7 @@ import io.ktor.server.routing.routing
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.application.getCioClient
+import no.nav.syfo.application.getHttpClient
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.tokenx.TokenXClient
@@ -35,7 +34,7 @@ class SyfosmregisterClientSpek : FunSpec({
     val timestamp = OffsetDateTime.of(2020, 2, 2, 15, 0, 0, 0, ZoneOffset.UTC)
     val tokenXClient = mockk<TokenXClient>()
 
-    val httpClient = getCioClient()
+    val httpClient = getHttpClient()
 
     val mockHttpServerPort = ServerSocket(0).use { it.localPort }
     val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
