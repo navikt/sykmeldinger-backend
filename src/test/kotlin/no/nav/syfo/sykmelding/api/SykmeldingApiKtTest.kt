@@ -31,8 +31,8 @@ class SykmeldingApiKtTest : FunSpec({
 
     beforeTest {
         clearAllMocks()
-        coEvery { sykmeldingService.hentSykmelding(any(), any(), any()) } returns getSykmeldingDTO()
-        coEvery { sykmeldingService.hentSykmeldinger(any(), any(), any()) } returns listOf(getSykmeldingDTO())
+        coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns getSykmeldingDTO()
+        coEvery { sykmeldingService.hentSykmeldinger(any()) } returns listOf(getSykmeldingDTO())
     }
 
     context("Sykmelding Api test") {

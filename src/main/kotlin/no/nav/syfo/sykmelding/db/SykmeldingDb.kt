@@ -1,20 +1,20 @@
 package no.nav.syfo.sykmelding.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
-import java.sql.ResultSet
-import java.time.ZoneOffset
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
 import no.nav.syfo.sykmelding.model.PasientDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import java.sql.ResultSet
+import java.time.ZoneOffset
 
 class SykmeldingDb(private val database: DatabaseInterface) {
 
@@ -40,7 +40,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
                 where sykmelding.sykmelding_id = ?  and sykmelding.fnr = ?
-                and not exists(select 1 from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id and event in ('SLETTET'));;
+                and not exists(select 1 from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id and event in ('SLETTET'));
                 """
             ).use { preparedStatement ->
                 preparedStatement.setString(1, sykmeldingId)
@@ -81,7 +81,6 @@ class SykmeldingDb(private val database: DatabaseInterface) {
         }
     }
 }
-
 
 private fun ResultSet.toSykmelding(): SykmeldingDTO {
     val sykmelding: SykmeldingDbModel = objectMapper.readValue(getString("sykmelding"))

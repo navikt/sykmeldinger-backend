@@ -9,8 +9,6 @@ import io.ktor.server.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
-import java.time.LocalDate
 
 fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
@@ -22,7 +20,6 @@ fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger/{sykmeldingid}") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
-        val token = principal.token
         val fnr = principal.fnr
 
         if (sykmeldingId == "null") {

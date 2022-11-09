@@ -14,6 +14,8 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.kafka.KafkaFactory.Companion.getSykmeldingStatusKafkaProducer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -60,7 +62,8 @@ fun main() {
     val sykmeldingStatusKafkaProducer = getSykmeldingStatusKafkaProducer(env)
 
     val narmestelederDb = NarmestelederDb(database)
-
+    val sykmeldingStatusDb = SykmeldingStatusDb(database)
+    val sykmeldingDb = SykmeldingDb(database)
     val applicationEngine = createApplicationEngine(
         env = env,
         applicationState = applicationState,
@@ -72,7 +75,9 @@ fun main() {
         jwkProviderTokenX = jwkProviderTokenX,
         tokenXIssuer = wellKnownTokenX.issuer,
         tokendingsUrl = wellKnownTokenX.token_endpoint,
-        narmestelederDb = narmestelederDb
+        narmestelederDb = narmestelederDb,
+        sykmeldingStatusDb = sykmeldingStatusDb,
+        sykmeldingDb = sykmeldingDb,
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

@@ -1,34 +1,30 @@
 package no.nav.syfo.sykmelding.db
 
 import io.kotest.core.spec.style.FunSpec
-import java.sql.Timestamp
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.AdresseDTO
 import no.nav.syfo.sykmelding.model.AktivitetIkkeMuligDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
+import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
 import no.nav.syfo.sykmelding.model.DiagnoseDTO
 import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
 import no.nav.syfo.sykmelding.model.MedisinskArsakDTO
 import no.nav.syfo.sykmelding.model.MedisinskVurderingDTO
 import no.nav.syfo.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.sykmelding.model.RegelStatusDTO
+import no.nav.syfo.sykmelding.model.SporsmalDTO
+import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.toPGObject
+import org.amshove.kluent.shouldBeEqualTo
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
-import no.nav.syfo.model.RuleInfo
-import no.nav.syfo.model.Status
-import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
-import no.nav.syfo.sykmelding.model.RegelStatusDTO
-import no.nav.syfo.sykmelding.model.RegelinfoDTO
-import no.nav.syfo.sykmelding.model.SporsmalDTO
-import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
-import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingDbTest : FunSpec({
 
@@ -62,7 +58,6 @@ fun getBehandlingsutfall(status: RegelStatusDTO): BehandlingsutfallDTO {
     )
 }
 
-
 fun getStatus(status: String, timestamp: OffsetDateTime, arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null, sporsmals: List<SporsmalDTO> = emptyList()): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         statusEvent = status,
@@ -85,7 +80,6 @@ private fun DatabaseInterface.insertSykmeldt(fnr: String) {
     }
 }
 
-
 private fun DatabaseInterface.insertBehandlingsutfall(sykmeldingId: String, behandlingsutfall: BehandlingsutfallDTO) {
     connection.use { connection ->
         connection.prepareStatement("""insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);""").use {
@@ -98,12 +92,13 @@ private fun DatabaseInterface.insertBehandlingsutfall(sykmeldingId: String, beha
     }
 }
 
-
 private fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatusDTO) {
     connection.use { connection ->
-        connection.prepareStatement("""
+        connection.prepareStatement(
+            """
             insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values (?, ?, ?, ?, ?)
-        """.trimIndent()).use {
+            """.trimIndent()
+        ).use {
             it.setString(1, sykmeldingId)
             it.setString(2, status.statusEvent)
             it.setTimestamp(3, Timestamp.from(status.timestamp.toInstant()))
@@ -114,7 +109,6 @@ private fun DatabaseInterface.insertStatus(sykmeldingId: String, status: Sykmeld
         connection.commit()
     }
 }
-
 
 private fun DatabaseInterface.insertSymelding(sykmeldingId: String, fnr: String, sykmelding: SykmeldingDbModel) {
     connection.use { connection ->

@@ -36,6 +36,7 @@ import no.nav.syfo.tokenx.TokenXClient
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 
 class SykmeldingApiIntegrationTest : FunSpec({
 
@@ -45,11 +46,9 @@ class SykmeldingApiIntegrationTest : FunSpec({
     val redisService = mockkClass(SykmeldingStatusRedisService::class)
     val pdlPersonService = mockkClass(PdlPersonService::class)
     val tokenXClient = mockk<TokenXClient>()
-    val syfosmregisterSykmeldingClient = SyfosmregisterSykmeldingClient("url", httpClient.httpClient, tokenXClient, "audience")
+    val sykmeldingDb = mockk<SykmeldingDb>()
     val sykmeldingService = SykmeldingService(
-        redisService,
-        pdlPersonService,
-        syfosmregisterSykmeldingClient
+        sykmeldingDb
     )
 
     coEvery { redisService.getStatus(any()) } returns null

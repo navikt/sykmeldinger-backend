@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.sql.Timestamp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import org.postgresql.util.PGobject
+import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.ZoneOffset
 
 private val objectMapper: ObjectMapper = jacksonObjectMapper().apply {
     registerModule(JavaTimeModule())
@@ -46,12 +50,39 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
         }
     }
 
-    fun getStatus() {}
-    fun getLatestStatus(sykmeldingId: String, fnr: String): SykmeldingStatusEventDTO? {
+    suspend fun getLatestStatus(sykmeldingId: String, fnr: String): SykmeldingStatusEventDTO = withContext(Dispatchers.IO) {
         databaseInterface.connection.use { connection ->
-            connection.prepareStatement("""
-                select * from sykmeldingstatus where sykmelding_id = ?
-            """.trimIndent())
+            connection.prepareStatement(
+                """
+                select
+                    ss.event,
+                    ss.timestamp,
+                    syk.sykmelding['egenmeldt'] as egenmeldt,
+                    beh.behandlingsutfall
+                    from sykmeldingstatus ss
+                inner join sykmelding syk on syk.sykmelding_id = ss.sykmelding_id and syk.fnr = ?
+                inner join behandlingsutfall beh on ss.sykmelding_id = beh.sykmelding_id
+                    where ss.sykmelding_id = ?
+                        and timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = ss.sykmelding_id)
+                """
+            ).use { ps ->
+                ps.setString(1, sykmeldingId)
+                ps.setString(2, fnr)
+                ps.executeQuery().toStatusEventDTO(sykmeldingId)
+            }
         }
+    }
+}
+
+private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEventDTO {
+    return if (next()) {
+        SykmeldingStatusEventDTO(
+            statusEvent = StatusEventDTO.valueOf(getString("event")),
+            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+            erEgenmeldt = getBoolean("egenmeldt"),
+            erAvvist = getString("behandlingsutfall").let { it == "INVALID" }
+        )
+    } else {
+        throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
     }
 }

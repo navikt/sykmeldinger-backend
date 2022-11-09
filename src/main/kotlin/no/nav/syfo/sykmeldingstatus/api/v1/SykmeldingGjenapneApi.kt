@@ -16,15 +16,13 @@ fun Route.registerSykmeldingGjenapneApi(sykmeldingStatusService: SykmeldingStatu
     post("/sykmeldinger/{sykmeldingid}/gjenapne") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
-        val token = principal.token
         val fnr = principal.fnr
 
         sykmeldingStatusService.registrerStatus(
             sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC)),
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr,
-            token = token
+            fnr = fnr
         )
 
         GJENAPNET_AV_BRUKER_COUNTER.inc()
@@ -37,14 +35,12 @@ fun Route.registerSykmeldingGjenapneApiV2(sykmeldingStatusService: SykmeldingSta
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val token = principal.token
 
         sykmeldingStatusService.registrerStatus(
             sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC)),
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr,
-            token = token
+            fnr = fnr
         )
 
         GJENAPNET_AV_BRUKER_COUNTER.inc()
