@@ -28,7 +28,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
 
     beforeTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } just Runs
+        coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } just Runs
     }
 
     context("Test SykmeldingGjenapneAPI for sluttbruker med tilgangskontroll") {
@@ -66,7 +66,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
 
             test("Bruker skal ikke få gjenåpne sin egen sykmelding når den ikke kan gjenåpnes") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/gjenapne") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -86,7 +86,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
             }
 
             test("Skal ikke kunne gjenåpne annen brukers sykmelding") {
-                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/gjenapne") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())

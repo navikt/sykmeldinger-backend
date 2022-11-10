@@ -36,7 +36,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.mellomnavn,
                 s.fnr
                 from sykmelding sykmelding
-                inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select timestamp from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id order by timestamp desc limit 1)
+                inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
                 where sykmelding.sykmelding_id = ?  and sykmelding.fnr = ?
@@ -68,11 +68,10 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.mellomnavn,
                 s.fnr
                 from sykmelding sykmelding
-                inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select timestamp from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id order by timestamp desc limit 1)
+                inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
-                where sykmelding.fnr = ? 
-                and not exists(select 1 from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id and event in ('SLETTET'));;
+                where sykmelding.fnr = ?;
                 """
             ).use { preparedStatement ->
                 preparedStatement.setString(1, fnr)

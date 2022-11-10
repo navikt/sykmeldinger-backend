@@ -26,7 +26,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
 
     beforeTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } just Runs
+        coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any()) } just Runs
     }
 
     context("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {
@@ -62,7 +62,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
 
             test("Bruker skal ikke få bekrefte sin egen sykmelding når den ikke kan bekreftes") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
+                coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreftAvvist") {
                         addHeader(
@@ -81,7 +81,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
             }
 
             test("Skal ikke kunne bekrefte annen brukers sykmelding") {
-                coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
+                coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
                         addHeader(

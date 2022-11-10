@@ -66,8 +66,8 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                         and timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = ss.sykmelding_id)
                 """
             ).use { ps ->
-                ps.setString(1, sykmeldingId)
-                ps.setString(2, fnr)
+                ps.setString(1, fnr)
+                ps.setString(2, sykmeldingId)
                 ps.executeQuery().toStatusEventDTO(sykmeldingId)
             }
         }

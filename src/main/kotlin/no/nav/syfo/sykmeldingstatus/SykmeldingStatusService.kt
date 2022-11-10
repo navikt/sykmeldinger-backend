@@ -82,7 +82,7 @@ class SykmeldingStatusService(
         fnr: String,
         token: String
     ) {
-        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+        val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
         if (canChangeStatus(
                 nyStatusEvent = nesteStatus,
