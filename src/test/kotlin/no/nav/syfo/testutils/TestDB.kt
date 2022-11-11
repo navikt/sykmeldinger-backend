@@ -5,6 +5,9 @@ import io.mockk.mockk
 import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.AdresseDTO
@@ -47,6 +50,7 @@ class TestDB private constructor() {
             every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
             database = Database(mockEnv).initializeDatasource().runFlywayMigrations()
         }
+
         fun clearAllData() {
             return database.connection.use {
                 it.prepareStatement(
@@ -79,7 +83,12 @@ fun getBehandlingsutfall(status: RegelStatusDTO): BehandlingsutfallDTO {
     )
 }
 
-fun getStatus(status: String, timestamp: OffsetDateTime, arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null, sporsmals: List<SporsmalDTO> = emptyList()): SykmeldingStatusDTO {
+fun getStatus(
+    status: String,
+    timestamp: OffsetDateTime,
+    arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null,
+    sporsmals: List<SporsmalDTO> = emptyList()
+): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         statusEvent = status,
         timestamp = timestamp,
@@ -90,25 +99,27 @@ fun getStatus(status: String, timestamp: OffsetDateTime, arbeidsgiverStatusDTO: 
 
 fun DatabaseInterface.insertSykmeldt(fnr: String) {
     connection.use { connection ->
-        connection.prepareStatement("INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)").use {
-            it.setString(1, fnr)
-            it.setString(2, "fornavn")
-            it.setString(3, "mellomnavn")
-            it.setString(4, "etternavn")
-            it.executeUpdate()
-        }
+        connection.prepareStatement("INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)")
+            .use {
+                it.setString(1, fnr)
+                it.setString(2, "fornavn")
+                it.setString(3, "mellomnavn")
+                it.setString(4, "etternavn")
+                it.executeUpdate()
+            }
         connection.commit()
     }
 }
 
 fun DatabaseInterface.insertBehandlingsutfall(sykmeldingId: String, behandlingsutfall: BehandlingsutfallDTO) {
     connection.use { connection ->
-        connection.prepareStatement("""insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);""").use {
-            it.setString(1, sykmeldingId)
-            it.setString(2, behandlingsutfall.status.name)
-            it.setObject(3, behandlingsutfall.ruleHits.toPGObject())
-            it.executeUpdate()
-        }
+        connection.prepareStatement("""insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);""")
+            .use {
+                it.setString(1, sykmeldingId)
+                it.setString(2, behandlingsutfall.status.name)
+                it.setObject(3, behandlingsutfall.ruleHits.toPGObject())
+                it.executeUpdate()
+            }
         connection.commit()
     }
 }
@@ -124,12 +135,23 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
             it.setString(2, status.statusEvent)
             it.setTimestamp(3, Timestamp.from(status.timestamp.toInstant()))
             it.setObject(4, status.arbeidsgiver?.toPGObject())
-            it.setObject(5, status.sporsmalOgSvarListe.toPGObject())
+            it.setObject(
+                5,
+                status.sporsmalOgSvarListe.map { spm ->
+                    SporsmalOgSvarDTO(
+                        tekst = spm.tekst,
+                        shortName = ShortNameDTO.valueOf(spm.shortName.name),
+                        svartype = SvartypeDTO.valueOf(spm.svar.svarType.name),
+                        svar = spm.svar.svar,
+                    )
+                }.toPGObject()
+            )
             it.executeUpdate()
         }
         connection.commit()
     }
 }
+
 fun DatabaseInterface.insertSymelding(sykmeldingId: String, fnr: String, sykmelding: SykmeldingDbModel) {
     connection.use { connection ->
         connection.prepareStatement(

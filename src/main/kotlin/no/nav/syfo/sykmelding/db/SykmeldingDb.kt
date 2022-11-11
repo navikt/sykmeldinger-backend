@@ -5,11 +5,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
 import no.nav.syfo.sykmelding.model.PasientDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
+import no.nav.syfo.sykmelding.model.ShortNameDTO
+import no.nav.syfo.sykmelding.model.SporsmalDTO
+import no.nav.syfo.sykmelding.model.SvarDTO
+import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
@@ -39,8 +44,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
-                where sykmelding.sykmelding_id = ?  and sykmelding.fnr = ?
-                and not exists(select 1 from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id and event in ('SLETTET'));
+                where sykmelding.sykmelding_id = ? and sykmelding.fnr = ?;
                 """
             ).use { preparedStatement ->
                 preparedStatement.setString(1, sykmeldingId)
@@ -103,7 +107,20 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
             statusEvent = getString("event"),
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             arbeidsgiver = getObject("arbeidsgiver")?.let { objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString()) },
-            sporsmalOgSvarListe = objectMapper.readValue(getString("sporsmal"))
+            sporsmalOgSvarListe = getString("sporsmal")?.let {
+                objectMapper.readValue<List<SporsmalOgSvarDTO>>(it).map { sporsmalOgSvarDTO ->
+                    SporsmalDTO(
+                        tekst = sporsmalOgSvarDTO.tekst,
+                        shortName = ShortNameDTO.valueOf(sporsmalOgSvarDTO.shortName.name),
+                        svar = sporsmalOgSvarDTO.svar.let { svar ->
+                            SvarDTO(
+                                svar = svar,
+                                svarType = SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name)
+                            )
+                        }
+                    )
+                }
+            } ?: emptyList()
         ),
         medisinskVurdering = sykmelding.medisinskVurdering,
         prognose = sykmelding.prognose,
