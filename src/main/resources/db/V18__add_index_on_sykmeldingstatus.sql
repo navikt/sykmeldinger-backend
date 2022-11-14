@@ -1,0 +1,1 @@
+create index concurrently sykmeldingstatus_id_status_idx on sykmeldingstatus(sykmelding_id, event)
