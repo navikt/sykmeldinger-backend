@@ -111,7 +111,6 @@ class SykmeldingStatusService(
                 source = "user",
                 fnr = fnr
             )
-            sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
 
             when (nesteStatus) {
                 StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
