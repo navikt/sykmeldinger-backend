@@ -146,7 +146,6 @@ fun createApplicationEngine(
         val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
 
-
         val pdlClient = PdlClient(
             httpClient,
             env.pdlGraphqlPath,
