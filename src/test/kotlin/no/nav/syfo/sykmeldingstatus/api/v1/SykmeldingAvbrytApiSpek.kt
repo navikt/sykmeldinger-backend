@@ -28,7 +28,7 @@ class SykmeldingAvbrytApiSpek : FunSpec({
 
     beforeTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } just Runs
+        coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } just Runs
     }
 
     context("Test SykmeldingAvbrytAPI for sluttbruker med tilgangskontroll") {
@@ -66,7 +66,7 @@ class SykmeldingAvbrytApiSpek : FunSpec({
 
             test("Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes") {
                 val sykmeldingId = "123"
-                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/avbryt") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
@@ -86,7 +86,7 @@ class SykmeldingAvbrytApiSpek : FunSpec({
             }
 
             test("Skal ikke kunne avbryte annen brukers sykmelding") {
-                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
+                coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/avbryt") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())

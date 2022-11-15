@@ -6,6 +6,6 @@ import no.nav.syfo.testutils.TestDB
 internal class DatabaseTest : FunSpec({
     test("Test database") {
 
-        val database = TestDB.database
+        TestDB.database
     }
 })

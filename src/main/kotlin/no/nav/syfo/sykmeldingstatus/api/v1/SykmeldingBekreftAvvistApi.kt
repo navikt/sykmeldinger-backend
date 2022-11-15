@@ -14,14 +14,11 @@ fun Route.registerSykmeldingBekreftAvvistApi(sykmeldingStatusService: Sykmelding
     post("/sykmeldinger/{sykmeldingid}/bekreftAvvist") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
-        val token = principal.token
         val fnr = principal.fnr
-
         sykmeldingStatusService.registrerBekreftetAvvist(
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr,
-            token = token
+            fnr = fnr
         )
 
         BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()
@@ -34,13 +31,10 @@ fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: Sykmeldi
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val token = principal.token
-
         sykmeldingStatusService.registrerBekreftetAvvist(
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr,
-            token = token
+            fnr = fnr
         )
 
         BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()

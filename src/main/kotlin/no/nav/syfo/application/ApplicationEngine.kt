@@ -41,7 +41,6 @@ import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
-import no.nav.syfo.client.SyfosmregisterStatusClient
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.pdl.client.PdlClient
@@ -50,7 +49,7 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
-import no.nav.syfo.sykmelding.client.SyfosmregisterSykmeldingClient
+import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
@@ -62,9 +61,9 @@ import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
+import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisService
 import no.nav.syfo.tokenx.TokenXClient
 import no.nav.syfo.tokenx.redis.TokenXRedisService
 import redis.clients.jedis.JedisPool
@@ -82,7 +81,9 @@ fun createApplicationEngine(
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
     tokendingsUrl: String,
-    narmestelederDb: NarmestelederDb
+    narmestelederDb: NarmestelederDb,
+    sykmeldingStatusDb: SykmeldingStatusDb,
+    sykmeldingDb: SykmeldingDb
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -142,11 +143,9 @@ fun createApplicationEngine(
             privateKey = env.tokenXPrivateJwk
         )
 
-        val smregisterSykmeldingClient = SyfosmregisterSykmeldingClient(env.smregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
-        val smregisterStatusClient = SyfosmregisterStatusClient(env.smregisterUrl, httpClient, tokenXClient, env.smregisterAudience)
-
         val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
         val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
+
 
         val pdlClient = PdlClient(
             httpClient,
@@ -160,9 +159,8 @@ fun createApplicationEngine(
         val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
         val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederDb, pdlService, arbeidsgiverRedisService)
 
-        val sykmeldingStatusRedisService = SykmeldingStatusRedisService(jedisPool, vaultSecrets.redisSecret)
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, sykmeldingStatusRedisService, smregisterStatusClient, arbeidsgiverService)
-        val sykmeldingService = SykmeldingService(sykmeldingStatusRedisService, pdlService, smregisterSykmeldingClient)
+        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, arbeidsgiverService, sykmeldingStatusDb)
+        val sykmeldingService = SykmeldingService(sykmeldingDb)
 
         routing {
             registerNaisApi(applicationState)
