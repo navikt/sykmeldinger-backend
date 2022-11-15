@@ -8,11 +8,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.log
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import org.postgresql.util.PGobject
+import org.postgresql.util.PSQLException
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.ZoneOffset
@@ -32,21 +34,25 @@ private fun toPGObject(jsonObject: Any) = PGobject().also {
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
 
     suspend fun insertStatus(event: SykmeldingStatusKafkaEventDTO) = withContext(Dispatchers.IO) {
-        databaseInterface.connection.use { connection ->
-            connection.prepareStatement(
-                """
+        try {
+            databaseInterface.connection.use { connection ->
+                connection.prepareStatement(
+                    """
             insert into sykmeldingstatus(sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values(?, ?, ?, ?, ?) on conflict do nothing;
         """
-            ).use { ps ->
-                var index = 1
-                ps.setString(index++, event.sykmeldingId)
-                ps.setString(index++, event.statusEvent)
-                ps.setTimestamp(index++, Timestamp.from(event.timestamp.toInstant()))
-                ps.setObject(index++, event.arbeidsgiver?.let { toPGObject(it) })
-                ps.setObject(index, event.sporsmals?.let { toPGObject(it) })
-                ps.executeUpdate()
+                ).use { ps ->
+                    var index = 1
+                    ps.setString(index++, event.sykmeldingId)
+                    ps.setString(index++, event.statusEvent)
+                    ps.setTimestamp(index++, Timestamp.from(event.timestamp.toInstant()))
+                    ps.setObject(index++, event.arbeidsgiver?.let { toPGObject(it) })
+                    ps.setObject(index, event.sporsmals?.let { toPGObject(it) })
+                    ps.executeUpdate()
+                }
+                connection.commit()
             }
-            connection.commit()
+        } catch (ex: PSQLException) {
+            log.warn(ex.message)
         }
     }
 
