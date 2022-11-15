@@ -33,7 +33,7 @@ class Database(private val env: Environment, private val retries: Long = 30, pri
                         idleTimeout = 10000
                         maxLifetime = 300000
                         isAutoCommit = false
-                        transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+                        transactionIsolation = "TRANSACTION_READ_COMMITTED"
                         validate()
                     }
                 )
