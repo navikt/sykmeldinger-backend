@@ -113,13 +113,11 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
         }
     }
 
     beforeTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusDb.insertStatus(any()) } just Runs
         coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
         coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } throws SykmeldingStatusNotFoundException("not found")
     }
@@ -159,7 +157,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 erAvvist = true
             )
             sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
-            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
             coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
         test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
@@ -170,7 +167,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
             }
 
             coVerify { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
     }
@@ -187,7 +183,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
         }
 
         test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
@@ -203,7 +198,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
         }
 
         test("Får ikke bekrefte sykmelding som ikke er avvist") {
@@ -219,7 +213,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
         }
     }
 
@@ -273,7 +266,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
         }
         test("test SENDT user event - Siste status er sendt") {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
@@ -328,7 +320,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
         }
         test("Test SEND user event - finner ikke riktig arbeidsgiver") {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
@@ -383,7 +374,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
         }
 
         test("Test BEKREFT user event") {
@@ -416,7 +406,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
         }
 
         test("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
@@ -467,7 +456,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
 
             val nlSvar = expected.captured.sporsmals?.filter { it.shortName == ShortNameDTO.NY_NARMESTE_LEDER }
 

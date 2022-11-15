@@ -72,7 +72,6 @@ class SykmeldingStatusService(
                 source = source,
                 fnr = fnr
             )
-            sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
         }
     }
 
@@ -153,9 +152,6 @@ class SykmeldingStatusService(
                         sykmeldingStatusKafkaEventDTO,
                         source,
                         fnr
-                    )
-                    sykmeldingStatusDb.insertStatus(
-                        sykmeldingStatusKafkaEventDTO
                     )
                 } else {
                     log.warn("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId")
