@@ -31,21 +31,15 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import no.nav.syfo.Environment
-import no.nav.syfo.VaultSecrets
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
 import no.nav.syfo.application.exception.ServiceUnavailableException
-import no.nav.syfo.arbeidsgivere.client.arbeidsforhold.client.ArbeidsforholdClient
-import no.nav.syfo.arbeidsgivere.client.organisasjon.client.OrganisasjonsinfoClient
+import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.arbeidsgivere.redis.ArbeidsgiverRedisService
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
-import no.nav.syfo.pdl.client.PdlClient
-import no.nav.syfo.pdl.redis.PdlPersonRedisService
-import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
@@ -64,26 +58,21 @@ import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandl
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
-import no.nav.syfo.tokenx.TokenXClient
-import no.nav.syfo.tokenx.redis.TokenXRedisService
-import redis.clients.jedis.JedisPool
 import java.util.UUID
 import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
-    vaultSecrets: VaultSecrets,
     jwkProvider: JwkProvider,
     issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
-    jedisPool: JedisPool,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
-    tokendingsUrl: String,
     narmestelederDb: NarmestelederDb,
     sykmeldingStatusDb: SykmeldingStatusDb,
-    sykmeldingDb: SykmeldingDb
+    sykmeldingDb: SykmeldingDb,
+    arbeidsforholdDb: ArbeidsforholdDb
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         install(ContentNegotiation) {
@@ -133,30 +122,7 @@ fun createApplicationEngine(
             allowNonSimpleContentTypes = true
         }
 
-        val httpClient = getHttpClient()
-        val tokenXRedisService = TokenXRedisService(jedisPool, vaultSecrets.redisSecret)
-        val tokenXClient = TokenXClient(
-            tokendingsUrl = tokendingsUrl,
-            tokenXClientId = env.clientIdTokenX,
-            tokenXRedisService = tokenXRedisService,
-            httpClient = httpClient,
-            privateKey = env.tokenXPrivateJwk
-        )
-
-        val arbeidsforholdClient = ArbeidsforholdClient(httpClient, env.aaregUrl, tokenXClient, env.aaregAudience)
-        val organisasjonsinfoClient = OrganisasjonsinfoClient(httpClient, env.eregUrl)
-
-        val pdlClient = PdlClient(
-            httpClient,
-            env.pdlGraphqlPath,
-            PdlClient::class.java.getResource("/graphql/getPerson.graphql").readText().replace(Regex("[\n\t]"), "")
-        )
-
-        val pdlPersonRedisService = PdlPersonRedisService(jedisPool, vaultSecrets.redisSecret)
-        val pdlService = PdlPersonService(pdlClient, pdlPersonRedisService, tokenXClient, env.pdlAudience)
-
-        val arbeidsgiverRedisService = ArbeidsgiverRedisService(jedisPool, vaultSecrets.redisSecret)
-        val arbeidsgiverService = ArbeidsgiverService(arbeidsforholdClient, organisasjonsinfoClient, narmestelederDb, pdlService, arbeidsgiverRedisService)
+        val arbeidsgiverService = ArbeidsgiverService(narmestelederDb, arbeidsforholdDb)
 
         val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, arbeidsgiverService, sykmeldingStatusDb)
         val sykmeldingService = SykmeldingService(sykmeldingDb)
@@ -172,7 +138,7 @@ fun createApplicationEngine(
                     registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
                     registerSykmeldingAvbrytApi(sykmeldingStatusService)
                     registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService)
+                    registrerBrukerinformasjonApi(arbeidsgiverService)
                 }
                 route("/api/v2") {
                     registrerSykmeldingSendApiV2(sykmeldingStatusService)
@@ -184,7 +150,7 @@ fun createApplicationEngine(
                     registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService)
                     registerSykmeldingAvbrytApiV2(sykmeldingStatusService)
                     registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
-                    registrerBrukerinformasjonApi(arbeidsgiverService, pdlService)
+                    registrerBrukerinformasjonApi(arbeidsgiverService)
                 }
                 route("/api/v3") {
                     registrerSykmeldingSendApiV3(sykmeldingStatusService)

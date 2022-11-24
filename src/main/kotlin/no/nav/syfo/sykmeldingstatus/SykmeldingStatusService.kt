@@ -14,7 +14,6 @@ import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.redis.SykmeldingStatusRedisModel
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -95,7 +94,6 @@ class SykmeldingStatusService(
             val arbeidsgiver = when (nesteStatus) {
                 StatusEventDTO.SENDT -> getArbeidsgiver(
                     fnr,
-                    token,
                     sykmeldingId,
                     sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar
                 )
@@ -123,11 +121,10 @@ class SykmeldingStatusService(
 
     private suspend fun getArbeidsgiver(
         fnr: String,
-        token: String,
         sykmeldingId: String,
         orgnummer: String
     ): Arbeidsgiverinfo {
-        return arbeidsgiverService.getArbeidsgivere(fnr, token, sykmeldingId)
+        return arbeidsgiverService.getArbeidsgivere(fnr)
             .find { it.orgnummer == orgnummer }
             ?: throw InvalidSykmeldingStatusException("Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der")
     }
@@ -202,15 +199,6 @@ class SykmeldingStatusService(
     suspend fun hentSisteStatusOgSjekkTilgang(sykmeldingId: String, fnr: String): SykmeldingStatusEventDTO {
         return sykmeldingStatusDb.getLatestStatus(sykmeldingId, fnr)
     }
-}
-
-private fun SykmeldingStatusRedisModel.toSykmeldingStatusDTO(): SykmeldingStatusEventDTO {
-    return SykmeldingStatusEventDTO(
-        timestamp = timestamp,
-        statusEvent = statusEvent,
-        erAvvist = erAvvist,
-        erEgenmeldt = erEgenmeldt
-    )
 }
 
 fun SykmeldingUserEvent.toStatusEvent(): StatusEventDTO {

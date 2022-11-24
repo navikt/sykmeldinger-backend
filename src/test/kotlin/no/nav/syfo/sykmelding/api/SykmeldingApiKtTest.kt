@@ -15,7 +15,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
-import no.nav.syfo.application.jedisObjectMapper
+import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
@@ -64,7 +64,7 @@ class SykmeldingApiKtTest : FunSpec({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
+                    objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             test("Hent sykmeldinger med fom og tom") {
@@ -84,7 +84,7 @@ class SykmeldingApiKtTest : FunSpec({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
+                    objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
             test("Hent sykmeldinger med fom og tom og exclude") {
@@ -104,7 +104,7 @@ class SykmeldingApiKtTest : FunSpec({
                     }
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
-                    jedisObjectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
+                    objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
                 }
             }
         }

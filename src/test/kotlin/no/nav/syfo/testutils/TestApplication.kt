@@ -24,20 +24,13 @@ val testAudience = listOf("loginserviceId1", "loginserviceId2")
 
 fun getTestEnvironment(audience: List<String> = testAudience): Environment =
     Environment(
-        eregUrl = "https://ereg",
-        aaregUrl = "https://aareg",
-        pdlGraphqlPath = "http://graphql",
         cluster = "dev-fss",
         loginserviceIdportenDiscoveryUrl = "url",
         loginserviceIdportenAudience = audience,
         tokenXWellKnownUrl = "https://tokenx",
         clientIdTokenX = "clientId",
         tokenXPrivateJwk = getDefaultRSAKey(),
-        pdlAudience = "pdl",
-        aaregAudience = "aareg",
         allowedOrigin = emptyList(),
-        smregisterUrl = "smregistergcp",
-        smregisterAudience = "smregaudience",
         dbHost = "",
         dbPort = "",
         dbName = "",
