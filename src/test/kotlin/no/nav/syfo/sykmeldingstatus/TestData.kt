@@ -22,11 +22,21 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-fun getSykmeldingStatus(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean? = null, erEgenmeldt: Boolean? = null): SykmeldingStatusEventDTO {
+fun getSykmeldingStatus(
+    statusEventDTO: StatusEventDTO,
+    dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+    erAvvist: Boolean? = null,
+    erEgenmeldt: Boolean? = null
+): SykmeldingStatusEventDTO {
     return SykmeldingStatusEventDTO(statusEventDTO, dateTime, erAvvist, erEgenmeldt)
 }
 
-fun getSykmeldingStatusRedisModel(statusEventDTO: StatusEventDTO, dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC), erAvvist: Boolean = false, erEgenmeldt: Boolean? = null): SykmeldingStatusRedisModel {
+fun getSykmeldingStatusRedisModel(
+    statusEventDTO: StatusEventDTO,
+    dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
+    erAvvist: Boolean = false,
+    erEgenmeldt: Boolean? = null
+): SykmeldingStatusRedisModel {
     return SykmeldingStatusRedisModel(dateTime, statusEventDTO, null, null, erAvvist, erEgenmeldt)
 }
 
@@ -35,8 +45,24 @@ fun getSykmeldingModel(merknader: List<MerknadDTO>? = null, timestamps: OffsetDa
         id = "1",
         utdypendeOpplysninger = emptyMap(),
         kontaktMedPasient = KontaktMedPasientDTO(null, null),
-        sykmeldingsperioder = listOf(SykmeldingsperiodeDTO(LocalDate.now(), LocalDate.now(), null, null, null, PeriodetypeDTO.AKTIVITET_IKKE_MULIG, null, false)),
-        sykmeldingStatus = SykmeldingStatusDTO("APEN", timestamps ?: OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
+        sykmeldingsperioder = listOf(
+            SykmeldingsperiodeDTO(
+                LocalDate.now(),
+                LocalDate.now(),
+                null,
+                null,
+                null,
+                PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                null,
+                false
+            )
+        ),
+        sykmeldingStatus = SykmeldingStatusDTO(
+            "APEN",
+            timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
+            null,
+            emptyList()
+        ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
         behandler = BehandlerDTO(
@@ -62,13 +88,30 @@ fun getSykmeldingModel(merknader: List<MerknadDTO>? = null, timestamps: OffsetDa
         merknader = merknader,
     )
 }
+
 fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDateTime? = null): SykmeldingDTO {
     return SykmeldingDTO(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
         kontaktMedPasient = KontaktMedPasientDTO(null, null),
-        sykmeldingsperioder = listOf(SykmeldingsperiodeDTO(LocalDate.now(), LocalDate.now(), null, null, null, PeriodetypeDTO.AKTIVITET_IKKE_MULIG, null, false)),
-        sykmeldingStatus = SykmeldingStatusDTO("APEN", timestamps ?: OffsetDateTime.now(ZoneOffset.UTC), null, emptyList()),
+        sykmeldingsperioder = listOf(
+            SykmeldingsperiodeDTO(
+                LocalDate.now(),
+                LocalDate.now(),
+                null,
+                null,
+                null,
+                PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                null,
+                false
+            )
+        ),
+        sykmeldingStatus = SykmeldingStatusDTO(
+            "APEN",
+            timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
+            null,
+            emptyList()
+        ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
         behandler = BehandlerDTO(
@@ -93,6 +136,7 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
         papirsykmelding = false,
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
+        rulesetVersion = null,
     )
 }
 

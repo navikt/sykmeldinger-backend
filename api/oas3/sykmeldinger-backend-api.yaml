@@ -509,7 +509,6 @@ components:
         - behandlingsutfall
         - sykmeldingsperioder
         - sykmeldingStatus
-        - skjermesForPasient
         - utdypendeOpplysninger
         - kontaktMedPasient
         - behandletTidspunkt
@@ -533,8 +532,6 @@ components:
           $ref: '#/components/schemas/SykmeldingStatus'
         medisinskVurdering:
           $ref: '#/components/schemas/InternalMedisinskVurdering'
-        skjermesForPasient:
-          type: boolean
         prognose:
           $ref: '#/components/schemas/Prognose'
         utdypendeOpplysninger:
@@ -569,6 +566,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Merknad'
+        rulesetVersion:
+          type: string
     Prognose:
       type: object
       required:

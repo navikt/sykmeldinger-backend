@@ -212,6 +212,7 @@ fun getSykmelding(): SykmeldingDbModel {
         egenmeldt = false,
         papirsykmelding = false,
         harRedusertArbeidsgiverperiode = null,
-        merknader = null
+        merknader = null,
+        rulesetVersion = null,
     )
 }

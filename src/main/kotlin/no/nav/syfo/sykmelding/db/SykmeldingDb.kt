@@ -139,6 +139,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         papirsykmelding = sykmelding.papirsykmelding,
         harRedusertArbeidsgiverperiode = sykmelding.harRedusertArbeidsgiverperiode,
         merknader = sykmelding.merknader,
-        skjermesForPasient = false
+        skjermesForPasient = false,
+        rulesetVersion = sykmelding.rulesetVersion,
     )
 }
