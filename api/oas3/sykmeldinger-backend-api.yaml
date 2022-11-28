@@ -568,6 +568,13 @@ components:
             $ref: '#/components/schemas/Merknad'
         rulesetVersion:
           type: string
+        utenlandskSykmelding:
+          type: object
+          required:
+            - land
+          properties:
+            land:
+              type: string
     Prognose:
       type: object
       required:

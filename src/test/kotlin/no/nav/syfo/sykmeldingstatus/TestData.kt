@@ -137,6 +137,7 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
+        utenlandskSykmelding = null,
     )
 }
 
