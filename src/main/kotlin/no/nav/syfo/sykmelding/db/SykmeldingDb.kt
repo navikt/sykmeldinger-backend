@@ -141,5 +141,6 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         merknader = sykmelding.merknader,
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding,
     )
 }

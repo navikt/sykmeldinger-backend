@@ -214,5 +214,6 @@ fun getSykmelding(): SykmeldingDbModel {
         harRedusertArbeidsgiverperiode = null,
         merknader = null,
         rulesetVersion = null,
+        utenlandskSykmelding = null,
     )
 }

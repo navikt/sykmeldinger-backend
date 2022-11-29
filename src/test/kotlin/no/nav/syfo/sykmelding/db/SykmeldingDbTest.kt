@@ -6,6 +6,7 @@ import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
+import no.nav.syfo.sykmelding.model.UtenlandskSykmelding
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.testutils.TestDB
@@ -150,6 +151,16 @@ class SykmeldingDbTest : FunSpec({
             testDb.insertBehandlingsutfall(sykmeldingId, getBehandlingsutfall(RegelStatusDTO.OK))
 
             sykmeldingDb.getSykmelding(sykmeldingId, fnr) shouldBeEqualTo null
+        }
+
+        test("UtenlandskSykelding") {
+            testDb.insertSymelding(sykmeldingId, fnr, getSykmelding().copy(utenlandskSykmelding = UtenlandskSykmelding("Danmark")))
+            testDb.insertStatus(sykmeldingId, getStatus(StatusEventDTO.APEN.name, OffsetDateTime.now().minusDays(1)))
+            testDb.insertBehandlingsutfall(sykmeldingId, getBehandlingsutfall(RegelStatusDTO.OK))
+            testDb.insertSykmeldt(fnr)
+
+            val sykmelding = sykmeldingDb.getSykmelding(sykmeldingId, fnr)!!
+            sykmelding.utenlandskSykmelding shouldBeEqualTo UtenlandskSykmelding("Danmark")
         }
     }
 })
