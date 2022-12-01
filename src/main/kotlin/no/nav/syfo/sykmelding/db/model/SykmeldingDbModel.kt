@@ -9,6 +9,7 @@ import no.nav.syfo.sykmelding.model.MerknadDTO
 import no.nav.syfo.sykmelding.model.PrognoseDTO
 import no.nav.syfo.sykmelding.model.SporsmalSvarDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmelding.model.UtenlandskSykmelding
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -33,5 +34,7 @@ data class SykmeldingDbModel(
     val egenmeldt: Boolean?,
     val papirsykmelding: Boolean?,
     val harRedusertArbeidsgiverperiode: Boolean?,
-    val merknader: List<MerknadDTO>?
+    val merknader: List<MerknadDTO>?,
+    val rulesetVersion: String?,
+    val utenlandskSykmelding: UtenlandskSykmelding?,
 )
