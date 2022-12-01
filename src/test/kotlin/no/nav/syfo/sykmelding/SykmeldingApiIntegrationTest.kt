@@ -23,7 +23,6 @@ import no.nav.syfo.testutils.ResponseData
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
-import no.nav.syfo.tokenx.TokenXClient
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingApiIntegrationTest : FunSpec({
@@ -31,13 +30,10 @@ class SykmeldingApiIntegrationTest : FunSpec({
     val httpClient = HttpClientTest()
     httpClient.responseData = ResponseData(HttpStatusCode.NotFound, "")
 
-    val tokenXClient = mockk<TokenXClient>()
     val sykmeldingDb = mockk<SykmeldingDb>()
     val sykmeldingService = SykmeldingService(
         sykmeldingDb
     )
-
-    coEvery { tokenXClient.getAccessToken(any(), any()) } returns "token"
 
     context("Sykmeldinger api integration test") {
         with(TestApplicationEngine()) {

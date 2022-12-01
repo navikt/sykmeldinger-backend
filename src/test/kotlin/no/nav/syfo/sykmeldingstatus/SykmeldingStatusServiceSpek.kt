@@ -49,7 +49,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 erAvvist = erAvvist,
                 erEgenmeldt = erEgenmeldt
             )
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
                     juridiskOrgnummer = "",
@@ -90,7 +90,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
     fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
                     juridiskOrgnummer = "",
@@ -230,7 +230,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = false
             )
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -270,7 +270,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
 
-            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
@@ -281,7 +281,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = false
             )
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -325,7 +325,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 }
             }
 
-            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
+            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
@@ -336,7 +336,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = false
             )
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -380,7 +380,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 }
             }
 
-            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
@@ -413,7 +413,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
 
-            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
+            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
@@ -425,7 +425,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = false
             )
-            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) } returns listOf(
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "123456789",
                     juridiskOrgnummer = "",
@@ -464,7 +464,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
 
-            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any(), any()) }
+            coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }

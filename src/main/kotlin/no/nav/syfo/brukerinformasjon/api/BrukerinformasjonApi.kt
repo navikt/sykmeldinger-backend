@@ -8,30 +8,17 @@ import io.ktor.server.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
-import no.nav.syfo.pdl.service.PdlPersonService
-import java.util.UUID
 
-fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService, pdlPersonService: PdlPersonService) {
+fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService) {
     get("/brukerinformasjon") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val token = principal.token
 
-        val person = pdlPersonService.getPerson(
-            fnr = fnr,
-            userToken = token,
-            callId = UUID.randomUUID().toString()
-        )
-
-        val arbeidsgivere = if (person.diskresjonskode) emptyList() else arbeidsgiverService.getArbeidsgivere(
-            fnr = fnr,
-            token = token,
-            sykmeldingId = UUID.randomUUID().toString()
-        )
+        val arbeidsgivere = arbeidsgiverService.getArbeidsgivere(fnr = fnr)
 
         call.respond(
             Brukerinformasjon(
-                strengtFortroligAdresse = person.diskresjonskode,
+                strengtFortroligAdresse = false,
                 arbeidsgivere = arbeidsgivere
             )
         )
