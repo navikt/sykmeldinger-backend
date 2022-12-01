@@ -483,8 +483,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
         test("Skal ikke kunne SENDE en allerede SENDT Sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.SENDT)
         }
-        test("Skal ikke kunne SENDE en BEKREFTET sykmelding") {
-            checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.BEKREFTET)
+        test("Skal kunne SENDE en BEKREFTET sykmelding") {
+            checkStatusOk(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.BEKREFTET)
         }
         test("skal ikke kunne SENDE en UTGÅTT sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.UTGATT)
@@ -498,8 +498,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
         test("Bruker skal få BEKREFTET sykmelding med status APEN") {
             checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.APEN)
         }
-        test("Bruker skal ikke få BEKREFTET en sykmelding med status BEKREFTET") {
-            checkStatusFails(StatusEventDTO.BEKREFTET, StatusEventDTO.BEKREFTET)
+        test("Bruker skal få BEKREFTET en sykmelding med status BEKREFTET") {
+            checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.BEKREFTET)
         }
 
         test("Bruker skal ikke få bekrefte sin egen sykmelding med status AVBRUTT") {
