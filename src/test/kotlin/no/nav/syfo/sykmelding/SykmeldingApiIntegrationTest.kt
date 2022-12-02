@@ -18,18 +18,12 @@ import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
-import no.nav.syfo.testutils.HttpClientTest
-import no.nav.syfo.testutils.ResponseData
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingApiIntegrationTest : FunSpec({
-
-    val httpClient = HttpClientTest()
-    httpClient.responseData = ResponseData(HttpStatusCode.NotFound, "")
-
     val sykmeldingDb = mockk<SykmeldingDb>()
     val sykmeldingService = SykmeldingService(
         sykmeldingDb

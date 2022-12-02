@@ -5,17 +5,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
@@ -33,7 +25,6 @@ import io.ktor.server.routing.routing
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
-import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -159,45 +150,3 @@ fun createApplicationEngine(
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
-
-fun getHttpClient(): HttpClient {
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(HttpRequestRetry) {
-            constantDelay(50, 0, false)
-            retryOnExceptionIf(3) { _, throwable ->
-                log.warn("Caught exception ${throwable.message}")
-                true
-            }
-            retryIf(maxRetries) { _, response ->
-                if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}")
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-        install(HttpTimeout) {
-            socketTimeoutMillis = 40_000
-            connectTimeoutMillis = 40_000
-            requestTimeoutMillis = 40_000
-        }
-        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
-                when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
-                }
-            }
-        }
-        expectSuccess = true
-    }
-    return HttpClient(Apache, config)
-}
