@@ -36,8 +36,8 @@ class BrukerinformasjonApiKtTest : FunSpec({
             setUpAuth()
 
             application.routing {
-                authenticate("jwt") {
-                    route("/api/v1") {
+                authenticate("tokenx") {
+                    route("/api/v2") {
                         registrerBrukerinformasjonApi(arbeidsgiverService)
                     }
                 }
@@ -45,13 +45,13 @@ class BrukerinformasjonApiKtTest : FunSpec({
 
             test("Får hentet riktig informasjon for innlogget bruker") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
+                    handleRequest(HttpMethod.Get, "/api/v2/brukerinformasjon") {
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )
@@ -70,7 +70,7 @@ class BrukerinformasjonApiKtTest : FunSpec({
 
             test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/brukerinformasjon") {
+                    handleRequest(HttpMethod.Get, "/api/v2/brukerinformasjon") {
                         addHeader(
                             "Authorization",
                             "Bearer ${

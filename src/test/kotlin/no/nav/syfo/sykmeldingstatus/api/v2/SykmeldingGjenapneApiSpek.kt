@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api.v1
+package no.nav.syfo.sykmeldingstatus.api.v2
 
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.ContentType
@@ -37,9 +37,9 @@ class SykmeldingGjenapneApiSpek : FunSpec({
             setUpAuth()
 
             application.routing {
-                authenticate("jwt") {
-                    route("/api/v1") {
-                        registerSykmeldingGjenapneApi(sykmeldingStatusService)
+                authenticate("tokenx") {
+                    route("/api/v2") {
+                        registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
                     }
                 }
             }
@@ -47,13 +47,13 @@ class SykmeldingGjenapneApiSpek : FunSpec({
             test("Bruker skal få gjenåpne sin egen sykmelding") {
                 val sykmeldingId = "123"
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/gjenapne") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/gjenapne") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )}"
@@ -68,13 +68,13 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/gjenapne") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/gjenapne") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )}"
@@ -88,13 +88,13 @@ class SykmeldingGjenapneApiSpek : FunSpec({
             test("Skal ikke kunne gjenåpne annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/gjenapne") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/gjenapne") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "Authorization",
                             "Bearer ${generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "00000000000",
                                 issuer = "issuer"
                             )}"
@@ -107,7 +107,7 @@ class SykmeldingGjenapneApiSpek : FunSpec({
 
             test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/gjenapne") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/gjenapne") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "Authorization",

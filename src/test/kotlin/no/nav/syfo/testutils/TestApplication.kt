@@ -20,13 +20,9 @@ import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandl
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import java.nio.file.Paths
 
-val testAudience = listOf("loginserviceId1", "loginserviceId2")
-
-fun getTestEnvironment(audience: List<String> = testAudience): Environment =
+fun getTestEnvironment(): Environment =
     Environment(
         cluster = "dev-fss",
-        loginserviceIdportenDiscoveryUrl = "url",
-        loginserviceIdportenAudience = audience,
         tokenXWellKnownUrl = "https://tokenx",
         clientIdTokenX = "clientId",
         tokenXPrivateJwk = getDefaultRSAKey(),
@@ -65,6 +61,6 @@ fun TestApplicationEngine.setUpAuth(): Environment {
     val jwkProvider = JwkProviderBuilder(uri).build()
     val testEnvironment = getTestEnvironment()
 
-    application.setupAuth(testAudience, jwkProvider, "issuer", jwkProvider, "tokenxissuer", testEnvironment.clientIdTokenX)
+    application.setupAuth(jwkProvider, "issuer", testEnvironment.clientIdTokenX)
     return testEnvironment
 }

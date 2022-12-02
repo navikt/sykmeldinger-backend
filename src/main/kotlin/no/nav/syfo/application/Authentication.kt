@@ -15,36 +15,11 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
 
 fun Application.setupAuth(
-    loginserviceIdportenClientId: List<String>,
-    jwkProvider: JwkProvider,
-    issuer: String,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
     clientIdTokenX: String
 ) {
     install(Authentication) {
-        jwt(name = "jwt") {
-            authHeader {
-                when (val token: String? = it.getToken()) {
-                    null -> return@authHeader null
-                    else -> return@authHeader HttpAuthHeader.Single("Bearer", token)
-                }
-            }
-            verifier(jwkProvider, issuer)
-            validate { credentials ->
-                when {
-                    hasLoginserviceIdportenClientIdAudience(credentials, loginserviceIdportenClientId) && erNiva4(credentials) -> {
-                        val principal = JWTPrincipal(credentials.payload)
-                        BrukerPrincipal(
-                            fnr = finnFnrFraToken(principal),
-                            principal = principal,
-                            token = this.getToken()!!
-                        )
-                    }
-                    else -> unauthorized(credentials)
-                }
-            }
-        }
         jwt(name = "tokenx") {
             authHeader {
                 when (val token: String? = it.getToken()) {
@@ -89,10 +64,6 @@ fun unauthorized(credentials: JWTCredential): Principal? {
         StructuredArguments.keyValue("audience", credentials.payload.audience)
     )
     return null
-}
-
-fun hasLoginserviceIdportenClientIdAudience(credentials: JWTCredential, loginserviceIdportenClientId: List<String>): Boolean {
-    return loginserviceIdportenClientId.any { credentials.payload.audience.contains(it) }
 }
 
 fun erNiva4(credentials: JWTCredential): Boolean {

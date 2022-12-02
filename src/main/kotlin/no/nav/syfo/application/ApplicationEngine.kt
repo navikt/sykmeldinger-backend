@@ -5,17 +5,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.install
@@ -33,7 +25,6 @@ import io.ktor.server.routing.routing
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.api.setupSwaggerDocApi
-import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -41,18 +32,13 @@ import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApiV2
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApiV2
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApiV2
-import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingAvbrytApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingBekreftAvvistApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingGjenapneApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
@@ -64,8 +50,6 @@ import java.util.concurrent.ExecutionException
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
-    jwkProvider: JwkProvider,
-    issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
@@ -84,9 +68,6 @@ fun createApplicationEngine(
             }
         }
         setupAuth(
-            loginserviceIdportenClientId = env.loginserviceIdportenAudience,
-            jwkProvider = jwkProvider,
-            issuer = issuer,
             jwkProviderTokenX = jwkProviderTokenX,
             tokenXIssuer = tokenXIssuer,
             clientIdTokenX = env.clientIdTokenX
@@ -132,18 +113,6 @@ fun createApplicationEngine(
             if (env.cluster == "dev-gcp") {
                 setupSwaggerDocApi()
             }
-            authenticate("jwt") {
-                route("/api/v1") {
-                    registerSykmeldingApi(sykmeldingService)
-                    registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
-                    registerSykmeldingAvbrytApi(sykmeldingStatusService)
-                    registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                    registrerBrukerinformasjonApi(arbeidsgiverService)
-                }
-                route("/api/v2") {
-                    registrerSykmeldingSendApiV2(sykmeldingStatusService)
-                }
-            }
             authenticate("tokenx") {
                 route("/api/v2") {
                     registerSykmeldingApiV2(sykmeldingService)
@@ -159,45 +128,3 @@ fun createApplicationEngine(
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
-
-fun getHttpClient(): HttpClient {
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(HttpRequestRetry) {
-            constantDelay(50, 0, false)
-            retryOnExceptionIf(3) { _, throwable ->
-                log.warn("Caught exception ${throwable.message}")
-                true
-            }
-            retryIf(maxRetries) { _, response ->
-                if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}")
-                    true
-                } else {
-                    false
-                }
-            }
-        }
-        install(HttpTimeout) {
-            socketTimeoutMillis = 40_000
-            connectTimeoutMillis = 40_000
-            requestTimeoutMillis = 40_000
-        }
-        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
-        HttpResponseValidator {
-            handleResponseExceptionWithRequest { exception, _ ->
-                when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
-                }
-            }
-        }
-        expectSuccess = true
-    }
-    return HttpClient(Apache, config)
-}
