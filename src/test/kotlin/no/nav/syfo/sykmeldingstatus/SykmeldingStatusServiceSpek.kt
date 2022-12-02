@@ -543,8 +543,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
         test("Skal kunne avbryte en BEKREFTET sykmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.BEKREFTET)
         }
-        test("Skal ikke kunne avbryte en allerede AVBRUTT sykmelding") {
-            checkStatusFails(StatusEventDTO.AVBRUTT, StatusEventDTO.AVBRUTT)
+        test("Skal kunne avbryte en allerede AVBRUTT sykmelding") {
+            checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.AVBRUTT)
         }
         test("Skal kunne avbryte en UTGATT sykmelding") {
             checkStatusOk(StatusEventDTO.AVBRUTT, StatusEventDTO.UTGATT)
