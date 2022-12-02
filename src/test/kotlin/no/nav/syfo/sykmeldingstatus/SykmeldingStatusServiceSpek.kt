@@ -489,8 +489,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
         test("skal ikke kunne SENDE en UTGÅTT sykmelding") {
             checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.UTGATT)
         }
-        test("SKal ikke kunne SENDE en AVBRUTT sykmelding") {
-            checkStatusFails(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.AVBRUTT)
+        test("SKal kunne SENDE en AVBRUTT sykmelding") {
+            checkStatusOk(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.AVBRUTT)
         }
     }
 
@@ -502,8 +502,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
             checkStatusOk(StatusEventDTO.BEKREFTET, StatusEventDTO.BEKREFTET)
         }
 
-        test("Bruker skal ikke få bekrefte sin egen sykmelding med status AVBRUTT") {
-            checkStatusFails(newStatus = StatusEventDTO.BEKREFTET, oldStatus = StatusEventDTO.AVBRUTT)
+        test("Bruker skal få bekrefte sin egen sykmelding med status AVBRUTT") {
+            checkStatusOk(newStatus = StatusEventDTO.BEKREFTET, oldStatus = StatusEventDTO.AVBRUTT)
         }
 
         test("Skal ikke kunne BEKREFTE når siste status er SENDT") {
