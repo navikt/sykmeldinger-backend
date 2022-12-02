@@ -9,27 +9,9 @@ data class SykmeldingStatusEventDTO(
     val erEgenmeldt: Boolean? = null
 )
 
-data class SykmeldingStatusDTO(
-    val statusEvent: String,
-    val timestamp: OffsetDateTime,
-    val arbeidsgiver: ArbeidsgiverStatusDTO?,
-    val sporsmalOgSvarListe: List<SporsmalDTO>
-)
-
 enum class StatusEventDTO {
     APEN, AVBRUTT, UTGATT, SENDT, BEKREFTET
 }
-
-data class SporsmalDTO(
-    val tekst: String,
-    val shortName: ShortNameDTO,
-    val svar: SvarDTO
-)
-
-data class SvarDTO(
-    val svarType: SvartypeDTO,
-    val svar: String
-)
 
 data class SykmeldingSendEventDTO(
     val timestamp: OffsetDateTime,
@@ -50,16 +32,6 @@ data class SykmeldingBekreftEventDTO(
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?,
     val erAvvist: Boolean? = null,
     val erEgenmeldt: Boolean? = null
-)
-
-data class SykmeldingBekreftEventUserDTO(
-    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
-)
-
-data class SykmeldingSendEventUserDTO(
-    val orgnummer: String,
-    val beOmNyNaermesteLeder: Boolean?,
-    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?
 )
 
 data class SporsmalOgSvarDTO(

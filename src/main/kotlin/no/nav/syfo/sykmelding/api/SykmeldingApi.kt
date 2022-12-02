@@ -10,32 +10,6 @@ import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.sykmelding.SykmeldingService
 
-fun Route.registerSykmeldingApi(sykmeldingService: SykmeldingService) {
-    get("/sykmeldinger") {
-        val principal: BrukerPrincipal = call.authentication.principal()!!
-        val fnr = principal.fnr
-        call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr))
-    }
-
-    get("/sykmeldinger/{sykmeldingid}") {
-        val sykmeldingId = call.parameters["sykmeldingid"]!!
-        val principal: BrukerPrincipal = call.authentication.principal()!!
-        val fnr = principal.fnr
-
-        if (sykmeldingId == "null") {
-            log.warn("Mottok kall for å hente sykmelding med id null")
-            call.respond(HttpStatusCode.NotFound)
-        } else {
-            val sykmelding = sykmeldingService.hentSykmelding(fnr, sykmeldingId)
-
-            when (sykmelding) {
-                null -> call.respond(HttpStatusCode.NotFound)
-                else -> call.respond(sykmelding)
-            }
-        }
-    }
-}
-
 fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
         val principal: BrukerPrincipal = call.authentication.principal()!!

@@ -7,7 +7,7 @@ info:
 servers:
   - url: 'https://sykmeldinger-backend.dev.nav.no'
 paths:
-  /api/v1/sykmeldinger:
+  /api/v2/sykmeldinger:
     get:
       summary: returnerer liste av alle sykmeldinger i syfosmregister for fnr i access_token
       operationId: getSykmeldingerForBruker
@@ -29,7 +29,7 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
-  /api/v1/sykmeldinger/{sykmeldingId}:
+  /api/v2/sykmeldinger/{sykmeldingId}:
     get:
       summary: returnerer sykmelding med angitt sykmeldingId hvis den tilhører fnr i access_token
       operationId: getSykmeldingForBruker
@@ -48,7 +48,7 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
-  /api/v1/sykmeldinger/{sykmeldingId}/avbryt:
+  /api/v2/sykmeldinger/{sykmeldingId}/avbryt:
     post:
       operationId: avbrytSykmelding
       tags:
@@ -65,7 +65,7 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
-  /api/v1/sykmeldinger/{sykmeldingId}/gjenapne:
+  /api/v2/sykmeldinger/{sykmeldingId}/gjenapne:
     post:
       operationId: gjenapneSykmelding
       tags:
@@ -82,7 +82,7 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
-  /api/v1/sykmeldinger/{sykmeldingId}/bekreftAvvist:
+  /api/v2/sykmeldinger/{sykmeldingId}/bekreftAvvist:
     post:
       operationId: bekreftAvvistSykmelding
       tags:
@@ -103,7 +103,7 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /api/v2/sykmeldinger/{sykmeldingId}/send:
+  /api/v3/sykmeldinger/{sykmeldingId}/send:
     post:
       operationId: sendSykmeldingV2
       tags:
@@ -126,7 +126,7 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
-  /api/v1/brukerinformasjon:
+  /api/v2/brukerinformasjon:
     get:
       operationId: brukerinformasjon
       tags:

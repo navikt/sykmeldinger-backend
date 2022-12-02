@@ -7,8 +7,6 @@ data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "sykmeldinger-backend"),
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
     val sykmeldingStatusTopic: String = "teamsykmelding.sykmeldingstatus-leesah",
-    val loginserviceIdportenDiscoveryUrl: String = getEnvVar("LOGINSERVICE_IDPORTEN_DISCOVERY_URL"),
-    val loginserviceIdportenAudience: List<String> = getEnvVar("LOGINSERVICE_IDPORTEN_AUDIENCE").split(","),
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val clientIdTokenX: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val tokenXPrivateJwk: RSAKey = RSAKey.parse(getEnvVar("TOKEN_X_PRIVATE_JWK")),

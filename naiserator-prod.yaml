@@ -69,8 +69,6 @@ spec:
     enabled: false
   ingresses:
     - "https://sykmeldinger-backend.nav.no"
-  envFrom:
-    - configmap: loginservice-idporten
   env:
     - name: ALLOWED_ORIGIN
       value: www.nav.no

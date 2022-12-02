@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.api.v1
+package no.nav.syfo.sykmeldingstatus.api.v2
 
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.http.HttpMethod
@@ -34,9 +34,9 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
             setUpTestApplication()
             setUpAuth()
             application.routing {
-                authenticate("jwt") {
-                    route("/api/v1") {
-                        registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
+                authenticate("tokenx") {
+                    route("/api/v2") {
+                        registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService)
                     }
                 }
             }
@@ -44,12 +44,12 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
             test("Bruker skal få bekrefte sin egen avviste sykmelding") {
                 val sykmeldingId = "123"
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreftAvvist") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/bekreftAvvist") {
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )}"
@@ -64,12 +64,12 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
                 val sykmeldingId = "123"
                 coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any()) } throws InvalidSykmeldingStatusException("Invalid status")
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/$sykmeldingId/bekreftAvvist") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/bekreftAvvist") {
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )}"
@@ -83,12 +83,12 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
             test("Skal ikke kunne bekrefte annen brukers sykmelding") {
                 coEvery { sykmeldingStatusService.registrerBekreftetAvvist(any(), any(), any()) } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/bekreftAvvist") {
                         addHeader(
                             "Authorization",
                             "Bearer ${generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "00000000000",
                                 issuer = "issuer"
                             )}"
@@ -101,7 +101,7 @@ class SykmeldingBekreftAvvistApiSpec : FunSpec({
 
             test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/sykmeldinger/123/bekreftAvvist") {
+                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/bekreftAvvist") {
                         addHeader(
                             "Authorization",
                             "Bearer ${generateJWT(

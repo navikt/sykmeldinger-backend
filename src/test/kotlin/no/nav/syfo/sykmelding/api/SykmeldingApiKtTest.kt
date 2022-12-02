@@ -41,21 +41,21 @@ class SykmeldingApiKtTest : FunSpec({
             setUpTestApplication()
             setUpAuth()
             application.routing {
-                authenticate("jwt") {
-                    route("/api/v1") {
-                        registerSykmeldingApi(sykmeldingService)
+                authenticate("tokenx") {
+                    route("/api/v2") {
+                        registerSykmeldingApiV2(sykmeldingService)
                     }
                 }
             }
             test("Hent sykmeldinger") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer"
                             )
@@ -69,13 +69,13 @@ class SykmeldingApiKtTest : FunSpec({
             }
             test("Hent sykmeldinger med fom og tom") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer"
                             )
@@ -89,13 +89,13 @@ class SykmeldingApiKtTest : FunSpec({
             }
             test("Hent sykmeldinger med fom og tom og exclude") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer"
                             )
@@ -114,21 +114,21 @@ class SykmeldingApiKtTest : FunSpec({
             setUpTestApplication()
             setUpAuth()
             application.routing {
-                authenticate("jwt") {
-                    route("/api/v1") {
-                        registerSykmeldingApi(sykmeldingService)
+                authenticate("tokenx") {
+                    route("/api/v2") {
+                        registerSykmeldingApiV2(sykmeldingService)
                     }
                 }
             }
             test("Sykmelding by id OK") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger/sykmeldingid") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger/sykmeldingid") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer"
                             )
@@ -141,13 +141,13 @@ class SykmeldingApiKtTest : FunSpec({
             }
             test("Sykmeldinger OK") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer"
                             )
@@ -160,13 +160,13 @@ class SykmeldingApiKtTest : FunSpec({
             }
             test("Sykmeldinger OK, with cookie") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
                         addHeader(
                             "Cookie",
                             "selvbetjening-idtoken=${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer"
                             )
@@ -179,7 +179,7 @@ class SykmeldingApiKtTest : FunSpec({
             }
             test("Unauthorized, incorrect audience") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
@@ -198,13 +198,13 @@ class SykmeldingApiKtTest : FunSpec({
             }
             test("Unauthorized, nivå 3") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {
+                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
                         addHeader(
                             "Authorization",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId1",
+                                "clientId",
                                 subject = "12345678901",
                                 issuer = "issuer",
                                 level = "Level3"
@@ -217,7 +217,7 @@ class SykmeldingApiKtTest : FunSpec({
                 }
             }
             test("Unauthorized, missing token") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/sykmeldinger") {}) {
+                with(handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {}) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
             }

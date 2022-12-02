@@ -32,18 +32,13 @@ import no.nav.syfo.brukerinformasjon.api.registrerBrukerinformasjonApi
 import no.nav.syfo.log
 import no.nav.syfo.metrics.monitorHttpRequests
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmelding.api.registerSykmeldingApi
 import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingAvbrytApiV2
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingBekreftAvvistApiV2
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApi
-import no.nav.syfo.sykmeldingstatus.api.v1.registerSykmeldingGjenapneApiV2
-import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingAvbrytApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingBekreftAvvistApiV2
+import no.nav.syfo.sykmeldingstatus.api.v2.registerSykmeldingGjenapneApiV2
 import no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
@@ -55,8 +50,6 @@ import java.util.concurrent.ExecutionException
 fun createApplicationEngine(
     env: Environment,
     applicationState: ApplicationState,
-    jwkProvider: JwkProvider,
-    issuer: String,
     sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
@@ -75,9 +68,6 @@ fun createApplicationEngine(
             }
         }
         setupAuth(
-            loginserviceIdportenClientId = env.loginserviceIdportenAudience,
-            jwkProvider = jwkProvider,
-            issuer = issuer,
             jwkProviderTokenX = jwkProviderTokenX,
             tokenXIssuer = tokenXIssuer,
             clientIdTokenX = env.clientIdTokenX
@@ -122,18 +112,6 @@ fun createApplicationEngine(
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
                 setupSwaggerDocApi()
-            }
-            authenticate("jwt") {
-                route("/api/v1") {
-                    registerSykmeldingApi(sykmeldingService)
-                    registerSykmeldingBekreftAvvistApi(sykmeldingStatusService)
-                    registerSykmeldingAvbrytApi(sykmeldingStatusService)
-                    registerSykmeldingGjenapneApi(sykmeldingStatusService)
-                    registrerBrukerinformasjonApi(arbeidsgiverService)
-                }
-                route("/api/v2") {
-                    registrerSykmeldingSendApiV2(sykmeldingStatusService)
-                }
             }
             authenticate("tokenx") {
                 route("/api/v2") {

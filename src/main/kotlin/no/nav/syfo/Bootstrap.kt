@@ -11,7 +11,6 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.database.Database
-import no.nav.syfo.application.getWellKnown
 import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
@@ -35,12 +34,6 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 fun main() {
     val env = Environment()
 
-    val wellKnown = getWellKnown(env.loginserviceIdportenDiscoveryUrl)
-    val jwkProvider = JwkProviderBuilder(URL(wellKnown.jwks_uri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
-
     val wellKnownTokenX = getWellKnownTokenX(env.tokenXWellKnownUrl)
     val jwkProviderTokenX = JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
         .cached(10, 24, TimeUnit.HOURS)
@@ -63,8 +56,6 @@ fun main() {
     val applicationEngine = createApplicationEngine(
         env = env,
         applicationState = applicationState,
-        jwkProvider = jwkProvider,
-        issuer = wellKnown.issuer,
         sykmeldingStatusKafkaProducer = sykmeldingStatusKafkaProducer,
         jwkProviderTokenX = jwkProviderTokenX,
         tokenXIssuer = wellKnownTokenX.issuer,

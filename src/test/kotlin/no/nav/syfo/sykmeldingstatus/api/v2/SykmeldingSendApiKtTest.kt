@@ -35,9 +35,9 @@ class SykmeldingSendApiKtTest : FunSpec({
             setUpAuth()
 
             application.routing {
-                authenticate("jwt") {
-                    route("/api/v2") {
-                        registrerSykmeldingSendApiV2(
+                authenticate("tokenx") {
+                    route("/api/v3") {
+                        registrerSykmeldingSendApiV3(
                             sykmeldingStatusService
                         )
                     }
@@ -47,7 +47,7 @@ class SykmeldingSendApiKtTest : FunSpec({
             test("Bruker skal få sende sin egen sykmelding") {
                 val sykmeldingId = "123"
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
+                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
                         setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
@@ -55,7 +55,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )
@@ -70,14 +70,14 @@ class SykmeldingSendApiKtTest : FunSpec({
             test("Får bad request ved empty body") {
                 val sykmeldingId = "123"
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
+                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )
@@ -92,7 +92,7 @@ class SykmeldingSendApiKtTest : FunSpec({
             test("Får bad request ved validateringsfeil") {
                 val sykmeldingId = "123"
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/$sykmeldingId/send") {
+                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
                         setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent().copy(erOpplysningeneRiktige = SporsmalSvar(sporsmaltekst = "", svartekster = "", svar = JaEllerNei.NEI))))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
@@ -100,7 +100,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "12345678910",
                                 issuer = "issuer"
                             )
@@ -122,7 +122,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                     )
                 } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/send") {
+                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
                         setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
@@ -130,7 +130,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                             "Bearer ${
                             generateJWT(
                                 "client",
-                                "loginserviceId2",
+                                "clientId",
                                 subject = "00000000000",
                                 issuer = "issuer"
                             )
@@ -144,7 +144,7 @@ class SykmeldingSendApiKtTest : FunSpec({
 
             test("Skal ikke kunne bruke apiet med token med feil audience") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/send") {
+                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
                         setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
