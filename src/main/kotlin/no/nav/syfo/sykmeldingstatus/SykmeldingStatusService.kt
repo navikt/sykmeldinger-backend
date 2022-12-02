@@ -44,7 +44,7 @@ class SykmeldingStatusService(
                 )
             ),
             Pair(StatusEventDTO.SENDT, emptyList()),
-            Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN, StatusEventDTO.SENDT, StatusEventDTO.BEKREFTET)),
+            Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN, StatusEventDTO.SENDT, StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT)),
             Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT))
         )
         private val statusStatesAvvistSykmelding: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
