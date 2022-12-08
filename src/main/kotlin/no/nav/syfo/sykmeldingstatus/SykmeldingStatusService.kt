@@ -87,7 +87,6 @@ class SykmeldingStatusService(
         sykmeldingUserEvent: SykmeldingUserEvent,
         sykmeldingId: String,
         fnr: String,
-        token: String
     ) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
