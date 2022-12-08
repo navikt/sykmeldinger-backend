@@ -9,17 +9,10 @@ Backend-app for sykmeldinger-frontend
 * Gradle
 * Kotest
 * Jackson
-* Redis
 
 #### Requirements
 
 * JDK 17
-
-## Deploy redis to dev:
-Deploying redis can be done with the following command: `kubectl apply --context dev-gcp --namespace teamsykmelding -f redis.yaml`
-
-## Deploy redis to prod:
-Deploying redis can be done with the following command: `kubectl apply --context prod-gcp --namespace teamsykmelding -f redis.yaml`
 
 ### Upgrading the gradle wrapper
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:

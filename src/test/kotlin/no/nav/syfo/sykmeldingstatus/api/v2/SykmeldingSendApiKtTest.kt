@@ -26,7 +26,7 @@ class SykmeldingSendApiKtTest : FunSpec({
 
     beforeTest {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerUserEvent(any(), any(), any(), any()) } returns Unit
+        coEvery { sykmeldingStatusService.registrerUserEvent(any(), any(), any()) } returns Unit
     }
 
     context("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
@@ -115,7 +115,6 @@ class SykmeldingSendApiKtTest : FunSpec({
             test("Skal ikke kunne sende annen brukers sykmelding") {
                 coEvery {
                     sykmeldingStatusService.registrerUserEvent(
-                        any(),
                         any(),
                         any(),
                         any(),

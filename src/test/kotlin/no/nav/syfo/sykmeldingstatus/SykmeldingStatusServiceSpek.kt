@@ -34,7 +34,7 @@ import kotlin.test.assertFailsWith
 class SykmeldingStatusServiceSpek : FunSpec({
     val sykmeldingId = "id"
     val fnr = "fnr"
-    val token = "token"
+
     val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
 
     val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
@@ -68,13 +68,11 @@ class SykmeldingStatusServiceSpek : FunSpec({
                         opprettSendtSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr,
-                        token
                     )
                     StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr,
-                        token
                     )
                     else -> sykmeldingStatusService.registrerStatus(
                         getSykmeldingStatus(newStatus),
@@ -106,9 +104,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     opprettSendtSykmeldingUserEvent(),
                     sykmeldingId,
                     fnr,
-                    token
                 )
-                StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
+                StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
                 else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr)
             }
 
@@ -145,7 +142,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
         test("Ikke tilgang til sykmeldingstatus") {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId")
             val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
-                sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, token)
+                sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
             }
             exception.message shouldBeEqualTo "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
         }
@@ -158,7 +155,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                 erAvvist = true
             )
-            sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
+            sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
             coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
@@ -166,7 +163,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } throws SykmeldingStatusNotFoundException("Ingen tilgang")
 
             assertFailsWith<SykmeldingStatusNotFoundException> {
-                sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr, token)
+                sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
             }
 
             coVerify { sykmeldingStatusDb.getLatestStatus(any(), any()) }
@@ -268,7 +265,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 harForsikring = null,
             )
 
-            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
+            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr") }
@@ -321,7 +318,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
                 runBlocking {
-                    sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
+                    sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
                 }
             }
 
@@ -376,7 +373,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
                 runBlocking {
-                    sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
+                    sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
                 }
             }
 
@@ -411,7 +408,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 harForsikring = null,
             )
 
-            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
+            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
 
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(statusEquals("BEKREFTET"), "user", "fnr") }
@@ -462,7 +459,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             val expected = slot<SykmeldingStatusKafkaEventDTO>()
 
-            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr", "token")
+            sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
 
             coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr") }
