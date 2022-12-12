@@ -93,7 +93,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                 val sykmeldingId = "123"
                 with(
                     handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent().copy(erOpplysningeneRiktige = SporsmalSvar(sporsmaltekst = "", svartekster = "", svar = JaEllerNei.NEI))))
+                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent().copy(erOpplysningeneRiktige = SporsmalSvar(sporsmaltekst = "", svar = JaEllerNei.NEI))))
                         addHeader("Content-Type", ContentType.Application.Json.toString())
                         addHeader(
                             "AUTHORIZATION",
@@ -170,13 +170,11 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
     return SykmeldingUserEvent(
         erOpplysningeneRiktige = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = JaEllerNei.JA,
         ),
         uriktigeOpplysninger = null,
         arbeidssituasjon = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = ArbeidssituasjonDTO.ANNET,
         ),
         arbeidsgiverOrgnummer = null,

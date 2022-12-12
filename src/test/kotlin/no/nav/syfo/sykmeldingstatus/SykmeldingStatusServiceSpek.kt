@@ -241,23 +241,19 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = "123456789",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.NEI,
                 ),
                 harBruktEgenmelding = null,
@@ -292,23 +288,19 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = "feilOrnummer",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.NEI,
                 ),
                 harBruktEgenmelding = null,
@@ -347,23 +339,19 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = "feilOrnummer",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.NEI,
                 ),
                 harBruktEgenmelding = null,
@@ -392,13 +380,11 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
@@ -437,18 +423,15 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = "123456789"
                 ),
                 riktigNarmesteLeder = null,
@@ -594,23 +577,19 @@ fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent =
     SykmeldingUserEvent(
         erOpplysningeneRiktige = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = JaEllerNei.JA
         ),
         uriktigeOpplysninger = null,
         arbeidssituasjon = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = ArbeidssituasjonDTO.ARBEIDSTAKER
         ),
         arbeidsgiverOrgnummer = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = "orgnummer"
         ),
         riktigNarmesteLeder = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = JaEllerNei.JA
         ),
         harBruktEgenmelding = null,
@@ -622,25 +601,21 @@ fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
     SykmeldingUserEvent(
         erOpplysningeneRiktige = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = JaEllerNei.JA
         ),
         uriktigeOpplysninger = null,
         arbeidssituasjon = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = ArbeidssituasjonDTO.FRILANSER
         ),
         arbeidsgiverOrgnummer = null,
         riktigNarmesteLeder = null,
         harBruktEgenmelding = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = JaEllerNei.JA
         ),
         egenmeldingsperioder = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = listOf(
                 Egenmeldingsperiode(
                     fom = LocalDate.now().minusWeeks(1),
@@ -650,7 +625,6 @@ fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
         ),
         harForsikring = SporsmalSvar(
             sporsmaltekst = "",
-            svartekster = "",
             svar = JaEllerNei.JA
         )
     )

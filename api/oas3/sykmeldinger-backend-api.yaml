@@ -260,20 +260,15 @@ components:
       properties:
         sporsmaltekst:
           type: string
-        svartekster:
-          type: string
         svar:
           $ref: '#/components/schemas/JaEllerNei'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     uriktigeOpplysninger:
       type: object
       properties:
         sporsmaltekst:
-          type: string
-        svartekster:
           type: string
         svar:
           type: array
@@ -281,66 +276,51 @@ components:
             $ref: '#/components/schemas/UriktigeOpplysningerDTO'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     arbeidssituasjon:
       type: object
       properties:
         sporsmaltekst:
           type: string
-        svartekster:
-          type: string
         svar:
           $ref: '#/components/schemas/ArbeidssituasjonDTO'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     arbeidsgiverOrgnummer:
       type: object
       properties:
         sporsmaltekst:
           type: string
-        svartekster:
-          type: string
         svar:
           type: string
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     riktigNarmesteLeder:
       type: object
       properties:
         sporsmaltekst:
           type: string
-        svartekster:
-          type: string
         svar:
           $ref: '#/components/schemas/JaEllerNei'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     harBruktEgenmelding:
       type: object
       properties:
         sporsmaltekst:
           type: string
-        svartekster:
-          type: string
         svar:
           $ref: '#/components/schemas/JaEllerNei'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     egenmeldingsperioder:
       type: object
       properties:
         sporsmaltekst:
-          type: string
-        svartekster:
           type: string
         svar:
           type: array
@@ -348,20 +328,16 @@ components:
             $ref: '#/components/schemas/Egenmeldingsperiode'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     harForsikring:
       type: object
       properties:
         sporsmaltekst:
           type: string
-        svartekster:
-          type: string
         svar:
           $ref: '#/components/schemas/JaEllerNei'
       required:
         - sporsmaltekst
-        - svartekster
         - svar
     JaEllerNei:
       type: string
