@@ -4,7 +4,6 @@ import java.time.LocalDate
 
 data class SporsmalSvar<T> (
     val sporsmaltekst: String,
-    val svartekster: String,
     val svar: T
 )
 

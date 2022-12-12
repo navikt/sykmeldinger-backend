@@ -18,13 +18,11 @@ class ValidationKtTest : FunSpec({
                 val sykmeldingUserEvent = SykmeldingUserEvent(
                     erOpplysningeneRiktige = SporsmalSvar(
                         sporsmaltekst = "",
-                        svartekster = "",
                         svar = JaEllerNei.NEI,
                     ),
                     uriktigeOpplysninger = null,
                     arbeidssituasjon = SporsmalSvar(
                         sporsmaltekst = "",
-                        svartekster = "",
                         svar = ArbeidssituasjonDTO.ANNET,
                     ),
                     arbeidsgiverOrgnummer = null,
@@ -47,13 +45,11 @@ class ValidationKtTest : FunSpec({
 
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                         ),
                         arbeidsgiverOrgnummer = null,
@@ -72,23 +68,19 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ANNET,
                         ),
                         arbeidsgiverOrgnummer = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = "13456789"
                         ),
                         riktigNarmesteLeder = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         harBruktEgenmelding = null,
@@ -105,13 +97,11 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                         ),
                         arbeidsgiverOrgnummer = null,
@@ -132,20 +122,17 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.FRILANSER,
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         egenmeldingsperioder = null,
@@ -163,20 +150,17 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         egenmeldingsperioder = null,
@@ -194,13 +178,11 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
                         ),
                         arbeidsgiverOrgnummer = null,
@@ -208,7 +190,6 @@ class ValidationKtTest : FunSpec({
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = listOf(),
                         ),
                         harForsikring = null,
@@ -223,13 +204,11 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
                         ),
                         arbeidsgiverOrgnummer = null,
@@ -238,7 +217,6 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                     )
@@ -254,13 +232,11 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ANNET,
                         ),
                         arbeidsgiverOrgnummer = null,
@@ -268,7 +244,6 @@ class ValidationKtTest : FunSpec({
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = listOf(),
                         ),
                         harForsikring = null,
@@ -283,13 +258,11 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = ArbeidssituasjonDTO.ANNET,
                         ),
                         arbeidsgiverOrgnummer = null,
@@ -298,7 +271,6 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = SporsmalSvar(
                             sporsmaltekst = "",
-                            svartekster = "",
                             svar = JaEllerNei.JA,
                         ),
                     )
@@ -316,13 +288,11 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
@@ -350,23 +320,19 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = "123456789",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 harBruktEgenmelding = null,
@@ -408,23 +374,19 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = "123456789",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 harBruktEgenmelding = null,
@@ -466,26 +428,22 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.NEI,
                 ),
                 egenmeldingsperioder = null,
                 harForsikring = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
             )
@@ -520,25 +478,21 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = JaEllerNei.JA,
                 ),
                 egenmeldingsperioder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svartekster = "",
                     svar = listOf(
                         Egenmeldingsperiode(
                             fom = LocalDate.now(),
