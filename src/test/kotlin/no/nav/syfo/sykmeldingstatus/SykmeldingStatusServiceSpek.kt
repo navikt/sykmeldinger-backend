@@ -43,7 +43,6 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
     fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
         runBlocking {
-
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(
                 oldStatus,
                 erAvvist = erAvvist,
@@ -67,12 +66,12 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     StatusEventDTO.SENDT -> sykmeldingStatusService.registrerUserEvent(
                         opprettSendtSykmeldingUserEvent(),
                         sykmeldingId,
-                        fnr,
+                        fnr
                     )
                     StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
-                        fnr,
+                        fnr
                     )
                     else -> sykmeldingStatusService.registrerStatus(
                         getSykmeldingStatus(newStatus),
@@ -103,7 +102,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 StatusEventDTO.SENDT -> sykmeldingStatusService.registrerUserEvent(
                     opprettSendtSykmeldingUserEvent(),
                     sykmeldingId,
-                    fnr,
+                    fnr
                 )
                 StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
                 else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr)
@@ -241,24 +240,24 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "123456789",
+                    svar = "123456789"
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI,
+                    svar = JaEllerNei.NEI
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
@@ -288,24 +287,24 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "feilOrnummer",
+                    svar = "feilOrnummer"
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI,
+                    svar = JaEllerNei.NEI
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -339,24 +338,24 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "feilOrnummer",
+                    svar = "feilOrnummer"
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI,
+                    svar = JaEllerNei.NEI
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -380,18 +379,18 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.FRILANSER,
+                    svar = ArbeidssituasjonDTO.FRILANSER
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
@@ -423,12 +422,12 @@ class SykmeldingStatusServiceSpek : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
@@ -437,7 +436,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             val expected = slot<SykmeldingStatusKafkaEventDTO>()
@@ -619,7 +618,7 @@ fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
             svar = listOf(
                 Egenmeldingsperiode(
                     fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now(),
+                    tom = LocalDate.now()
                 )
             )
         ),

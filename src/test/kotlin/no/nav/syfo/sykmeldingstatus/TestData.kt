@@ -55,8 +55,11 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
         behandler = BehandlerDTO(
-            "fornavn", null, "etternavn",
-            AdresseDTO(null, null, null, null, null), null
+            "fornavn",
+            null,
+            "etternavn",
+            AdresseDTO(null, null, null, null, null),
+            null
         ),
         behandletTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
         mottattTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
@@ -77,7 +80,7 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
-        utenlandskSykmelding = null,
+        utenlandskSykmelding = null
     )
 }
 

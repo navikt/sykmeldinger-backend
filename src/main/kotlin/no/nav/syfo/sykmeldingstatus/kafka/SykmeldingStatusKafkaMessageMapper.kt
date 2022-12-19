@@ -24,15 +24,17 @@ import java.time.OffsetDateTime
 
 fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp: OffsetDateTime, sykmeldingId: String, arbeidsgiver: Arbeidsgiverinfo?): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(
-        sykmeldingId, timestamp, this.toStatusEvent().tilStatusEventDTO(),
+        sykmeldingId,
+        timestamp,
+        this.toStatusEvent().tilStatusEventDTO(),
         arbeidsgiver?.let {
             ArbeidsgiverStatusDTO(
                 orgnummer = it.orgnummer,
                 juridiskOrgnummer = it.juridiskOrgnummer,
-                orgNavn = it.navn,
+                orgNavn = it.navn
             )
         },
-        toSporsmalSvarListe(arbeidsgiver, sykmeldingId),
+        toSporsmalSvarListe(arbeidsgiver, sykmeldingId)
     )
 }
 
@@ -42,7 +44,7 @@ fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = nu
         fravarSporsmalBuilder(),
         periodeSporsmalBuilder(),
         riktigNarmesteLederSporsmalBuilder(arbeidsgiver, sykmeldingId),
-        forsikringSporsmalBuilder(),
+        forsikringSporsmalBuilder()
     )
 }
 
@@ -51,7 +53,7 @@ private fun SykmeldingUserEvent.arbeidssituasjonSporsmalBuilder(): SporsmalOgSva
         tekst = arbeidssituasjon.sporsmaltekst,
         shortName = ShortNameDTO.ARBEIDSSITUASJON,
         svartype = SvartypeDTO.ARBEIDSSITUASJON,
-        svar = arbeidssituasjon.svar.name,
+        svar = arbeidssituasjon.svar.name
     )
 }
 
@@ -61,7 +63,7 @@ private fun SykmeldingUserEvent.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
             tekst = harBruktEgenmelding.sporsmaltekst,
             shortName = ShortNameDTO.FRAVAER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = harBruktEgenmelding.svar.name,
+            svar = harBruktEgenmelding.svar.name
         )
     }
     return null
@@ -73,7 +75,7 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
             tekst = egenmeldingsperioder.sporsmaltekst,
             shortName = ShortNameDTO.PERIODE,
             svartype = SvartypeDTO.PERIODER,
-            svar = objectMapper.writeValueAsString(egenmeldingsperioder.svar),
+            svar = objectMapper.writeValueAsString(egenmeldingsperioder.svar)
         )
     }
     return null
@@ -86,7 +88,7 @@ private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(arbeidsgiver:
             tekst = "Skal finne ny nærmeste leder",
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = "NEI",
+            svar = "NEI"
         )
     }
 
@@ -110,7 +112,7 @@ private fun SykmeldingUserEvent.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? 
             tekst = harForsikring.sporsmaltekst,
             shortName = ShortNameDTO.FORSIKRING,
             svartype = SvartypeDTO.JA_NEI,
-            svar = harForsikring.svar.name,
+            svar = harForsikring.svar.name
         )
     }
     return null

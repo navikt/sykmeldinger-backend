@@ -18,18 +18,18 @@ class ValidationKtTest : FunSpec({
                 val sykmeldingUserEvent = SykmeldingUserEvent(
                     erOpplysningeneRiktige = SporsmalSvar(
                         sporsmaltekst = "",
-                        svar = JaEllerNei.NEI,
+                        svar = JaEllerNei.NEI
                     ),
                     uriktigeOpplysninger = null,
                     arbeidssituasjon = SporsmalSvar(
                         sporsmaltekst = "",
-                        svar = ArbeidssituasjonDTO.ANNET,
+                        svar = ArbeidssituasjonDTO.ANNET
                     ),
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
-                    harForsikring = null,
+                    harForsikring = null
                 )
 
                 assertFailsWith<ValidationException> {
@@ -45,18 +45,18 @@ class ValidationKtTest : FunSpec({
 
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -68,12 +68,12 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ANNET,
+                            svar = ArbeidssituasjonDTO.ANNET
                         ),
                         arbeidsgiverOrgnummer = SporsmalSvar(
                             sporsmaltekst = "",
@@ -81,11 +81,11 @@ class ValidationKtTest : FunSpec({
                         ),
                         riktigNarmesteLeder = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -97,18 +97,18 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -122,21 +122,21 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.FRILANSER,
+                            svar = ArbeidssituasjonDTO.FRILANSER
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         egenmeldingsperioder = null,
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -150,21 +150,21 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
+                            svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         egenmeldingsperioder = null,
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -178,21 +178,21 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
+                            svar = ArbeidssituasjonDTO.ARBEIDSLEDIG
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = listOf(),
+                            svar = listOf()
                         ),
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -204,12 +204,12 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
+                            svar = ArbeidssituasjonDTO.ARBEIDSLEDIG
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -217,8 +217,8 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
-                        ),
+                            svar = JaEllerNei.JA
+                        )
                     )
 
                     assertFailsWith<ValidationException> {
@@ -232,21 +232,21 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ANNET,
+                            svar = ArbeidssituasjonDTO.ANNET
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = listOf(),
+                            svar = listOf()
                         ),
-                        harForsikring = null,
+                        harForsikring = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -258,12 +258,12 @@ class ValidationKtTest : FunSpec({
                     val sykmeldingUserEvent = SykmeldingUserEvent(
                         erOpplysningeneRiktige = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
+                            svar = JaEllerNei.JA
                         ),
                         uriktigeOpplysninger = null,
                         arbeidssituasjon = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ANNET,
+                            svar = ArbeidssituasjonDTO.ANNET
                         ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -271,8 +271,8 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = JaEllerNei.JA,
-                        ),
+                            svar = JaEllerNei.JA
+                        )
                     )
 
                     assertFailsWith<ValidationException> {
@@ -288,18 +288,18 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.FRILANSER,
+                    svar = ArbeidssituasjonDTO.FRILANSER
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
@@ -309,7 +309,7 @@ class ValidationKtTest : FunSpec({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.FRILANSER.name,
+                    svar = ArbeidssituasjonDTO.FRILANSER.name
                 )
             )
 
@@ -320,24 +320,24 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "123456789",
+                    svar = "123456789"
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             val arbeidsgiver = Arbeidsgiverinfo(
@@ -357,13 +357,13 @@ class ValidationKtTest : FunSpec({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name
                 ),
                 SporsmalOgSvarDTO(
                     "",
                     ShortNameDTO.NY_NARMESTE_LEDER,
                     SvartypeDTO.JA_NEI,
-                    svar = JaEllerNei.NEI.name,
+                    svar = JaEllerNei.NEI.name
                 )
             )
 
@@ -374,24 +374,24 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "123456789",
+                    svar = "123456789"
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
-                harForsikring = null,
+                harForsikring = null
             )
 
             val arbeidsgiver = Arbeidsgiverinfo(
@@ -411,13 +411,13 @@ class ValidationKtTest : FunSpec({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name,
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name
                 ),
                 SporsmalOgSvarDTO(
                     "Skal finne ny nærmeste leder",
                     ShortNameDTO.NY_NARMESTE_LEDER,
                     SvartypeDTO.JA_NEI,
-                    svar = JaEllerNei.NEI.name,
+                    svar = JaEllerNei.NEI.name
                 )
             )
 
@@ -428,24 +428,24 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
+                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI,
+                    svar = JaEllerNei.NEI
                 ),
                 egenmeldingsperioder = null,
                 harForsikring = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
-                ),
+                    svar = JaEllerNei.JA
+                )
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
@@ -455,19 +455,19 @@ class ValidationKtTest : FunSpec({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE.name,
+                    svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE.name
                 ),
                 SporsmalOgSvarDTO(
                     "",
                     ShortNameDTO.FRAVAER,
                     SvartypeDTO.JA_NEI,
-                    svar = JaEllerNei.NEI.name,
+                    svar = JaEllerNei.NEI.name
                 ),
                 SporsmalOgSvarDTO(
                     "",
                     ShortNameDTO.FORSIKRING,
                     SvartypeDTO.JA_NEI,
-                    svar = JaEllerNei.JA.name,
+                    svar = JaEllerNei.JA.name
                 )
             )
 
@@ -478,29 +478,29 @@ class ValidationKtTest : FunSpec({
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.FRILANSER,
+                    svar = ArbeidssituasjonDTO.FRILANSER
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA,
+                    svar = JaEllerNei.JA
                 ),
                 egenmeldingsperioder = SporsmalSvar(
                     sporsmaltekst = "",
                     svar = listOf(
                         Egenmeldingsperiode(
                             fom = LocalDate.now(),
-                            tom = LocalDate.now(),
+                            tom = LocalDate.now()
                         )
                     )
                 ),
-                harForsikring = null,
+                harForsikring = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
@@ -510,13 +510,13 @@ class ValidationKtTest : FunSpec({
                     "",
                     ShortNameDTO.ARBEIDSSITUASJON,
                     SvartypeDTO.ARBEIDSSITUASJON,
-                    svar = ArbeidssituasjonDTO.FRILANSER.name,
+                    svar = ArbeidssituasjonDTO.FRILANSER.name
                 ),
                 SporsmalOgSvarDTO(
                     "",
                     ShortNameDTO.FRAVAER,
                     SvartypeDTO.JA_NEI,
-                    svar = JaEllerNei.JA.name,
+                    svar = JaEllerNei.JA.name
                 ),
                 SporsmalOgSvarDTO(
                     "",
@@ -526,10 +526,10 @@ class ValidationKtTest : FunSpec({
                         listOf(
                             Egenmeldingsperiode(
                                 fom = LocalDate.now(),
-                                tom = LocalDate.now(),
+                                tom = LocalDate.now()
                             )
                         )
-                    ),
+                    )
                 )
             )
 

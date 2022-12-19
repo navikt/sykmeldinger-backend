@@ -46,12 +46,14 @@ class SykmeldingStatusKafkaMessageMapperSpek : FunSpec({
                 no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                     "Arbeidssituasjon",
                     no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
-                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON, "ARBEIDSTAKER"
+                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON,
+                    "ARBEIDSTAKER"
                 ),
                 no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                     "Nærmeste leder",
                     no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.NY_NARMESTE_LEDER,
-                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI, "NEI"
+                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
+                    "NEI"
                 )
             )
             sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO(

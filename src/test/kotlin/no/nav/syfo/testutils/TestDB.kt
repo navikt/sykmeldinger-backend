@@ -79,7 +79,7 @@ fun Any.toPGObject() = PGobject().also {
 fun getBehandlingsutfall(status: RegelStatusDTO): BehandlingsutfallDTO {
     return BehandlingsutfallDTO(
         status = status,
-        ruleHits = emptyList(),
+        ruleHits = emptyList()
     )
 }
 
@@ -142,7 +142,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
                         tekst = spm.tekst,
                         shortName = ShortNameDTO.valueOf(spm.shortName.name),
                         svartype = SvartypeDTO.valueOf(spm.svar.svarType.name),
-                        svar = spm.svar.svar,
+                        svar = spm.svar.svar
                     )
                 }.toPGObject()
             )
@@ -186,7 +186,7 @@ fun getSykmelding(): SykmeldingDbModel {
                     medisinskArsak = MedisinskArsakDTO("Test", emptyList()),
                     arbeidsrelatertArsak = null
                 ),
-                reisetilskudd = false,
+                reisetilskudd = false
             )
         ),
         medisinskVurdering = MedisinskVurderingDTO(
@@ -214,6 +214,6 @@ fun getSykmelding(): SykmeldingDbModel {
         harRedusertArbeidsgiverperiode = null,
         merknader = null,
         rulesetVersion = null,
-        utenlandskSykmelding = null,
+        utenlandskSykmelding = null
     )
 }
