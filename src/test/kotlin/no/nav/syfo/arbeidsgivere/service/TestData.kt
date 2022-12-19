@@ -9,7 +9,7 @@ import java.util.UUID
 
 fun getArbeidsgiverforhold(
     fom: LocalDate = LocalDate.of(2020, 6, 1),
-    tom: LocalDate? = null,
+    tom: LocalDate? = null
 ): List<Arbeidsforhold> {
     return listOf(
         Arbeidsforhold(

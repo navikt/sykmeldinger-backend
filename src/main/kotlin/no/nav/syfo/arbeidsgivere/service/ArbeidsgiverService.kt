@@ -13,7 +13,6 @@ class ArbeidsgiverService(
     private val arbeidsforholdDb: ArbeidsforholdDb
 ) {
     suspend fun getArbeidsgivere(fnr: String, date: LocalDate = LocalDate.now()): List<Arbeidsgiverinfo> {
-
         val arbeidsgivere = arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
 
         if (arbeidsgivere.isEmpty()) {

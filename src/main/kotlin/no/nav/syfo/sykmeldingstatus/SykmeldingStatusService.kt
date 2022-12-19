@@ -37,7 +37,8 @@ class SykmeldingStatusService(
             Pair(
                 StatusEventDTO.BEKREFTET,
                 listOf(
-                    StatusEventDTO.APEN, StatusEventDTO.AVBRUTT,
+                    StatusEventDTO.APEN,
+                    StatusEventDTO.AVBRUTT,
                     StatusEventDTO
                         .BEKREFTET,
                     StatusEventDTO.SENDT
@@ -86,7 +87,7 @@ class SykmeldingStatusService(
     suspend fun registrerUserEvent(
         sykmeldingUserEvent: SykmeldingUserEvent,
         sykmeldingId: String,
-        fnr: String,
+        fnr: String
     ) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
@@ -150,7 +151,7 @@ class SykmeldingStatusService(
                 ) {
                     val sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        sporsmalOgSvarListe = emptyList(),
+                        sporsmalOgSvarListe = emptyList()
                     )
                     val sykmeldingStatusKafkaEventDTO =
                         sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)

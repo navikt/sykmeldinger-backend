@@ -15,17 +15,17 @@ data class SykmeldingUserEvent(
     val riktigNarmesteLeder: SporsmalSvar<JaEllerNei>?,
     val harBruktEgenmelding: SporsmalSvar<JaEllerNei>?,
     val egenmeldingsperioder: SporsmalSvar<List<Egenmeldingsperiode>>?,
-    val harForsikring: SporsmalSvar<JaEllerNei>?,
+    val harForsikring: SporsmalSvar<JaEllerNei>?
 )
 
 data class Egenmeldingsperiode(
     val fom: LocalDate,
-    val tom: LocalDate,
+    val tom: LocalDate
 )
 
 enum class JaEllerNei {
     JA,
-    NEI,
+    NEI
 }
 
 enum class UriktigeOpplysningerDTO {
@@ -34,7 +34,7 @@ enum class UriktigeOpplysningerDTO {
     SYKMELDINGSGRAD_FOR_LAV,
     ARBEIDSGIVER,
     DIAGNOSE,
-    ANDRE_OPPLYSNINGER,
+    ANDRE_OPPLYSNINGER
 }
 
 enum class ArbeidssituasjonDTO {
@@ -42,5 +42,5 @@ enum class ArbeidssituasjonDTO {
     FRILANSER,
     NAERINGSDRIVENDE,
     ARBEIDSLEDIG,
-    ANNET,
+    ANNET
 }

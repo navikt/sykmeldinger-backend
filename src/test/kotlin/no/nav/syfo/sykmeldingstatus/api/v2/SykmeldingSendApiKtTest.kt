@@ -117,7 +117,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                     sykmeldingStatusService.registrerUserEvent(
                         any(),
                         any(),
-                        any(),
+                        any()
                     )
                 } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
@@ -170,17 +170,17 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
     return SykmeldingUserEvent(
         erOpplysningeneRiktige = SporsmalSvar(
             sporsmaltekst = "",
-            svar = JaEllerNei.JA,
+            svar = JaEllerNei.JA
         ),
         uriktigeOpplysninger = null,
         arbeidssituasjon = SporsmalSvar(
             sporsmaltekst = "",
-            svar = ArbeidssituasjonDTO.ANNET,
+            svar = ArbeidssituasjonDTO.ANNET
         ),
         arbeidsgiverOrgnummer = null,
         riktigNarmesteLeder = null,
         harBruktEgenmelding = null,
         egenmeldingsperioder = null,
-        harForsikring = null,
+        harForsikring = null
     )
 }

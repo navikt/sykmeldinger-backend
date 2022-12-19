@@ -112,7 +112,7 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     fnr = "12345678901",
                     fom = LocalDate.of(2020, 6, 1),
-                    tom = null,
+                    tom = null
                 ),
                 Arbeidsforhold(
                     id = 3,
