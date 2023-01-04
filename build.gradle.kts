@@ -19,14 +19,15 @@ val jedisVersion = "4.3.1"
 val kotestVersion = "5.5.4"
 val testcontainersVersion = "1.17.6"
 val swaggerUiVersion = "4.15.0"
-val kotlinVersion = "1.7.22"
+val kotlinVersion = "1.8.0"
 val flywayVersion = "9.10.0"
 val postgresVersion = "42.5.1"
 val hikariVersion = "5.0.1"
+val commonsCodecVersion = "1.15"
 val nettyCodecVersion = "4.1.86.Final"
 
 plugins {
-    kotlin("jvm") version "1.7.22"
+    kotlin("jvm") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.12.0"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
@@ -66,6 +67,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")// override transient version 1.13
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
