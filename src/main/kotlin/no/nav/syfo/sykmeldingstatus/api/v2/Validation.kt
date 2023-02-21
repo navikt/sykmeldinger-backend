@@ -8,6 +8,7 @@ fun SykmeldingUserEvent.validate() {
     }
     if (arbeidssituasjon.svar == ArbeidssituasjonDTO.ARBEIDSTAKER) {
         requireNotNull(arbeidsgiverOrgnummer, "Arbeidsgiver må være valgt når arbeidssituasjon er arbeidstaker")
+        requireNotNull(harBruktEgenmeldingsdager, "Spørsmål om egenmeldingsdager må være besvart hvis arbeidstaker")
     } else {
         require(arbeidsgiverOrgnummer == null, "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker")
         require(riktigNarmesteLeder == null, "Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
@@ -26,6 +27,9 @@ fun SykmeldingUserEvent.validate() {
         require(harBruktEgenmelding == null, "Spørsmål om egenmelding kan ikke være besvart hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
         require(egenmeldingsperioder == null, "Egenmeldingsperioder må være null hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
         require(harForsikring == null, "Spørsmål om forsikring kan ikke være besvart hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
+    }
+    if (harBruktEgenmeldingsdager?.svar == JaEllerNei.JA) {
+        require(egenmeldingsdager?.svar?.size == 0, "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA")
     }
 }
 
