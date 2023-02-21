@@ -181,6 +181,8 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
         riktigNarmesteLeder = null,
         harBruktEgenmelding = null,
         egenmeldingsperioder = null,
-        harForsikring = null
+        harForsikring = null,
+        harBruktEgenmeldingsdager = null,
+        egenmeldingsdager = null,
     )
 }
