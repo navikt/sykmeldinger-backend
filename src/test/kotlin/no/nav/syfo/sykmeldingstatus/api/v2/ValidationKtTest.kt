@@ -7,10 +7,7 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.kafka.toSporsmalSvarListe
-import org.amshove.kluent.invoking
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldThrow
-import org.amshove.kluent.withMessage
+import org.amshove.kluent.*
 import java.time.LocalDate
 import kotlin.test.assertFailsWith
 
@@ -154,6 +151,69 @@ class ValidationKtTest : FunSpec({
                     )
                     invoking { sykmeldingUserEvent.validate() } shouldThrow ValidationException::class withMessage "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA"
                 }
+
+                test("Skal kaste exception hvis harBruktEgenmeldingsdager == JA, men egenmeldingsdager er en tom liste") {
+                    val sykmeldingUserEvent = SykmeldingUserEvent(
+                        erOpplysningeneRiktige = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = JaEllerNei.JA
+                        ),
+                        uriktigeOpplysninger = null,
+                        arbeidssituasjon = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+                        ),
+                        arbeidsgiverOrgnummer = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = "543263",
+                        ),
+                        riktigNarmesteLeder = null,
+                        harBruktEgenmelding = null,
+                        egenmeldingsperioder = null,
+                        harForsikring = null,
+                        harBruktEgenmeldingsdager = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = JaEllerNei.JA
+                        ),
+                        egenmeldingsdager = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = emptyList(),
+                        ),
+                    )
+                    invoking { sykmeldingUserEvent.validate() } shouldThrow ValidationException::class withMessage "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA"
+                }
+
+                test("Skal IKKE kaste exception hvis harBruktEgenmeldingsdager == JA, men egenmeldingsdager har 1 element") {
+                    val sykmeldingUserEvent = SykmeldingUserEvent(
+                        erOpplysningeneRiktige = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = JaEllerNei.JA
+                        ),
+                        uriktigeOpplysninger = null,
+                        arbeidssituasjon = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+                        ),
+                        arbeidsgiverOrgnummer = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = "543263",
+                        ),
+                        riktigNarmesteLeder = null,
+                        harBruktEgenmelding = null,
+                        egenmeldingsperioder = null,
+                        harForsikring = null,
+                        harBruktEgenmeldingsdager = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = JaEllerNei.JA
+                        ),
+                        egenmeldingsdager = SporsmalSvar(
+                            sporsmaltekst = "",
+                            svar = listOf(LocalDate.now()),
+                        ),
+                    )
+                    invoking { sykmeldingUserEvent.validate() } shouldNotThrow  ValidationException::class
+                }
+
 
                 test("Skal kaste exception hvis arbeidssituasjon er arbeidstaker og harBruktEgenmeldingsdager mangler") {
                     val sykmeldingUserEvent = SykmeldingUserEvent(

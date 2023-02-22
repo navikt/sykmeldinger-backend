@@ -29,7 +29,7 @@ fun SykmeldingUserEvent.validate() {
         require(harForsikring == null, "Spørsmål om forsikring kan ikke være besvart hvis arbeidssituasjon ikke er frilanser eller selvstendig næringsdrivende")
     }
     if (harBruktEgenmeldingsdager?.svar == JaEllerNei.JA) {
-        require(egenmeldingsdager?.svar?.size == 0, "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA")
+        require(egenmeldingsdager?.svar != null && egenmeldingsdager.svar.isNotEmpty(), "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA")
     }
 }
 

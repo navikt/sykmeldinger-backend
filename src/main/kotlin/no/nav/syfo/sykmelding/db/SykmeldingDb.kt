@@ -112,12 +112,10 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                     SporsmalDTO(
                         tekst = sporsmalOgSvarDTO.tekst,
                         shortName = ShortNameDTO.valueOf(sporsmalOgSvarDTO.shortName.name),
-                        svar = sporsmalOgSvarDTO.svar.let { svar ->
-                            SvarDTO(
-                                svar = svar,
-                                svarType = SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name)
-                            )
-                        }
+                        svar = SvarDTO(
+                            svar = sporsmalOgSvarDTO.svar,
+                            svarType = SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name)
+                        )
                     )
                 }
             } ?: emptyList()

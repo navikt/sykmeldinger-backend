@@ -44,7 +44,19 @@ fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = nu
         fravarSporsmalBuilder(),
         periodeSporsmalBuilder(),
         riktigNarmesteLederSporsmalBuilder(arbeidsgiver, sykmeldingId),
-        forsikringSporsmalBuilder()
+        forsikringSporsmalBuilder(),
+        egenmeldingsdagerBuilder(),
+    )
+}
+
+private fun SykmeldingUserEvent.egenmeldingsdagerBuilder(): SporsmalOgSvarDTO? {
+    if (egenmeldingsdager == null) return null
+
+    return SporsmalOgSvarDTO(
+        tekst = egenmeldingsdager.sporsmaltekst,
+        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+        svartype = SvartypeDTO.DAGER,
+        svar = objectMapper.writeValueAsString(egenmeldingsdager.svar)
     )
 }
 
