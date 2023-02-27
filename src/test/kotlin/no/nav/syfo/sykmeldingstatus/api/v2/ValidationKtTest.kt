@@ -213,32 +213,6 @@ class ValidationKtTest : FunSpec({
                     )
                     invoking { sykmeldingUserEvent.validate() } shouldNotThrow  ValidationException::class
                 }
-
-
-                test("Skal kaste exception hvis arbeidssituasjon er arbeidstaker og harBruktEgenmeldingsdager mangler") {
-                    val sykmeldingUserEvent = SykmeldingUserEvent(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svar = JaEllerNei.JA
-                        ),
-                        uriktigeOpplysninger = null,
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
-                        ),
-                        arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "",
-                            svar = "543263",
-                        ),
-                        riktigNarmesteLeder = null,
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = null,
-                        harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
-                    )
-                    invoking { sykmeldingUserEvent.validate() } shouldThrow ValidationException::class withMessage "Spørsmål om egenmeldingsdager må være besvart hvis arbeidstaker"
-                }
             }
 
             context("frilanser") {

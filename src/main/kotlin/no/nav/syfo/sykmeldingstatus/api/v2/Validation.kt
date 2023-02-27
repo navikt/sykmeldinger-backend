@@ -8,7 +8,6 @@ fun SykmeldingUserEvent.validate() {
     }
     if (arbeidssituasjon.svar == ArbeidssituasjonDTO.ARBEIDSTAKER) {
         requireNotNull(arbeidsgiverOrgnummer, "Arbeidsgiver må være valgt når arbeidssituasjon er arbeidstaker")
-        requireNotNull(harBruktEgenmeldingsdager, "Spørsmål om egenmeldingsdager må være besvart hvis arbeidstaker")
     } else {
         require(arbeidsgiverOrgnummer == null, "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker")
         require(riktigNarmesteLeder == null, "Spørsmål om ny nærmeste leder kan ikke være besvart når arbeidssituasjon ikke er arbeidstaker")
