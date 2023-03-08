@@ -13,11 +13,14 @@ import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
+import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
@@ -39,9 +42,15 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
     val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
     val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
-    val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, arbeidsgiverService, sykmeldingStatusDb)
+    val sykmeldingStatusService =
+        SykmeldingStatusService(sykmeldingStatusKafkaProducer, arbeidsgiverService, sykmeldingStatusDb)
 
-    fun checkStatusFails(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
+    fun checkStatusFails(
+        newStatus: StatusEventDTO,
+        oldStatus: StatusEventDTO,
+        erAvvist: Boolean = false,
+        erEgenmeldt: Boolean = false
+    ) {
         runBlocking {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(
                 oldStatus,
@@ -68,11 +77,13 @@ class SykmeldingStatusServiceSpek : FunSpec({
                         sykmeldingId,
                         fnr
                     )
+
                     StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr
                     )
+
                     else -> sykmeldingStatusService.registrerStatus(
                         getSykmeldingStatus(newStatus),
                         sykmeldingId,
@@ -84,9 +95,19 @@ class SykmeldingStatusServiceSpek : FunSpec({
             error.message shouldBeEqualTo expextedErrorMessage
         }
     }
-    fun checkStatusOk(newStatus: StatusEventDTO, oldStatus: StatusEventDTO, erAvvist: Boolean = false, erEgenmeldt: Boolean = false) {
+
+    fun checkStatusOk(
+        newStatus: StatusEventDTO,
+        oldStatus: StatusEventDTO,
+        erAvvist: Boolean = false,
+        erEgenmeldt: Boolean = false
+    ) {
         runBlocking {
-            coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(oldStatus, erAvvist = erAvvist, erEgenmeldt = erEgenmeldt)
+            coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(
+                oldStatus,
+                erAvvist = erAvvist,
+                erEgenmeldt = erEgenmeldt
+            )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
                     orgnummer = "orgnummer",
@@ -104,8 +125,19 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     sykmeldingId,
                     fnr
                 )
-                StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
-                else -> sykmeldingStatusService.registrerStatus(getSykmeldingStatus(newStatus), sykmeldingId, "user", fnr)
+
+                StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(),
+                    sykmeldingId,
+                    fnr
+                )
+
+                else -> sykmeldingStatusService.registrerStatus(
+                    getSykmeldingStatus(newStatus),
+                    sykmeldingId,
+                    "user",
+                    fnr
+                )
             }
 
             coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
@@ -117,7 +149,12 @@ class SykmeldingStatusServiceSpek : FunSpec({
         clearAllMocks()
         coEvery { sykmeldingStatusDb.insertStatus(any()) } just Runs
         coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
-        coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } throws SykmeldingStatusNotFoundException("not found")
+        coEvery {
+            sykmeldingStatusDb.getLatestStatus(
+                any(),
+                any()
+            )
+        } throws SykmeldingStatusNotFoundException("not found")
     }
 
     context("Hent nyeste status") {
@@ -139,7 +176,12 @@ class SykmeldingStatusServiceSpek : FunSpec({
         }
 
         test("Ikke tilgang til sykmeldingstatus") {
-            coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId")
+            coEvery {
+                sykmeldingStatusDb.getLatestStatus(
+                    any(),
+                    any()
+                )
+            } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId")
             val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
                 sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
             }
@@ -159,7 +201,12 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
         }
         test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
-            coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } throws SykmeldingStatusNotFoundException("Ingen tilgang")
+            coEvery {
+                sykmeldingStatusDb.getLatestStatus(
+                    any(),
+                    any()
+                )
+            } throws SykmeldingStatusNotFoundException("Ingen tilgang")
 
             assertFailsWith<SykmeldingStatusNotFoundException> {
                 sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
@@ -181,7 +228,13 @@ class SykmeldingStatusServiceSpek : FunSpec({
 
             sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
 
-            coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
+            coVerify(exactly = 1) {
+                sykmeldingStatusKafkaProducer.send(
+                    matchStatusWithEmptySporsmals("BEKREFTET"),
+                    "user",
+                    "fnr"
+                )
+            }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
         }
@@ -197,7 +250,13 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
             }
 
-            coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
+            coVerify(exactly = 0) {
+                sykmeldingStatusKafkaProducer.send(
+                    matchStatusWithEmptySporsmals("BEKREFTET"),
+                    "user",
+                    "fnr"
+                )
+            }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
         }
@@ -213,7 +272,13 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
             }
 
-            coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(matchStatusWithEmptySporsmals("BEKREFTET"), "user", "fnr") }
+            coVerify(exactly = 0) {
+                sykmeldingStatusKafkaProducer.send(
+                    matchStatusWithEmptySporsmals("BEKREFTET"),
+                    "user",
+                    "fnr"
+                )
+            }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
             coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
         }
@@ -465,6 +530,157 @@ class SykmeldingStatusServiceSpek : FunSpec({
         }
     }
 
+    context("Endre egenmeldingsdager") {
+        test("Oppdatere sporsmal med nye egenmeldingsdager") {
+            coEvery {
+                sykmeldingStatusDb.getSykmeldingStatus(
+                    sykmeldingId = "sykmelding-id",
+                    fnr = "22222222"
+                )
+            } returns SykmeldingStatusKafkaEventDTO(
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        svartype = SvartypeDTO.DAGER,
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "",
+                        tekst = "tom string"
+                    ),
+                    SporsmalOgSvarDTO(
+                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                        svar = "8765432",
+                        tekst = ""
+                    )
+                ),
+                sykmeldingId = "sykmelding-id",
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                statusEvent = StatusEventDTO.SENDT.toString()
+            )
+
+            sykmeldingStatusService.endreEgenmeldingsdager(
+                sykmeldingId = "sykmelding-id",
+                egenmeldingsdagerEvent = EndreEgenmeldingsdagerEvent(
+                    dager = listOf(LocalDate.parse("2021-02-01"), LocalDate.parse("2021-02-02")),
+                    tekst = "Egenmeldingsdager spørsmål"
+                ),
+                fnr = "22222222"
+            )
+
+            coVerify(exactly = 1) {
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO = match {
+                        val last = it.sporsmals?.last()
+                        val first = it.sporsmals?.first()
+                        // Verify value has been updated
+                        last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
+                            last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                            // Verify that existing remains untouched
+                            first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                            first.svar == "8765432" && it.erSvarOppdatering == true
+                    },
+                    source = "user",
+                    fnr = "22222222"
+                )
+            }
+            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+        }
+
+        test("Fjern spørsmål om egenmeldingsdager") {
+            coEvery {
+                sykmeldingStatusDb.getSykmeldingStatus(
+                    sykmeldingId = "sykmelding-id",
+                    fnr = "22222222"
+                )
+            } returns SykmeldingStatusKafkaEventDTO(
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        svartype = SvartypeDTO.DAGER,
+                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                        svar = "",
+                        tekst = "tom string"
+                    ),
+                    SporsmalOgSvarDTO(
+                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                        svar = "8765432",
+                        tekst = ""
+                    )
+                ),
+                sykmeldingId = "sykmelding-id",
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                statusEvent = StatusEventDTO.SENDT.toString()
+            )
+
+            sykmeldingStatusService.endreEgenmeldingsdager(
+                sykmeldingId = "sykmelding-id",
+                egenmeldingsdagerEvent = EndreEgenmeldingsdagerEvent(
+                    dager = listOf(),
+                    tekst = "Egenmeldingsdager spørsmål"
+                ),
+                fnr = "22222222"
+            )
+
+            coVerify(exactly = 1) {
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO = match {
+                        it.sporsmals?.size == 1 && it.sporsmals?.first()?.svartype == SvartypeDTO.ARBEIDSSITUASJON
+                    },
+                    source = "user",
+                    fnr = "22222222"
+                )
+            }
+            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+        }
+
+        test("Legg til egenmeldingsdager") {
+            coEvery {
+                sykmeldingStatusDb.getSykmeldingStatus(
+                    sykmeldingId = "sykmelding-id",
+                    fnr = "22222222"
+                )
+            } returns SykmeldingStatusKafkaEventDTO(
+                sporsmals = listOf(
+                    SporsmalOgSvarDTO(
+                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                        svar = "8765432",
+                        tekst = ""
+                    )
+                ),
+                sykmeldingId = "sykmelding-id",
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                statusEvent = StatusEventDTO.SENDT.toString()
+            )
+
+            sykmeldingStatusService.endreEgenmeldingsdager(
+                sykmeldingId = "sykmelding-id",
+                egenmeldingsdagerEvent = EndreEgenmeldingsdagerEvent(
+                    dager = listOf(LocalDate.parse("2021-02-01"), LocalDate.parse("2021-02-02")),
+                    tekst = "Egenmeldingsdager spørsmål"
+                ),
+                fnr = "22222222"
+            )
+
+            coVerify(exactly = 1) {
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO = match {
+                        val last = it.sporsmals?.last()
+                        val first = it.sporsmals?.first()
+                        // Verify value has been updated
+                        last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
+                            last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                            // Verify that existing remains untouched
+                            first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                            first.svar == "8765432" && it.erSvarOppdatering == true
+                    },
+                    source = "user",
+                    fnr = "22222222"
+                )
+            }
+            coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+        }
+    }
+
     context("Test SENDT status") {
         test("Skal kunne sende sykmelding med status APEN") {
             checkStatusOk(newStatus = StatusEventDTO.SENDT, oldStatus = StatusEventDTO.APEN)
@@ -582,62 +798,60 @@ fun MockKMatcherScope.matchStatusWithEmptySporsmals(statusEvent: String) = match
     statusEvent == it.statusEvent && it.sporsmals?.isEmpty() ?: true
 }
 
-fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent =
-    SykmeldingUserEvent(
-        erOpplysningeneRiktige = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = JaEllerNei.JA
-        ),
-        uriktigeOpplysninger = null,
-        arbeidssituasjon = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = ArbeidssituasjonDTO.ARBEIDSTAKER
-        ),
-        arbeidsgiverOrgnummer = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = "orgnummer"
-        ),
-        riktigNarmesteLeder = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = JaEllerNei.JA
-        ),
-        harBruktEgenmelding = null,
-        egenmeldingsperioder = null,
-        harForsikring = null,
-        harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null
-    )
+fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent = SykmeldingUserEvent(
+    erOpplysningeneRiktige = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = JaEllerNei.JA
+    ),
+    uriktigeOpplysninger = null,
+    arbeidssituasjon = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+    ),
+    arbeidsgiverOrgnummer = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = "orgnummer"
+    ),
+    riktigNarmesteLeder = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = JaEllerNei.JA
+    ),
+    harBruktEgenmelding = null,
+    egenmeldingsperioder = null,
+    harForsikring = null,
+    harBruktEgenmeldingsdager = null,
+    egenmeldingsdager = null
+)
 
-fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
-    SykmeldingUserEvent(
-        erOpplysningeneRiktige = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = JaEllerNei.JA
-        ),
-        uriktigeOpplysninger = null,
-        arbeidssituasjon = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = ArbeidssituasjonDTO.FRILANSER
-        ),
-        arbeidsgiverOrgnummer = null,
-        riktigNarmesteLeder = null,
-        harBruktEgenmelding = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = JaEllerNei.JA
-        ),
-        egenmeldingsperioder = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = listOf(
-                Egenmeldingsperiode(
-                    fom = LocalDate.now().minusWeeks(1),
-                    tom = LocalDate.now()
-                )
+fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent = SykmeldingUserEvent(
+    erOpplysningeneRiktige = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = JaEllerNei.JA
+    ),
+    uriktigeOpplysninger = null,
+    arbeidssituasjon = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = ArbeidssituasjonDTO.FRILANSER
+    ),
+    arbeidsgiverOrgnummer = null,
+    riktigNarmesteLeder = null,
+    harBruktEgenmelding = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = JaEllerNei.JA
+    ),
+    egenmeldingsperioder = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = listOf(
+            Egenmeldingsperiode(
+                fom = LocalDate.now().minusWeeks(1),
+                tom = LocalDate.now()
             )
-        ),
-        harForsikring = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = JaEllerNei.JA
-        ),
-        harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null
-    )
+        )
+    ),
+    harForsikring = SporsmalSvar(
+        sporsmaltekst = "",
+        svar = JaEllerNei.JA
+    ),
+    harBruktEgenmeldingsdager = null,
+    egenmeldingsdager = null
+)

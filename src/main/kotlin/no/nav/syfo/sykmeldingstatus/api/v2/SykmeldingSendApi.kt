@@ -30,6 +30,23 @@ fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatus
             }
         }
     }
+
+    post("/sykmeldinger/{sykmeldingid}/endre-egenmeldingsdager") {
+        val sykmeldingId = call.parameters["sykmeldingid"]!!
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+
+        val endreEgenmeldingsdagerEvent = call.safeReceiveOrNull<EndreEgenmeldingsdagerEvent>()
+
+        when (endreEgenmeldingsdagerEvent) {
+            null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
+            else -> {
+                sykmeldingStatusService.endreEgenmeldingsdager(sykmeldingId, endreEgenmeldingsdagerEvent, fnr)
+
+                call.respond(HttpStatusCode.Accepted)
+            }
+        }
+    }
 }
 
 // Workaround pga. bug i ktor: https://github.com/ktorio/ktor/issues/901
