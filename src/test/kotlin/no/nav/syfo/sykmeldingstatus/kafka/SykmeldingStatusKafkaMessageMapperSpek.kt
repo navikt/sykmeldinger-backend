@@ -4,14 +4,11 @@ import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
 import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
 import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
-import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
-import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingSendEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import org.amshove.kluent.shouldBeEqualTo
 import java.time.OffsetDateTime
@@ -19,50 +16,6 @@ import java.time.ZoneOffset
 
 class SykmeldingStatusKafkaMessageMapperSpek : FunSpec({
     val sykmeldingId = "id"
-
-    context("Test av tilSykmeldingStatusKafkaEventDTO - send") {
-        test("Mapper SykmeldingSendEventDTO riktig") {
-            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-            val sykmeldingSendEventDTO = SykmeldingSendEventDTO(
-                timestamp,
-                ArbeidsgiverStatusDTO(orgnummer = "orgnummer", juridiskOrgnummer = null, orgNavn = "navn"),
-                listOf(
-                    SporsmalOgSvarDTO(
-                        "Arbeidssituasjon",
-                        ShortNameDTO.ARBEIDSSITUASJON,
-                        SvartypeDTO.ARBEIDSSITUASJON,
-                        "ARBEIDSTAKER"
-                    ),
-                    SporsmalOgSvarDTO("Nærmeste leder", ShortNameDTO.NY_NARMESTE_LEDER, SvartypeDTO.JA_NEI, "NEI")
-                )
-            )
-
-            val sykmeldingStatusKafkaEventDTO = sykmeldingSendEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
-
-            sykmeldingStatusKafkaEventDTO.sykmeldingId shouldBeEqualTo sykmeldingId
-            sykmeldingStatusKafkaEventDTO.timestamp shouldBeEqualTo timestamp
-            sykmeldingStatusKafkaEventDTO.statusEvent shouldBeEqualTo STATUS_SENDT
-            sykmeldingStatusKafkaEventDTO.sporsmals shouldBeEqualTo listOf(
-                no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
-                    "Arbeidssituasjon",
-                    no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
-                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON,
-                    "ARBEIDSTAKER"
-                ),
-                no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
-                    "Nærmeste leder",
-                    no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.NY_NARMESTE_LEDER,
-                    no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
-                    "NEI"
-                )
-            )
-            sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO(
-                orgnummer = "orgnummer",
-                juridiskOrgnummer = null,
-                orgNavn = "navn"
-            )
-        }
-    }
 
     context("Test av tilSykmeldingStatusKafkaEventDTO - bekreft") {
         test("Mapper SykmeldingBekreftEventDTO med spørsmål riktig") {

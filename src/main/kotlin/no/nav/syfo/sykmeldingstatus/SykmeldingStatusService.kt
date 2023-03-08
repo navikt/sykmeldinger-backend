@@ -5,10 +5,16 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.log
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
+import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
+import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
+import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
@@ -125,6 +131,46 @@ class SykmeldingStatusService(
                 else -> Unit
             }
         }
+    }
+
+    suspend fun endreEgenmeldingsdager(sykmeldingId: String, egenmeldingsdagerEvent: EndreEgenmeldingsdagerEvent, fnr: String) {
+        val sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO = sykmeldingStatusDb.getSykmeldingStatus(sykmeldingId, fnr)
+
+        val sykmeldingStatusKafkaEventDTOUpdated = sykmeldingStatusKafkaEventDTO.copy(
+            sporsmals = updateEgenemeldingsdagerSporsmal(sykmeldingStatusKafkaEventDTO.sporsmals, egenmeldingsdagerEvent),
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+            erSvarOppdatering = true
+        )
+
+        sykmeldingStatusKafkaProducer.send(
+            sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTOUpdated,
+            source = "user",
+            fnr = fnr
+        )
+
+        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
+    }
+
+    private fun updateEgenemeldingsdagerSporsmal(sporsmalSvar: List<SporsmalOgSvarDTO>?, egenmeldingsdagerEvent: EndreEgenmeldingsdagerEvent): List<SporsmalOgSvarDTO> {
+        requireNotNull(sporsmalSvar) { "Forsøkte å oppdatere egenmeldingsdager, men spørsmål og svar er ikke satt." }
+        return sporsmalSvar
+            .filter { it.shortName != ShortNameDTO.EGENMELDINGSDAGER }
+            .let {
+                if (egenmeldingsdagerEvent.dager.isNotEmpty()) {
+                    it.plus(
+                        listOf(
+                            SporsmalOgSvarDTO(
+                                tekst = egenmeldingsdagerEvent.tekst,
+                                shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                svartype = SvartypeDTO.DAGER,
+                                svar = objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager)
+                            )
+                        )
+                    )
+                } else {
+                    it
+                }
+            }
     }
 
     private suspend fun getArbeidsgiver(

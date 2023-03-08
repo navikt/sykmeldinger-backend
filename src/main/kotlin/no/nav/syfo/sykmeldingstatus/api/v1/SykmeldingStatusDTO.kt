@@ -13,14 +13,6 @@ enum class StatusEventDTO {
     APEN, AVBRUTT, UTGATT, SENDT, BEKREFTET
 }
 
-data class SykmeldingSendEventDTO(
-    val timestamp: OffsetDateTime,
-    val arbeidsgiver: ArbeidsgiverStatusDTO,
-    val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>,
-    val erAvvist: Boolean? = null,
-    val erEgenmeldt: Boolean? = null
-)
-
 data class ArbeidsgiverStatusDTO(
     val orgnummer: String,
     val juridiskOrgnummer: String?,
