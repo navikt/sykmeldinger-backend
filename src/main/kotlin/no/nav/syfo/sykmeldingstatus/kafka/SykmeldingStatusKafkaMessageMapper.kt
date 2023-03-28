@@ -45,7 +45,7 @@ fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = nu
         periodeSporsmalBuilder(),
         riktigNarmesteLederSporsmalBuilder(arbeidsgiver, sykmeldingId),
         forsikringSporsmalBuilder(),
-        egenmeldingsdagerBuilder(),
+        egenmeldingsdagerBuilder()
     )
 }
 

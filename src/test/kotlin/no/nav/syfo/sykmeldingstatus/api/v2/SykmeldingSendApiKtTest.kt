@@ -183,6 +183,6 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
         egenmeldingsperioder = null,
         harForsikring = null,
         harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null,
+        egenmeldingsdager = null
     )
 }

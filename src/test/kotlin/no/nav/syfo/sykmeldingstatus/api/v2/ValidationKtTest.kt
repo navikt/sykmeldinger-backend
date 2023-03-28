@@ -7,7 +7,11 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.kafka.toSporsmalSvarListe
-import org.amshove.kluent.*
+import org.amshove.kluent.invoking
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldNotThrow
+import org.amshove.kluent.shouldThrow
+import org.amshove.kluent.withMessage
 import java.time.LocalDate
 import kotlin.test.assertFailsWith
 
@@ -31,7 +35,7 @@ class ValidationKtTest : FunSpec({
                     egenmeldingsperioder = null,
                     harForsikring = null,
                     harBruktEgenmeldingsdager = null,
-                    egenmeldingsdager = null,
+                    egenmeldingsdager = null
                 )
 
                 assertFailsWith<ValidationException> {
@@ -60,7 +64,7 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -91,7 +95,7 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -116,7 +120,7 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -137,7 +141,7 @@ class ValidationKtTest : FunSpec({
                         ),
                         arbeidsgiverOrgnummer = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = "543263",
+                            svar = "543263"
                         ),
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
@@ -147,7 +151,7 @@ class ValidationKtTest : FunSpec({
                             sporsmaltekst = "",
                             svar = JaEllerNei.JA
                         ),
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
                     invoking { sykmeldingUserEvent.validate() } shouldThrow ValidationException::class withMessage "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA"
                 }
@@ -165,7 +169,7 @@ class ValidationKtTest : FunSpec({
                         ),
                         arbeidsgiverOrgnummer = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = "543263",
+                            svar = "543263"
                         ),
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
@@ -177,8 +181,8 @@ class ValidationKtTest : FunSpec({
                         ),
                         egenmeldingsdager = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = emptyList(),
-                        ),
+                            svar = emptyList()
+                        )
                     )
                     invoking { sykmeldingUserEvent.validate() } shouldThrow ValidationException::class withMessage "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA"
                 }
@@ -196,7 +200,7 @@ class ValidationKtTest : FunSpec({
                         ),
                         arbeidsgiverOrgnummer = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = "543263",
+                            svar = "543263"
                         ),
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
@@ -208,10 +212,10 @@ class ValidationKtTest : FunSpec({
                         ),
                         egenmeldingsdager = SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = listOf(LocalDate.now()),
-                        ),
+                            svar = listOf(LocalDate.now())
+                        )
                     )
-                    invoking { sykmeldingUserEvent.validate() } shouldNotThrow  ValidationException::class
+                    invoking { sykmeldingUserEvent.validate() } shouldNotThrow ValidationException::class
                 }
             }
 
@@ -236,7 +240,7 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -266,7 +270,7 @@ class ValidationKtTest : FunSpec({
                         egenmeldingsperioder = null,
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -296,7 +300,7 @@ class ValidationKtTest : FunSpec({
                         ),
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -324,7 +328,7 @@ class ValidationKtTest : FunSpec({
                             svar = JaEllerNei.JA
                         ),
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -354,7 +358,7 @@ class ValidationKtTest : FunSpec({
                         ),
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -382,7 +386,7 @@ class ValidationKtTest : FunSpec({
                             svar = JaEllerNei.JA
                         ),
                         harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
+                        egenmeldingsdager = null
                     )
 
                     assertFailsWith<ValidationException> {
@@ -411,7 +415,7 @@ class ValidationKtTest : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
@@ -451,7 +455,7 @@ class ValidationKtTest : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             val arbeidsgiver = Arbeidsgiverinfo(
@@ -507,7 +511,7 @@ class ValidationKtTest : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             val arbeidsgiver = Arbeidsgiverinfo(
@@ -563,7 +567,7 @@ class ValidationKtTest : FunSpec({
                     svar = JaEllerNei.JA
                 ),
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
@@ -620,7 +624,7 @@ class ValidationKtTest : FunSpec({
                 ),
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             val sporsmalOgSvarListe = sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
