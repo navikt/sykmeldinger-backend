@@ -17,7 +17,7 @@ data class SykmeldingUserEvent(
     val egenmeldingsperioder: SporsmalSvar<List<Egenmeldingsperiode>>?,
     val harForsikring: SporsmalSvar<JaEllerNei>?,
     val egenmeldingsdager: SporsmalSvar<List<LocalDate>>?,
-    val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?,
+    val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?
 )
 
 data class Egenmeldingsperiode(

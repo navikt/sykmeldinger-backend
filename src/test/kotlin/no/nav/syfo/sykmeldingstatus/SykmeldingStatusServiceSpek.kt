@@ -259,7 +259,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
@@ -308,7 +308,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -361,7 +361,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -398,7 +398,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
@@ -446,7 +446,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null,
+                egenmeldingsdager = null
             )
 
             val expected = slot<SykmeldingStatusKafkaEventDTO>()
@@ -605,7 +605,7 @@ fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent =
         egenmeldingsperioder = null,
         harForsikring = null,
         harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null,
+        egenmeldingsdager = null
     )
 
 fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
@@ -639,5 +639,5 @@ fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
             svar = JaEllerNei.JA
         ),
         harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null,
+        egenmeldingsdager = null
     )
