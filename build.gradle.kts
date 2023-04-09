@@ -24,7 +24,7 @@ val flywayVersion = "9.10.0"
 val postgresVersion = "42.5.1"
 val hikariVersion = "5.0.1"
 val commonsCodecVersion = "1.15"
-val nettyCodecVersion = "4.1.86.Final"
+val nettyCodecVersion = "4.1.91.Final"
 
 plugins {
     kotlin("jvm") version "1.8.0"
