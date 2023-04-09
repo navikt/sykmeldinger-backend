@@ -27,7 +27,7 @@ val commonsCodecVersion = "1.15"
 val nettyCodecVersion = "4.1.86.Final"
 
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jmailen.kotlinter") version "3.12.0"
     id("org.hidetake.swagger.generator") version "2.18.2" apply true
