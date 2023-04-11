@@ -36,5 +36,5 @@ data class SykmeldingDbModel(
     val harRedusertArbeidsgiverperiode: Boolean?,
     val merknader: List<MerknadDTO>?,
     val rulesetVersion: String?,
-    val utenlandskSykmelding: UtenlandskSykmelding?
+    val utenlandskSykmelding: UtenlandskSykmelding?,
 )

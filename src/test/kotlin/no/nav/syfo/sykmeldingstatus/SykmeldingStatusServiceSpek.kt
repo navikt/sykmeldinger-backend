@@ -49,13 +49,13 @@ class SykmeldingStatusServiceSpek : FunSpec({
         newStatus: StatusEventDTO,
         oldStatus: StatusEventDTO,
         erAvvist: Boolean = false,
-        erEgenmeldt: Boolean = false
+        erEgenmeldt: Boolean = false,
     ) {
         runBlocking {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(
                 oldStatus,
                 erAvvist = erAvvist,
-                erEgenmeldt = erEgenmeldt
+                erEgenmeldt = erEgenmeldt,
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -65,8 +65,8 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     stillingsprosent = "",
                     stilling = "",
                     aktivtArbeidsforhold = true,
-                    naermesteLeder = null
-                )
+                    naermesteLeder = null,
+                ),
             )
             val expextedErrorMessage =
                 "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
@@ -75,20 +75,20 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     StatusEventDTO.SENDT -> sykmeldingStatusService.registrerUserEvent(
                         opprettSendtSykmeldingUserEvent(),
                         sykmeldingId,
-                        fnr
+                        fnr,
                     )
 
                     StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
-                        fnr
+                        fnr,
                     )
 
                     else -> sykmeldingStatusService.registrerStatus(
                         getSykmeldingStatus(newStatus),
                         sykmeldingId,
                         "user",
-                        fnr
+                        fnr,
                     )
                 }
             }
@@ -100,13 +100,13 @@ class SykmeldingStatusServiceSpek : FunSpec({
         newStatus: StatusEventDTO,
         oldStatus: StatusEventDTO,
         erAvvist: Boolean = false,
-        erEgenmeldt: Boolean = false
+        erEgenmeldt: Boolean = false,
     ) {
         runBlocking {
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns getSykmeldingStatus(
                 oldStatus,
                 erAvvist = erAvvist,
-                erEgenmeldt = erEgenmeldt
+                erEgenmeldt = erEgenmeldt,
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -116,27 +116,27 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     stillingsprosent = "",
                     stilling = "",
                     aktivtArbeidsforhold = true,
-                    naermesteLeder = null
-                )
+                    naermesteLeder = null,
+                ),
             )
             when (newStatus) {
                 StatusEventDTO.SENDT -> sykmeldingStatusService.registrerUserEvent(
                     opprettSendtSykmeldingUserEvent(),
                     sykmeldingId,
-                    fnr
+                    fnr,
                 )
 
                 StatusEventDTO.BEKREFTET -> sykmeldingStatusService.registrerUserEvent(
                     opprettBekreftetSykmeldingUserEvent(),
                     sykmeldingId,
-                    fnr
+                    fnr,
                 )
 
                 else -> sykmeldingStatusService.registrerStatus(
                     getSykmeldingStatus(newStatus),
                     sykmeldingId,
                     "user",
-                    fnr
+                    fnr,
                 )
             }
 
@@ -152,7 +152,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
         coEvery {
             sykmeldingStatusDb.getLatestStatus(
                 any(),
-                any()
+                any(),
             )
         } throws SykmeldingStatusNotFoundException("not found")
     }
@@ -163,7 +163,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 StatusEventDTO.SENDT,
                 OffsetDateTime.now(ZoneOffset.UTC),
                 erAvvist = true,
-                erEgenmeldt = false
+                erEgenmeldt = false,
             )
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns status
             val sisteStatusEventDTO = sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
@@ -171,7 +171,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 StatusEventDTO.SENDT,
                 status.timestamp,
                 erAvvist = true,
-                erEgenmeldt = false
+                erEgenmeldt = false,
             )
         }
 
@@ -179,7 +179,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery {
                 sykmeldingStatusDb.getLatestStatus(
                     any(),
-                    any()
+                    any(),
                 )
             } throws SykmeldingStatusNotFoundException("Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId")
             val exception = assertFailsWith<SykmeldingStatusNotFoundException> {
@@ -194,7 +194,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = true
+                erAvvist = true,
             )
             sykmeldingStatusService.registrerUserEvent(opprettBekreftetSykmeldingUserEvent(), sykmeldingId, fnr)
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
@@ -204,7 +204,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery {
                 sykmeldingStatusDb.getLatestStatus(
                     any(),
-                    any()
+                    any(),
                 )
             } throws SykmeldingStatusNotFoundException("Ingen tilgang")
 
@@ -223,7 +223,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = true
+                erAvvist = true,
             )
 
             sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
@@ -232,7 +232,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 sykmeldingStatusKafkaProducer.send(
                     matchStatusWithEmptySporsmals("BEKREFTET"),
                     "user",
-                    "fnr"
+                    "fnr",
                 )
             }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
@@ -243,7 +243,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.BEKREFTET,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = true
+                erAvvist = true,
             )
 
             assertFailsWith<InvalidSykmeldingStatusException> {
@@ -254,7 +254,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 sykmeldingStatusKafkaProducer.send(
                     matchStatusWithEmptySporsmals("BEKREFTET"),
                     "user",
-                    "fnr"
+                    "fnr",
                 )
             }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
@@ -265,7 +265,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.BEKREFTET,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = false
+                erAvvist = false,
             )
 
             assertFailsWith<InvalidSykmeldingStatusException> {
@@ -276,7 +276,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 sykmeldingStatusKafkaProducer.send(
                     matchStatusWithEmptySporsmals("BEKREFTET"),
                     "user",
-                    "fnr"
+                    "fnr",
                 )
             }
             coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
@@ -289,7 +289,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = false
+                erAvvist = false,
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -299,32 +299,32 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     stillingsprosent = "",
                     stilling = "",
                     aktivtArbeidsforhold = true,
-                    naermesteLeder = null
-                )
+                    naermesteLeder = null,
+                ),
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA
+                    svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "123456789"
+                    svar = "123456789",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI
+                    svar = JaEllerNei.NEI,
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null
+                egenmeldingsdager = null,
             )
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
@@ -338,7 +338,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.SENDT,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = false
+                erAvvist = false,
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -348,32 +348,32 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     stillingsprosent = "",
                     stilling = "",
                     aktivtArbeidsforhold = true,
-                    naermesteLeder = null
-                )
+                    naermesteLeder = null,
+                ),
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA
+                    svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "feilOrnummer"
+                    svar = "feilOrnummer",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI
+                    svar = JaEllerNei.NEI,
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null
+                egenmeldingsdager = null,
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -391,7 +391,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = false
+                erAvvist = false,
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -401,32 +401,32 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     stillingsprosent = "",
                     stilling = "",
                     aktivtArbeidsforhold = true,
-                    naermesteLeder = null
-                )
+                    naermesteLeder = null,
+                ),
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA
+                    svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "feilOrnummer"
+                    svar = "feilOrnummer",
                 ),
                 riktigNarmesteLeder = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.NEI
+                    svar = JaEllerNei.NEI,
                 ),
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null
+                egenmeldingsdager = null,
             )
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -445,17 +445,17 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = false
+                erAvvist = false,
             )
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA
+                    svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.FRILANSER
+                    svar = ArbeidssituasjonDTO.FRILANSER,
                 ),
                 arbeidsgiverOrgnummer = null,
                 riktigNarmesteLeder = null,
@@ -463,7 +463,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null
+                egenmeldingsdager = null,
             )
 
             sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
@@ -478,7 +478,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns SykmeldingStatusEventDTO(
                 statusEvent = StatusEventDTO.APEN,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                erAvvist = false
+                erAvvist = false,
             )
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(
                 Arbeidsgiverinfo(
@@ -488,30 +488,30 @@ class SykmeldingStatusServiceSpek : FunSpec({
                     stillingsprosent = "",
                     stilling = "",
                     aktivtArbeidsforhold = false,
-                    naermesteLeder = null
-                )
+                    naermesteLeder = null,
+                ),
             )
 
             val sykmeldingUserEvent = SykmeldingUserEvent(
                 erOpplysningeneRiktige = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = JaEllerNei.JA
+                    svar = JaEllerNei.JA,
                 ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                 ),
                 arbeidsgiverOrgnummer = SporsmalSvar(
                     sporsmaltekst = "",
-                    svar = "123456789"
+                    svar = "123456789",
                 ),
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
                 harForsikring = null,
                 harBruktEgenmeldingsdager = null,
-                egenmeldingsdager = null
+                egenmeldingsdager = null,
             )
 
             val expected = slot<SykmeldingStatusKafkaEventDTO>()
@@ -535,7 +535,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery {
                 sykmeldingStatusDb.getSykmeldingStatus(
                     sykmeldingId = "sykmelding-id",
-                    fnr = "22222222"
+                    fnr = "22222222",
                 )
             } returns SykmeldingStatusKafkaEventDTO(
                 sporsmals = listOf(
@@ -543,27 +543,27 @@ class SykmeldingStatusServiceSpek : FunSpec({
                         svartype = SvartypeDTO.DAGER,
                         shortName = ShortNameDTO.EGENMELDINGSDAGER,
                         svar = "",
-                        tekst = "tom string"
+                        tekst = "tom string",
                     ),
                     SporsmalOgSvarDTO(
                         svartype = SvartypeDTO.ARBEIDSSITUASJON,
                         shortName = ShortNameDTO.ARBEIDSSITUASJON,
                         svar = "8765432",
-                        tekst = ""
-                    )
+                        tekst = "",
+                    ),
                 ),
                 sykmeldingId = "sykmelding-id",
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                statusEvent = StatusEventDTO.SENDT.toString()
+                statusEvent = StatusEventDTO.SENDT.toString(),
             )
 
             sykmeldingStatusService.endreEgenmeldingsdager(
                 sykmeldingId = "sykmelding-id",
                 egenmeldingsdagerEvent = EndreEgenmeldingsdagerEvent(
                     dager = listOf(LocalDate.parse("2021-02-01"), LocalDate.parse("2021-02-02")),
-                    tekst = "Egenmeldingsdager spørsmål"
+                    tekst = "Egenmeldingsdager spørsmål",
                 ),
-                fnr = "22222222"
+                fnr = "22222222",
             )
 
             coVerify(exactly = 1) {
@@ -579,7 +579,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                             first.svar == "8765432" && it.erSvarOppdatering == true
                     },
                     source = "user",
-                    fnr = "22222222"
+                    fnr = "22222222",
                 )
             }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
@@ -589,7 +589,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery {
                 sykmeldingStatusDb.getSykmeldingStatus(
                     sykmeldingId = "sykmelding-id",
-                    fnr = "22222222"
+                    fnr = "22222222",
                 )
             } returns SykmeldingStatusKafkaEventDTO(
                 sporsmals = listOf(
@@ -597,27 +597,27 @@ class SykmeldingStatusServiceSpek : FunSpec({
                         svartype = SvartypeDTO.DAGER,
                         shortName = ShortNameDTO.EGENMELDINGSDAGER,
                         svar = "",
-                        tekst = "tom string"
+                        tekst = "tom string",
                     ),
                     SporsmalOgSvarDTO(
                         svartype = SvartypeDTO.ARBEIDSSITUASJON,
                         shortName = ShortNameDTO.ARBEIDSSITUASJON,
                         svar = "8765432",
-                        tekst = ""
-                    )
+                        tekst = "",
+                    ),
                 ),
                 sykmeldingId = "sykmelding-id",
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                statusEvent = StatusEventDTO.SENDT.toString()
+                statusEvent = StatusEventDTO.SENDT.toString(),
             )
 
             sykmeldingStatusService.endreEgenmeldingsdager(
                 sykmeldingId = "sykmelding-id",
                 egenmeldingsdagerEvent = EndreEgenmeldingsdagerEvent(
                     dager = listOf(),
-                    tekst = "Egenmeldingsdager spørsmål"
+                    tekst = "Egenmeldingsdager spørsmål",
                 ),
-                fnr = "22222222"
+                fnr = "22222222",
             )
 
             coVerify(exactly = 1) {
@@ -626,7 +626,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                         it.sporsmals?.size == 1 && it.sporsmals?.first()?.svartype == SvartypeDTO.ARBEIDSSITUASJON
                     },
                     source = "user",
-                    fnr = "22222222"
+                    fnr = "22222222",
                 )
             }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
@@ -636,7 +636,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
             coEvery {
                 sykmeldingStatusDb.getSykmeldingStatus(
                     sykmeldingId = "sykmelding-id",
-                    fnr = "22222222"
+                    fnr = "22222222",
                 )
             } returns SykmeldingStatusKafkaEventDTO(
                 sporsmals = listOf(
@@ -644,21 +644,21 @@ class SykmeldingStatusServiceSpek : FunSpec({
                         svartype = SvartypeDTO.ARBEIDSSITUASJON,
                         shortName = ShortNameDTO.ARBEIDSSITUASJON,
                         svar = "8765432",
-                        tekst = ""
-                    )
+                        tekst = "",
+                    ),
                 ),
                 sykmeldingId = "sykmelding-id",
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                statusEvent = StatusEventDTO.SENDT.toString()
+                statusEvent = StatusEventDTO.SENDT.toString(),
             )
 
             sykmeldingStatusService.endreEgenmeldingsdager(
                 sykmeldingId = "sykmelding-id",
                 egenmeldingsdagerEvent = EndreEgenmeldingsdagerEvent(
                     dager = listOf(LocalDate.parse("2021-02-01"), LocalDate.parse("2021-02-02")),
-                    tekst = "Egenmeldingsdager spørsmål"
+                    tekst = "Egenmeldingsdager spørsmål",
                 ),
-                fnr = "22222222"
+                fnr = "22222222",
             )
 
             coVerify(exactly = 1) {
@@ -674,7 +674,7 @@ class SykmeldingStatusServiceSpek : FunSpec({
                             first.svar == "8765432" && it.erSvarOppdatering == true
                     },
                     source = "user",
-                    fnr = "22222222"
+                    fnr = "22222222",
                 )
             }
             coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
@@ -801,57 +801,57 @@ fun MockKMatcherScope.matchStatusWithEmptySporsmals(statusEvent: String) = match
 fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent = SykmeldingUserEvent(
     erOpplysningeneRiktige = SporsmalSvar(
         sporsmaltekst = "",
-        svar = JaEllerNei.JA
+        svar = JaEllerNei.JA,
     ),
     uriktigeOpplysninger = null,
     arbeidssituasjon = SporsmalSvar(
         sporsmaltekst = "",
-        svar = ArbeidssituasjonDTO.ARBEIDSTAKER
+        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
     ),
     arbeidsgiverOrgnummer = SporsmalSvar(
         sporsmaltekst = "",
-        svar = "orgnummer"
+        svar = "orgnummer",
     ),
     riktigNarmesteLeder = SporsmalSvar(
         sporsmaltekst = "",
-        svar = JaEllerNei.JA
+        svar = JaEllerNei.JA,
     ),
     harBruktEgenmelding = null,
     egenmeldingsperioder = null,
     harForsikring = null,
     harBruktEgenmeldingsdager = null,
-    egenmeldingsdager = null
+    egenmeldingsdager = null,
 )
 
 fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent = SykmeldingUserEvent(
     erOpplysningeneRiktige = SporsmalSvar(
         sporsmaltekst = "",
-        svar = JaEllerNei.JA
+        svar = JaEllerNei.JA,
     ),
     uriktigeOpplysninger = null,
     arbeidssituasjon = SporsmalSvar(
         sporsmaltekst = "",
-        svar = ArbeidssituasjonDTO.FRILANSER
+        svar = ArbeidssituasjonDTO.FRILANSER,
     ),
     arbeidsgiverOrgnummer = null,
     riktigNarmesteLeder = null,
     harBruktEgenmelding = SporsmalSvar(
         sporsmaltekst = "",
-        svar = JaEllerNei.JA
+        svar = JaEllerNei.JA,
     ),
     egenmeldingsperioder = SporsmalSvar(
         sporsmaltekst = "",
         svar = listOf(
             Egenmeldingsperiode(
                 fom = LocalDate.now().minusWeeks(1),
-                tom = LocalDate.now()
-            )
-        )
+                tom = LocalDate.now(),
+            ),
+        ),
     ),
     harForsikring = SporsmalSvar(
         sporsmaltekst = "",
-        svar = JaEllerNei.JA
+        svar = JaEllerNei.JA,
     ),
     harBruktEgenmeldingsdager = null,
-    egenmeldingsdager = null
+    egenmeldingsdager = null,
 )

@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class SporsmalSvar<T> (
     val sporsmaltekst: String,
-    val svar: T
+    val svar: T,
 )
 
 data class SykmeldingUserEvent(
@@ -17,17 +17,17 @@ data class SykmeldingUserEvent(
     val egenmeldingsperioder: SporsmalSvar<List<Egenmeldingsperiode>>?,
     val harForsikring: SporsmalSvar<JaEllerNei>?,
     val egenmeldingsdager: SporsmalSvar<List<LocalDate>>?,
-    val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?
+    val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?,
 )
 
 data class Egenmeldingsperiode(
     val fom: LocalDate,
-    val tom: LocalDate
+    val tom: LocalDate,
 )
 
 enum class JaEllerNei {
     JA,
-    NEI
+    NEI,
 }
 
 enum class UriktigeOpplysningerDTO {
@@ -36,7 +36,7 @@ enum class UriktigeOpplysningerDTO {
     SYKMELDINGSGRAD_FOR_LAV,
     ARBEIDSGIVER,
     DIAGNOSE,
-    ANDRE_OPPLYSNINGER
+    ANDRE_OPPLYSNINGER,
 }
 
 enum class ArbeidssituasjonDTO {
@@ -44,5 +44,5 @@ enum class ArbeidssituasjonDTO {
     FRILANSER,
     NAERINGSDRIVENDE,
     ARBEIDSLEDIG,
-    ANNET
+    ANNET,
 }

@@ -62,7 +62,7 @@ fun main() {
         narmestelederDb = narmestelederDb,
         sykmeldingStatusDb = sykmeldingStatusDb,
         sykmeldingDb = sykmeldingDb,
-        arbeidsforholdDb = arbeidsforholdDb
+        arbeidsforholdDb = arbeidsforholdDb,
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)

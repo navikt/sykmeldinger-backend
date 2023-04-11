@@ -53,15 +53,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
@@ -73,15 +73,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
@@ -93,15 +93,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
@@ -126,15 +126,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
@@ -145,15 +145,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
@@ -164,15 +164,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Cookie",
                             "selvbetjening-idtoken=${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                 }
@@ -183,15 +183,15 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "loginservice2",
-                                subject = "12345678901",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "loginservice2",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -202,16 +202,16 @@ class SykmeldingApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678901",
-                                issuer = "issuer",
-                                level = "Level3"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678901",
+                                    issuer = "issuer",
+                                    level = "Level3",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

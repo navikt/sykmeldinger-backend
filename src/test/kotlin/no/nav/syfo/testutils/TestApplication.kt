@@ -31,7 +31,7 @@ fun getTestEnvironment(): Environment =
         dbPort = "",
         dbName = "",
         databasePassword = "",
-        databaseUsername = ""
+        databaseUsername = "",
     )
 
 fun TestApplicationEngine.setUpTestApplication() {

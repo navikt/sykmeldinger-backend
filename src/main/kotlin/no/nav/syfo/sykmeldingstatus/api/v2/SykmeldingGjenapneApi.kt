@@ -24,7 +24,7 @@ fun Route.registerSykmeldingGjenapneApiV2(sykmeldingStatusService: SykmeldingSta
             sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC)),
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr
+            fnr = fnr,
         )
 
         GJENAPNET_AV_BRUKER_COUNTER.inc()

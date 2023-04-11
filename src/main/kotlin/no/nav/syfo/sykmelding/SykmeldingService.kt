@@ -6,7 +6,7 @@ import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 
 class SykmeldingService(
-    private val sykmeldingDb: SykmeldingDb
+    private val sykmeldingDb: SykmeldingDb,
 ) {
     suspend fun hentSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? = withContext(Dispatchers.IO) {
         sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)

@@ -55,10 +55,10 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "clientId",
                                 subject = "12345678910",
-                                issuer = "issuer"
-                            )}"
+                                issuer = "issuer",
+                            )}",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Accepted
                 }
@@ -76,10 +76,10 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "clientId",
                                 subject = "12345678910",
-                                issuer = "issuer"
-                            )}"
+                                issuer = "issuer",
+                            )}",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                 }
@@ -96,10 +96,10 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "clientId",
                                 subject = "00000000000",
-                                issuer = "issuer"
-                            )}"
+                                issuer = "issuer",
+                            )}",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
@@ -115,10 +115,10 @@ class SykmeldingGjenapneApiSpek : FunSpec({
                                 "client",
                                 "annenservice",
                                 subject = "12345678910",
-                                issuer = "issuer"
-                            )}"
+                                issuer = "issuer",
+                            )}",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

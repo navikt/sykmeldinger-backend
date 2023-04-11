@@ -45,7 +45,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
                 where sykmelding.sykmelding_id = ? and sykmelding.fnr = ?;
-                """
+                """,
             ).use { preparedStatement ->
                 preparedStatement.setString(1, sykmeldingId)
                 preparedStatement.setString(2, fnr)
@@ -76,7 +76,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
                 where sykmelding.fnr = ?;
-                """
+                """,
             ).use { preparedStatement ->
                 preparedStatement.setString(1, fnr)
                 preparedStatement.executeQuery().toList { toSykmelding() }
@@ -92,13 +92,13 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
             fnr = getString("fnr"),
             fornavn = getString("fornavn"),
             mellomnavn = getString("mellomnavn"),
-            etternavn = getString("etternavn")
+            etternavn = getString("etternavn"),
         ),
         id = getString("sykmelding_id"),
         mottattTidspunkt = sykmelding.mottattTidspunkt,
         behandlingsutfall = BehandlingsutfallDTO(
             status = RegelStatusDTO.valueOf(getString("behandlingsutfall")),
-            ruleHits = objectMapper.readValue(getString("rule_hits"))
+            ruleHits = objectMapper.readValue(getString("rule_hits")),
         ),
         arbeidsgiver = sykmelding.arbeidsgiver,
         legekontorOrgnummer = sykmelding.legekontorOrgnummer,
@@ -114,11 +114,11 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                         shortName = ShortNameDTO.valueOf(sporsmalOgSvarDTO.shortName.name),
                         svar = SvarDTO(
                             svar = sporsmalOgSvarDTO.svar,
-                            svarType = SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name)
-                        )
+                            svarType = SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name),
+                        ),
                     )
                 }
-            } ?: emptyList()
+            } ?: emptyList(),
         ),
         medisinskVurdering = sykmelding.medisinskVurdering,
         prognose = sykmelding.prognose,
@@ -139,6 +139,6 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         merknader = sykmelding.merknader,
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding,
     )
 }

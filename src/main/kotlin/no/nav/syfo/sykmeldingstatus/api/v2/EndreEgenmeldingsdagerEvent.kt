@@ -4,5 +4,5 @@ import java.time.LocalDate
 
 data class EndreEgenmeldingsdagerEvent(
     val dager: List<LocalDate>,
-    val tekst: String
+    val tekst: String,
 )

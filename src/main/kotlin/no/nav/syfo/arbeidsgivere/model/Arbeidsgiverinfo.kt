@@ -9,7 +9,7 @@ data class Arbeidsgiverinfo(
     val stillingsprosent: String,
     val stilling: String,
     val aktivtArbeidsforhold: Boolean,
-    val naermesteLeder: NarmesteLeder?
+    val naermesteLeder: NarmesteLeder?,
 )
 
 data class NarmesteLeder(
@@ -20,5 +20,5 @@ data class NarmesteLeder(
     val orgnummer: String,
     val organisasjonsnavn: String,
     val aktivTom: LocalDate?,
-    val arbeidsgiverForskuttererLoenn: Boolean?
+    val arbeidsgiverForskuttererLoenn: Boolean?,
 )

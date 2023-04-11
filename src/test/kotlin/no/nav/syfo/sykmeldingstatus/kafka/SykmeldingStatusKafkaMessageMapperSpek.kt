@@ -33,25 +33,25 @@ class SykmeldingStatusKafkaMessageMapperSpek : FunSpec({
                 "Sykmeldt fra ",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON,
-                "Frilanser"
+                "Frilanser",
             )
             sykmeldingStatusKafkaEventDTO.sporsmals!![1] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Har forsikring?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FORSIKRING,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
-                "Ja"
+                "Ja",
             )
             sykmeldingStatusKafkaEventDTO.sporsmals!![2] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Hatt fravær?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FRAVAER,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
-                "Ja"
+                "Ja",
             )
             sykmeldingStatusKafkaEventDTO.sporsmals!![3] shouldBeEqualTo no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
                 "Når hadde du fravær?",
                 no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.PERIODE,
                 no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.PERIODER,
-                "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}"
+                "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}",
             )
         }
 
@@ -120,6 +120,6 @@ fun lagSporsmalOgSvarDTOListe(): List<SporsmalOgSvarDTO> {
         SporsmalOgSvarDTO("Sykmeldt fra ", ShortNameDTO.ARBEIDSSITUASJON, SvartypeDTO.ARBEIDSSITUASJON, "Frilanser"),
         SporsmalOgSvarDTO("Har forsikring?", ShortNameDTO.FORSIKRING, SvartypeDTO.JA_NEI, "Ja"),
         SporsmalOgSvarDTO("Hatt fravær?", ShortNameDTO.FRAVAER, SvartypeDTO.JA_NEI, "Ja"),
-        SporsmalOgSvarDTO("Når hadde du fravær?", ShortNameDTO.PERIODE, SvartypeDTO.PERIODER, "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}")
+        SporsmalOgSvarDTO("Når hadde du fravær?", ShortNameDTO.PERIODE, SvartypeDTO.PERIODER, "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}"),
     )
 }

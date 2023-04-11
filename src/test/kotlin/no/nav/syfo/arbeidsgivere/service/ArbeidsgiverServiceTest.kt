@@ -17,14 +17,14 @@ class ArbeidsgiverServiceTest : FunSpec({
 
     val arbeidsgiverService = ArbeidsgiverService(
         narmestelederDb = narmestelederDb,
-        arbeidsforholdDb = arbeidsforholdDb
+        arbeidsforholdDb = arbeidsforholdDb,
 
     )
 
     beforeTest {
         clearMocks(
             narmestelederDb,
-            arbeidsforholdDb
+            arbeidsforholdDb,
         )
         coEvery { narmestelederDb.getNarmesteleder(any()) } returns getNarmesteledere()
     }
@@ -58,7 +58,7 @@ class ArbeidsgiverServiceTest : FunSpec({
                 arbeidsforholdDb.getArbeidsforhold(any())
             } returns getArbeidsgiverforhold(
                 fom = LocalDate.of(2019, 1, 1),
-                tom = LocalDate.now().minusDays(1)
+                tom = LocalDate.now().minusDays(1),
             )
 
             val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901")
@@ -71,7 +71,7 @@ class ArbeidsgiverServiceTest : FunSpec({
             } returns getArbeidsgiverforhold(
 
                 fom = LocalDate.now().plusDays(1),
-                tom = LocalDate.now().plusDays(10)
+                tom = LocalDate.now().plusDays(10),
 
             )
 
@@ -85,7 +85,7 @@ class ArbeidsgiverServiceTest : FunSpec({
             } returns getArbeidsgiverforhold(
 
                 fom = LocalDate.now().minusDays(1),
-                tom = LocalDate.now().plusDays(1)
+                tom = LocalDate.now().plusDays(1),
 
             )
 
@@ -103,7 +103,7 @@ class ArbeidsgiverServiceTest : FunSpec({
                     fnr = "12345678901",
                     juridiskOrgnummer = "987654321",
                     fom = LocalDate.of(2020, 6, 1),
-                    tom = null
+                    tom = null,
                 ),
                 Arbeidsforhold(
                     id = 2,
@@ -112,7 +112,7 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     fnr = "12345678901",
                     fom = LocalDate.of(2020, 6, 1),
-                    tom = null
+                    tom = null,
                 ),
                 Arbeidsforhold(
                     id = 3,
@@ -121,8 +121,8 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     fnr = "12345678901",
                     fom = LocalDate.of(2020, 6, 1),
-                    tom = null
-                )
+                    tom = null,
+                ),
             )
 
             val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901")
@@ -142,7 +142,7 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     orgNavn = "Navn 1",
                     fom = LocalDate.of(2020, 5, 1),
-                    tom = LocalDate.of(2020, 6, 1)
+                    tom = LocalDate.of(2020, 6, 1),
                 ),
                 Arbeidsforhold(
                     id = 2,
@@ -151,8 +151,8 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     orgNavn = "Navn 1",
                     fom = LocalDate.of(2020, 1, 1),
-                    tom = null
-                )
+                    tom = null,
+                ),
             )
 
             val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere("12345678901")
@@ -172,7 +172,7 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     orgNavn = "Navn 1",
                     fom = LocalDate.of(2021, 3, 12),
-                    tom = LocalDate.of(2021, 4, 22)
+                    tom = LocalDate.of(2021, 4, 22),
                 ),
                 Arbeidsforhold(
                     id = 2,
@@ -181,13 +181,13 @@ class ArbeidsgiverServiceTest : FunSpec({
                     juridiskOrgnummer = "987654321",
                     orgNavn = "Navn 1",
                     fom = LocalDate.of(2021, 4, 23),
-                    tom = LocalDate.of(2021, 9, 1)
-                )
+                    tom = LocalDate.of(2021, 9, 1),
+                ),
             )
 
             val arbeidsgiverinformasjon = arbeidsgiverService.getArbeidsgivere(
                 "12345678901",
-                date = LocalDate.of(2021, 8, 22)
+                date = LocalDate.of(2021, 8, 22),
             )
             arbeidsgiverinformasjon.size shouldBeEqualTo 1
             arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"

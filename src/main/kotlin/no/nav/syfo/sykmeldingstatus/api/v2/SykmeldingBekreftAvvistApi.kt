@@ -18,7 +18,7 @@ fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: Sykmeldi
         sykmeldingStatusService.registrerBekreftetAvvist(
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr
+            fnr = fnr,
         )
 
         BEKREFTET_AVVIST_AV_BRUKER_COUNTER.inc()

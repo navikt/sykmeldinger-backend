@@ -49,21 +49,21 @@ class BrukerinformasjonApiKtTest : FunSpec({
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678910",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678910",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
                     objectMapper.readValue<Brukerinformasjon>(response.content!!) shouldBeEqualTo Brukerinformasjon(
                         arbeidsgivere = listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null)),
-                        strengtFortroligAdresse = false
+                        strengtFortroligAdresse = false,
                     )
                 }
             }
@@ -74,15 +74,15 @@ class BrukerinformasjonApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "annenservice",
-                                subject = "12345678910",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "annenservice",
+                                    subject = "12345678910",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }

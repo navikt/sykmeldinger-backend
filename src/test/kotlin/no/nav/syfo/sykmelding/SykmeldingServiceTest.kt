@@ -13,7 +13,7 @@ class SykmeldingServiceTest : FunSpec({
     val sykmeldingDb = mockk<SykmeldingDb>()
 
     val sykmeldingService = SykmeldingService(
-        sykmeldingDb
+        sykmeldingDb,
     )
 
     beforeTest {

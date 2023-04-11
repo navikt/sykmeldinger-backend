@@ -10,7 +10,7 @@ data class SykmeldingsperiodeDTO(
     val innspillTilArbeidsgiver: String?,
     val type: PeriodetypeDTO,
     val aktivitetIkkeMulig: AktivitetIkkeMuligDTO?,
-    val reisetilskudd: Boolean
+    val reisetilskudd: Boolean,
 )
 
 enum class PeriodetypeDTO {
@@ -18,5 +18,5 @@ enum class PeriodetypeDTO {
     AVVENTENDE,
     BEHANDLINGSDAGER,
     GRADERT,
-    REISETILSKUDD
+    REISETILSKUDD,
 }

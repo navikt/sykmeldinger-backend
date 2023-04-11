@@ -24,7 +24,7 @@ fun Route.registerSykmeldingAvbrytApiV2(sykmeldingStatusService: SykmeldingStatu
             sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.AVBRUTT, OffsetDateTime.now(ZoneOffset.UTC)),
             sykmeldingId = sykmeldingId,
             source = "user",
-            fnr = fnr
+            fnr = fnr,
         )
 
         AVBRUTT_AV_BRUKER_COUNTER.inc()

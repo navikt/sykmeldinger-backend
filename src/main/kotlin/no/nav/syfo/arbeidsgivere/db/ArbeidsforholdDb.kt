@@ -13,7 +13,7 @@ class ArbeidsforholdDb(private val database: DatabaseInterface) {
             it.prepareStatement(
                 """
                     SELECT * FROM arbeidsforhold WHERE fnr = ?;
-                """
+                """,
             ).use { ps ->
                 ps.setString(1, fnr)
                 ps.executeQuery().toList { toArbeidsforhold() }
@@ -30,5 +30,5 @@ fun ResultSet.toArbeidsforhold(): Arbeidsforhold =
         juridiskOrgnummer = getString("juridisk_orgnummer"),
         orgNavn = getString("orgnavn"),
         fom = getDate("fom").toLocalDate(),
-        tom = getDate("tom")?.toLocalDate()
+        tom = getDate("tom")?.toLocalDate(),
     )

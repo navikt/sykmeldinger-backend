@@ -26,7 +26,7 @@ import org.amshove.kluent.shouldBeEqualTo
 class SykmeldingApiIntegrationTest : FunSpec({
     val sykmeldingDb = mockk<SykmeldingDb>()
     val sykmeldingService = SykmeldingService(
-        sykmeldingDb
+        sykmeldingDb,
     )
 
     context("Sykmeldinger api integration test") {
@@ -67,7 +67,7 @@ private fun TestApplicationEngine.withGetSykmeldinger(block: TestApplicationCall
     with(
         handleRequest(HttpMethod.Get, "api/v2/sykmeldinger") {
             setUpAuthHeader()
-        }
+        },
     ) {
         block()
     }
@@ -80,7 +80,7 @@ fun TestApplicationRequest.setUpAuthHeader() {
             "client",
             "clientId",
             subject = "12345678901",
-            issuer = "issuer"
-        )}"
+            issuer = "issuer",
+        )}",
     )
 }

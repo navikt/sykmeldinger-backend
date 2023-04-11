@@ -61,7 +61,7 @@ class TestDB private constructor() {
                     DELETE FROM sykmelding;
                     DELETE FROM sykmeldt;
                     DELETE FROM behandlingsutfall;
-                """
+                """,
                 ).use { ps ->
                     ps.executeUpdate()
                 }
@@ -79,7 +79,7 @@ fun Any.toPGObject() = PGobject().also {
 fun getBehandlingsutfall(status: RegelStatusDTO): BehandlingsutfallDTO {
     return BehandlingsutfallDTO(
         status = status,
-        ruleHits = emptyList()
+        ruleHits = emptyList(),
     )
 }
 
@@ -87,13 +87,13 @@ fun getStatus(
     status: String,
     timestamp: OffsetDateTime,
     arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null,
-    sporsmals: List<SporsmalDTO> = emptyList()
+    sporsmals: List<SporsmalDTO> = emptyList(),
 ): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         statusEvent = status,
         timestamp = timestamp,
         arbeidsgiver = arbeidsgiverStatusDTO,
-        sporsmalOgSvarListe = sporsmals
+        sporsmalOgSvarListe = sporsmals,
     )
 }
 
@@ -129,7 +129,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
         connection.prepareStatement(
             """
             insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values (?, ?, ?, ?, ?)
-            """.trimIndent()
+            """.trimIndent(),
         ).use {
             it.setString(1, sykmeldingId)
             it.setString(2, status.statusEvent)
@@ -142,9 +142,9 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
                         tekst = spm.tekst,
                         shortName = ShortNameDTO.valueOf(spm.shortName.name),
                         svartype = SvartypeDTO.valueOf(spm.svar.svarType.name),
-                        svar = spm.svar.svar
+                        svar = spm.svar.svar,
                     )
-                }.toPGObject()
+                }.toPGObject(),
             )
             it.executeUpdate()
         }
@@ -158,7 +158,7 @@ fun DatabaseInterface.insertSymelding(sykmeldingId: String, fnr: String, sykmeld
             """ 
                     insert into sykmelding(sykmelding_id, fnr, sykmelding) 
                     values (?, ?, ?)
-            """.trimIndent()
+            """.trimIndent(),
         ).use { preparedStatement ->
             preparedStatement.setString(1, sykmeldingId)
             preparedStatement.setString(2, fnr)
@@ -184,10 +184,10 @@ fun getSykmelding(): SykmeldingDbModel {
                 type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                 aktivitetIkkeMulig = AktivitetIkkeMuligDTO(
                     medisinskArsak = MedisinskArsakDTO("Test", emptyList()),
-                    arbeidsrelatertArsak = null
+                    arbeidsrelatertArsak = null,
                 ),
-                reisetilskudd = false
-            )
+                reisetilskudd = false,
+            ),
         ),
         medisinskVurdering = MedisinskVurderingDTO(
             hovedDiagnose = DiagnoseDTO("ABC", "syk", "syk"),
@@ -195,7 +195,7 @@ fun getSykmelding(): SykmeldingDbModel {
             annenFraversArsak = null,
             svangerskap = false,
             yrkesskade = false,
-            yrkesskadeDato = null
+            yrkesskadeDato = null,
         ),
         prognose = null,
         utdypendeOpplysninger = emptyMap(),
@@ -214,6 +214,6 @@ fun getSykmelding(): SykmeldingDbModel {
         harRedusertArbeidsgiverperiode = null,
         merknader = null,
         rulesetVersion = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
     )
 }

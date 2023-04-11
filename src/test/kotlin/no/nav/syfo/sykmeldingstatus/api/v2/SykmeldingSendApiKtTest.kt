@@ -38,7 +38,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                 authenticate("tokenx") {
                     route("/api/v3") {
                         registrerSykmeldingSendApiV3(
-                            sykmeldingStatusService
+                            sykmeldingStatusService,
                         )
                     }
                 }
@@ -53,15 +53,15 @@ class SykmeldingSendApiKtTest : FunSpec({
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678910",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678910",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Accepted
                 }
@@ -75,15 +75,15 @@ class SykmeldingSendApiKtTest : FunSpec({
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678910",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678910",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                 }
@@ -98,15 +98,15 @@ class SykmeldingSendApiKtTest : FunSpec({
                         addHeader(
                             "AUTHORIZATION",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "12345678910",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "12345678910",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.BadRequest
                 }
@@ -117,7 +117,7 @@ class SykmeldingSendApiKtTest : FunSpec({
                     sykmeldingStatusService.registrerUserEvent(
                         any(),
                         any(),
-                        any()
+                        any(),
                     )
                 } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
                 with(
@@ -127,15 +127,15 @@ class SykmeldingSendApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "clientId",
-                                subject = "00000000000",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "clientId",
+                                    subject = "00000000000",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.NotFound
                 }
@@ -149,15 +149,15 @@ class SykmeldingSendApiKtTest : FunSpec({
                         addHeader(
                             "Authorization",
                             "Bearer ${
-                            generateJWT(
-                                "client",
-                                "annenservice",
-                                subject = "12345678910",
-                                issuer = "issuer"
-                            )
-                            }"
+                                generateJWT(
+                                    "client",
+                                    "annenservice",
+                                    subject = "12345678910",
+                                    issuer = "issuer",
+                                )
+                            }",
                         )
-                    }
+                    },
                 ) {
                     response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
                 }
@@ -170,12 +170,12 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
     return SykmeldingUserEvent(
         erOpplysningeneRiktige = SporsmalSvar(
             sporsmaltekst = "",
-            svar = JaEllerNei.JA
+            svar = JaEllerNei.JA,
         ),
         uriktigeOpplysninger = null,
         arbeidssituasjon = SporsmalSvar(
             sporsmaltekst = "",
-            svar = ArbeidssituasjonDTO.ANNET
+            svar = ArbeidssituasjonDTO.ANNET,
         ),
         arbeidsgiverOrgnummer = null,
         riktigNarmesteLeder = null,
@@ -183,6 +183,6 @@ fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
         egenmeldingsperioder = null,
         harForsikring = null,
         harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null
+        egenmeldingsdager = null,
     )
 }

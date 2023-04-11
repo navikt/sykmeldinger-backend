@@ -19,13 +19,13 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
         call.respond(
             Brukerinformasjon(
                 strengtFortroligAdresse = false,
-                arbeidsgivere = arbeidsgivere
-            )
+                arbeidsgivere = arbeidsgivere,
+            ),
         )
     }
 }
 
 data class Brukerinformasjon(
     val arbeidsgivere: List<Arbeidsgiverinfo>,
-    val strengtFortroligAdresse: Boolean
+    val strengtFortroligAdresse: Boolean,
 )

@@ -26,7 +26,7 @@ import java.time.ZoneOffset
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val arbeidsgiverService: ArbeidsgiverService,
-    private val sykmeldingStatusDb: SykmeldingStatusDb
+    private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
@@ -37,8 +37,8 @@ class SykmeldingStatusService(
                     StatusEventDTO.AVBRUTT,
                     StatusEventDTO.SENDT,
                     StatusEventDTO.APEN,
-                    StatusEventDTO.UTGATT
-                )
+                    StatusEventDTO.UTGATT,
+                ),
             ),
             Pair(
                 StatusEventDTO.BEKREFTET,
@@ -47,21 +47,21 @@ class SykmeldingStatusService(
                     StatusEventDTO.AVBRUTT,
                     StatusEventDTO
                         .BEKREFTET,
-                    StatusEventDTO.SENDT
-                )
+                    StatusEventDTO.SENDT,
+                ),
             ),
             Pair(StatusEventDTO.SENDT, emptyList()),
             Pair(StatusEventDTO.AVBRUTT, listOf(StatusEventDTO.APEN, StatusEventDTO.SENDT, StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT)),
-            Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT))
+            Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT)),
         )
         private val statusStatesAvvistSykmelding: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
             Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET)),
-            Pair(StatusEventDTO.BEKREFTET, emptyList())
+            Pair(StatusEventDTO.BEKREFTET, emptyList()),
         )
         private val statusStatesEgenmelding: Map<StatusEventDTO, List<StatusEventDTO>> = mapOf(
             Pair(StatusEventDTO.APEN, listOf(StatusEventDTO.BEKREFTET, StatusEventDTO.AVBRUTT)),
             Pair(StatusEventDTO.BEKREFTET, emptyList()),
-            Pair(StatusEventDTO.AVBRUTT, emptyList())
+            Pair(StatusEventDTO.AVBRUTT, emptyList()),
         )
     }
 
@@ -69,7 +69,7 @@ class SykmeldingStatusService(
         sykmeldingStatusEventDTO: SykmeldingStatusEventDTO,
         sykmeldingId: String,
         source: String,
-        fnr: String
+        fnr: String,
     ) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         if (canChangeStatus(
@@ -77,14 +77,14 @@ class SykmeldingStatusService(
                 sisteStatus = sisteStatus.statusEvent,
                 erAvvist = sisteStatus.erAvvist,
                 erEgenmeldt = sisteStatus.erEgenmeldt,
-                sykmeldingId = sykmeldingId
+                sykmeldingId = sykmeldingId,
             )
         ) {
             val sykmeldingStatusKafkaEventDTO = sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
             sykmeldingStatusKafkaProducer.send(
                 sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
                 source = source,
-                fnr = fnr
+                fnr = fnr,
             )
             sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
         }
@@ -93,7 +93,7 @@ class SykmeldingStatusService(
     suspend fun registrerUserEvent(
         sykmeldingUserEvent: SykmeldingUserEvent,
         sykmeldingId: String,
-        fnr: String
+        fnr: String,
     ) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
@@ -102,14 +102,14 @@ class SykmeldingStatusService(
                 sisteStatus = sisteStatus.statusEvent,
                 erAvvist = sisteStatus.erAvvist,
                 erEgenmeldt = sisteStatus.erEgenmeldt,
-                sykmeldingId = sykmeldingId
+                sykmeldingId = sykmeldingId,
             )
         ) {
             val arbeidsgiver = when (nesteStatus) {
                 StatusEventDTO.SENDT -> getArbeidsgiver(
                     fnr,
                     sykmeldingId,
-                    sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar
+                    sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar,
                 )
 
                 else -> null
@@ -121,7 +121,7 @@ class SykmeldingStatusService(
             sykmeldingStatusKafkaProducer.send(
                 sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
                 source = "user",
-                fnr = fnr
+                fnr = fnr,
             )
             sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
 
@@ -139,13 +139,13 @@ class SykmeldingStatusService(
         val sykmeldingStatusKafkaEventDTOUpdated = sykmeldingStatusKafkaEventDTO.copy(
             sporsmals = updateEgenemeldingsdagerSporsmal(sykmeldingStatusKafkaEventDTO.sporsmals, egenmeldingsdagerEvent),
             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-            erSvarOppdatering = true
+            erSvarOppdatering = true,
         )
 
         sykmeldingStatusKafkaProducer.send(
             sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTOUpdated,
             source = "user",
-            fnr = fnr
+            fnr = fnr,
         )
 
         sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
@@ -163,9 +163,9 @@ class SykmeldingStatusService(
                                 tekst = egenmeldingsdagerEvent.tekst,
                                 shortName = ShortNameDTO.EGENMELDINGSDAGER,
                                 svartype = SvartypeDTO.DAGER,
-                                svar = objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager)
-                            )
-                        )
+                                svar = objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
+                            ),
+                        ),
                     )
                 } else {
                     it
@@ -176,7 +176,7 @@ class SykmeldingStatusService(
     private suspend fun getArbeidsgiver(
         fnr: String,
         sykmeldingId: String,
-        orgnummer: String
+        orgnummer: String,
     ): Arbeidsgiverinfo {
         return arbeidsgiverService.getArbeidsgivere(fnr)
             .find { it.orgnummer == orgnummer }
@@ -192,22 +192,22 @@ class SykmeldingStatusService(
                         sisteStatus = sisteStatus.statusEvent,
                         erAvvist = true,
                         erEgenmeldt = sisteStatus.erEgenmeldt,
-                        sykmeldingId = sykmeldingId
+                        sykmeldingId = sykmeldingId,
                     )
                 ) {
                     val sykmeldingBekreftEventDTO = SykmeldingBekreftEventDTO(
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        sporsmalOgSvarListe = emptyList()
+                        sporsmalOgSvarListe = emptyList(),
                     )
                     val sykmeldingStatusKafkaEventDTO =
                         sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
                     sykmeldingStatusKafkaProducer.send(
                         sykmeldingStatusKafkaEventDTO,
                         source,
-                        fnr
+                        fnr,
                     )
                     sykmeldingStatusDb.insertStatus(
-                        sykmeldingStatusKafkaEventDTO
+                        sykmeldingStatusKafkaEventDTO,
                     )
                 } else {
                     log.warn("Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId")
@@ -227,7 +227,7 @@ class SykmeldingStatusService(
         sisteStatus: StatusEventDTO,
         erAvvist: Boolean?,
         erEgenmeldt: Boolean?,
-        sykmeldingId: String
+        sykmeldingId: String,
     ): Boolean {
         val allowedStatuses =
             when {

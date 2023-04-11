@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 class ArbeidsgiverService(
     private val narmestelederDb: NarmestelederDb,
-    private val arbeidsforholdDb: ArbeidsforholdDb
+    private val arbeidsforholdDb: ArbeidsforholdDb,
 ) {
     suspend fun getArbeidsgivere(fnr: String, date: LocalDate = LocalDate.now()): List<Arbeidsgiverinfo> {
         val arbeidsgivere = arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
@@ -24,7 +24,7 @@ class ArbeidsgiverService(
         arbeidsgivere.sortedWith(
             compareByDescending(nullsLast()) {
                 it.tom
-            }
+            },
         ).distinctBy {
             it.orgnummer
         }.forEach { arbeidsforhold ->
@@ -38,7 +38,7 @@ class ArbeidsgiverService(
         arbeidsgiverList: ArrayList<Arbeidsgiverinfo>,
         arbeidsforhold: Arbeidsforhold,
         narmestelederDbModel: NarmestelederDbModel?,
-        date: LocalDate
+        date: LocalDate,
     ) {
         arbeidsgiverList.add(
             Arbeidsgiverinfo(
@@ -49,8 +49,8 @@ class ArbeidsgiverService(
                 stillingsprosent = "", // denne brukes ikke, men er påkrevd i formatet
                 aktivtArbeidsforhold = arbeidsforhold.tom == null ||
                     !date.isAfter(arbeidsforhold.tom) && !date.isBefore(arbeidsforhold.fom),
-                naermesteLeder = narmestelederDbModel?.tilNarmesteLeder(arbeidsforhold.orgNavn)
-            )
+                naermesteLeder = narmestelederDbModel?.tilNarmesteLeder(arbeidsforhold.orgNavn),
+            ),
         )
     }
 
@@ -63,7 +63,7 @@ class ArbeidsgiverService(
             orgnummer = orgnummer,
             organisasjonsnavn = orgnavn,
             aktivTom = null, // brukes ikke i frontend
-            arbeidsgiverForskuttererLoenn = null // brukes ikke i frontend
+            arbeidsgiverForskuttererLoenn = null, // brukes ikke i frontend
         )
     }
 }

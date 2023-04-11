@@ -24,7 +24,7 @@ fun getSykmeldingStatus(
     statusEventDTO: StatusEventDTO,
     dateTime: OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC),
     erAvvist: Boolean? = null,
-    erEgenmeldt: Boolean? = null
+    erEgenmeldt: Boolean? = null,
 ): SykmeldingStatusEventDTO {
     return SykmeldingStatusEventDTO(statusEventDTO, dateTime, erAvvist, erEgenmeldt)
 }
@@ -43,14 +43,14 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
                 null,
                 PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
                 null,
-                false
-            )
+                false,
+            ),
         ),
         sykmeldingStatus = SykmeldingStatusDTO(
             "APEN",
             timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
             null,
-            emptyList()
+            emptyList(),
         ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
@@ -59,7 +59,7 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
             null,
             "etternavn",
             AdresseDTO(null, null, null, null, null),
-            null
+            null,
         ),
         behandletTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
         mottattTidspunkt = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
@@ -80,7 +80,7 @@ fun getSykmeldingDTO(merknader: List<MerknadDTO>? = null, timestamps: OffsetDate
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
     )
 }
 
@@ -91,6 +91,6 @@ fun getMedisinskVurdering(): MedisinskVurderingDTO {
         annenFraversArsak = AnnenFraversArsakDTO("", emptyList()),
         svangerskap = false,
         yrkesskade = false,
-        yrkesskadeDato = null
+        yrkesskadeDato = null,
     )
 }

@@ -100,5 +100,5 @@ private fun getSykmeldingStatusEvent() = SykmeldingStatusKafkaEventDTO(
     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
     statusEvent = StatusEventDTO.SENDT.name,
     arbeidsgiver = null,
-    sporsmals = null
+    sporsmals = null,
 )

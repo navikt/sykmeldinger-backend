@@ -17,7 +17,7 @@ import no.nav.syfo.log
 fun Application.setupAuth(
     jwkProviderTokenX: JwkProvider,
     tokenXIssuer: String,
-    clientIdTokenX: String
+    clientIdTokenX: String,
 ) {
     install(Authentication) {
         jwt(name = "tokenx") {
@@ -36,7 +36,7 @@ fun Application.setupAuth(
                             BrukerPrincipal(
                                 fnr = finnFnrFraToken(principal),
                                 principal = principal,
-                                token = this.getToken()!!
+                                token = this.getToken()!!,
                             )
                         }
                     else -> unauthorized(credentials)
@@ -61,7 +61,7 @@ fun unauthorized(credentials: JWTCredential): Principal? {
     log.warn(
         "Auth: Unexpected audience for jwt {}, {}",
         StructuredArguments.keyValue("issuer", credentials.payload.issuer),
-        StructuredArguments.keyValue("audience", credentials.payload.audience)
+        StructuredArguments.keyValue("audience", credentials.payload.audience),
     )
     return null
 }
@@ -83,5 +83,5 @@ fun finnFnrFraToken(principal: JWTPrincipal): String {
 data class BrukerPrincipal(
     val fnr: String,
     val principal: JWTPrincipal,
-    val token: String
+    val token: String,
 ) : Principal

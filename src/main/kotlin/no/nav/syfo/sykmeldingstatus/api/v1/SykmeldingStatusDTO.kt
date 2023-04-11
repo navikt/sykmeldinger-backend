@@ -6,7 +6,7 @@ data class SykmeldingStatusEventDTO(
     val statusEvent: StatusEventDTO,
     val timestamp: OffsetDateTime,
     val erAvvist: Boolean? = null,
-    val erEgenmeldt: Boolean? = null
+    val erEgenmeldt: Boolean? = null,
 )
 
 enum class StatusEventDTO {
@@ -16,21 +16,21 @@ enum class StatusEventDTO {
 data class ArbeidsgiverStatusDTO(
     val orgnummer: String,
     val juridiskOrgnummer: String?,
-    val orgNavn: String
+    val orgNavn: String,
 )
 
 data class SykmeldingBekreftEventDTO(
     val timestamp: OffsetDateTime,
     val sporsmalOgSvarListe: List<SporsmalOgSvarDTO>?,
     val erAvvist: Boolean? = null,
-    val erEgenmeldt: Boolean? = null
+    val erEgenmeldt: Boolean? = null,
 )
 
 data class SporsmalOgSvarDTO(
     val tekst: String,
     val shortName: ShortNameDTO,
     val svartype: SvartypeDTO,
-    val svar: String
+    val svar: String,
 )
 
 enum class ShortNameDTO {
@@ -40,5 +40,5 @@ enum class ShortNameDTO {
 enum class SvartypeDTO {
     ARBEIDSSITUASJON,
     PERIODER,
-    JA_NEI
+    JA_NEI,
 }

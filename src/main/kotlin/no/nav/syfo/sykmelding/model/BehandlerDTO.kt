@@ -5,5 +5,5 @@ data class BehandlerDTO(
     val mellomnavn: String?,
     val etternavn: String,
     val adresse: AdresseDTO,
-    val tlf: String?
+    val tlf: String?,
 )

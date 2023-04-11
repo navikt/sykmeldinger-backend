@@ -9,7 +9,7 @@ import java.util.UUID
 
 fun getArbeidsgiverforhold(
     fom: LocalDate = LocalDate.of(2020, 6, 1),
-    tom: LocalDate? = null
+    tom: LocalDate? = null,
 ): List<Arbeidsforhold> {
     return listOf(
         Arbeidsforhold(
@@ -19,8 +19,8 @@ fun getArbeidsgiverforhold(
             juridiskOrgnummer = "987654321",
             orgNavn = "Navn 1",
             fom = fom,
-            tom = tom
-        )
+            tom = tom,
+        ),
     )
 }
 
@@ -32,7 +32,7 @@ fun getNarmesteledere(): List<NarmestelederDbModel> {
             brukerFnr = "12345678901",
             lederFnr = "01987654321",
             navn = "Leder Ledersen",
-            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1)
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(1),
         ),
         NarmestelederDbModel(
             narmestelederId = UUID.randomUUID().toString(),
@@ -40,7 +40,7 @@ fun getNarmesteledere(): List<NarmestelederDbModel> {
             brukerFnr = "12345678901",
             lederFnr = "01987654321",
             navn = "Annen Ledersen",
-            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2)
-        )
+            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusYears(2),
+        ),
     )
 }

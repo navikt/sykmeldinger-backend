@@ -42,7 +42,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                 connection.prepareStatement(
                     """
             insert into sykmeldingstatus(sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values(?, ?, ?, ?, ?) on conflict do nothing;
-        """
+        """,
                 ).use { ps ->
                     var index = 1
                     ps.setString(index++, event.sykmeldingId)
@@ -73,7 +73,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                 inner join behandlingsutfall beh on ss.sykmelding_id = beh.sykmelding_id
                     where ss.sykmelding_id = ?
                         and timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = ss.sykmelding_id)
-                """
+                """,
             ).use { ps ->
                 ps.setString(1, fnr)
                 ps.setString(2, sykmeldingId)
@@ -95,7 +95,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                 inner join sykmelding syk on syk.sykmelding_id = ss.sykmelding_id and syk.fnr = ?
                     where ss.sykmelding_id = ?
                         and timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = ss.sykmelding_id)
-                """
+                """,
             ).use { ps ->
                 ps.setString(1, fnr)
                 ps.setString(2, sykmeldingId)
@@ -111,7 +111,7 @@ private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEv
             statusEvent = StatusEventDTO.valueOf(getString("event")),
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             erEgenmeldt = getBoolean("egenmeldt"),
-            erAvvist = getString("behandlingsutfall").let { it == "INVALID" }
+            erAvvist = getString("behandlingsutfall").let { it == "INVALID" },
         )
     } else {
         throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
@@ -127,7 +127,7 @@ private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingS
             sporsmals = getString("sporsmal")?.let {
                 objectMapper.readValue<List<SporsmalOgSvarDTO>>(it)
             } ?: emptyList(),
-            statusEvent = getString("event")
+            statusEvent = getString("event"),
         )
     } else {
         throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
