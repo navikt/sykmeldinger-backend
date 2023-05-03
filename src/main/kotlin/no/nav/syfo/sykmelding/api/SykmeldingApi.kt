@@ -29,9 +29,11 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
             call.respond(HttpStatusCode.NotFound)
         } else {
             log.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
-            securelog.info("Henter ut sykmelding for fnr: $fnr og sykmeldingid: $sykmeldingId")
             when (val sykmelding = sykmeldingService.hentSykmelding(fnr, sykmeldingId)) {
-                null -> call.respond(HttpStatusCode.NotFound)
+                null -> call.respond(HttpStatusCode.NotFound).also {
+                    securelog.info("Fikk null fra sql, prøvde å hente ut sykmelding for " +
+                            "fnr: $fnr med sykmeldingid: $sykmeldingId")
+                }
                 else -> call.respond(sykmelding)
             }
         }
