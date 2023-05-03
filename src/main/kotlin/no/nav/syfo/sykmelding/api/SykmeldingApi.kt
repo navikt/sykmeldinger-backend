@@ -8,6 +8,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
+import no.nav.syfo.securelog
 import no.nav.syfo.sykmelding.SykmeldingService
 
 fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
@@ -24,9 +25,11 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
         val fnr = principal.fnr
 
         if (sykmeldingId == "null") {
-            log.warn("Mottok kall for å hente sykmelding med id null")
+            log.warn("Mottok kall for å hente sykmelding med id null, sender 404 Not Found")
             call.respond(HttpStatusCode.NotFound)
         } else {
+            log.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
+            securelog.info("Henter ut sykmelding for fnr: $fnr og sykmeldingid: $sykmeldingId")
             when (val sykmelding = sykmeldingService.hentSykmelding(fnr, sykmeldingId)) {
                 null -> call.respond(HttpStatusCode.NotFound)
                 else -> call.respond(sykmelding)
