@@ -23,6 +23,7 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sykmeldinger-backend")
+val securelog: Logger = LoggerFactory.getLogger("securelog")
 
 val objectMapper: ObjectMapper = ObjectMapper().apply {
     registerKotlinModule()

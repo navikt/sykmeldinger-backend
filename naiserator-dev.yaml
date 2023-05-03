@@ -67,8 +67,8 @@ spec:
         - application: sykepengesoknad
           namespace: flex
           cluster: dev-gcp
-  vault:
-    enabled: false
+  secureLogs:
+    enabled: true
   ingresses:
     - "https://sykmeldinger-backend.dev.nav.no"
   env:
