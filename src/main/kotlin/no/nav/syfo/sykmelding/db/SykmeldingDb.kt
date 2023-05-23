@@ -83,6 +83,42 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             }
         }
     }
+
+    suspend fun sykmeldingExists(sykmeldingId: String): Boolean = withContext(Dispatchers.IO) {
+        database.connection.use { connection ->
+            connection.prepareStatement("""select true from sykmelding where sykmelding_id = ? limit 1""").use {
+                it.setString(1, sykmeldingId)
+                it.executeQuery().next()
+            }
+        }
+    }
+
+    suspend fun behandlingsutfallExists(sykmeldingId: String): Boolean = withContext(Dispatchers.IO) {
+        database.connection.use { connection ->
+            connection.prepareStatement("""select true from behandlingsutfall where sykmelding_id = ?""").use {
+                it.setString(1, sykmeldingId)
+                it.executeQuery().next()
+            }
+        }
+    }
+
+    suspend fun sykmeldingStatusExists(sykmeldingId: String): Boolean = withContext(Dispatchers.IO) {
+        database.connection.use { connection ->
+            connection.prepareStatement("""select true from sykmeldingstatus where sykmelding_id = ?""").use {
+                it.setString(1, sykmeldingId)
+                it.executeQuery().next()
+            }
+        }
+    }
+
+    suspend fun sykmeldtExists(fnr: String): Boolean = withContext(Dispatchers.IO) {
+        database.connection.use { connection ->
+            connection.prepareStatement("""select true from sykmeldt where fnr = ?""").use {
+                it.setString(1, fnr)
+                it.executeQuery().next()
+            }
+        }
+    }
 }
 
 private fun ResultSet.toSykmelding(): SykmeldingDTO {
