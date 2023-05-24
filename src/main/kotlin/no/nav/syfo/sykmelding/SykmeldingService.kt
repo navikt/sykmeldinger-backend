@@ -39,7 +39,9 @@ class SykmeldingService(
             if (!sykmeldtExists) {
                 MISSING_DATA_COUNTER.labels("sykmeldt").inc()
             }
-            log.info("404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists")
+
+            val allDataExists: Boolean = sykmeldingDb.getSykmelding(sykmeldingId, fnr) != null
+            log.info("404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId")
         }
     }
 }
