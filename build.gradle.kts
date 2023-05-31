@@ -15,7 +15,6 @@ val jacksonVersion = "2.15.1"
 val kluentVersion = "1.73"
 val mockkVersion = "1.13.5"
 val nimbusdsVersion = "9.31"
-val jedisVersion = "4.4.1"
 val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.18.2"
 val swaggerUiVersion = "4.18.2"
@@ -81,7 +80,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-    implementation("redis.clients:jedis:$jedisVersion")
     implementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
 
     implementation("com.zaxxer:HikariCP:$hikariVersion")
