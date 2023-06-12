@@ -2,7 +2,7 @@ package no.nav.syfo.sykmeldingstatus.api.v2
 
 import java.time.LocalDate
 
-data class SporsmalSvar<T> (
+data class SporsmalSvar<T>(
     val sporsmaltekst: String,
     val svar: T,
 )

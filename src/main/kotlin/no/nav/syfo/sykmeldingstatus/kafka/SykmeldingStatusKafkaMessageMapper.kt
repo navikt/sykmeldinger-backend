@@ -1,5 +1,6 @@
 package no.nav.syfo.sykmeldingstatus.kafka
 
+import java.time.OffsetDateTime
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
@@ -19,9 +20,12 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
-import java.time.OffsetDateTime
 
-fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp: OffsetDateTime, sykmeldingId: String, arbeidsgiver: Arbeidsgiverinfo?): SykmeldingStatusKafkaEventDTO {
+fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
+    timestamp: OffsetDateTime,
+    sykmeldingId: String,
+    arbeidsgiver: Arbeidsgiverinfo?
+): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(
         sykmeldingId,
         timestamp,
@@ -37,7 +41,10 @@ fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(timestamp: OffsetDateTi
     )
 }
 
-fun SykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver: Arbeidsgiverinfo? = null, sykmeldingId: String): List<SporsmalOgSvarDTO> {
+fun SykmeldingUserEvent.toSporsmalSvarListe(
+    arbeidsgiver: Arbeidsgiverinfo? = null,
+    sykmeldingId: String
+): List<SporsmalOgSvarDTO> {
     return listOfNotNull(
         arbeidssituasjonSporsmalBuilder(),
         fravarSporsmalBuilder(),
@@ -92,9 +99,14 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
     return null
 }
 
-private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(arbeidsgiver: Arbeidsgiverinfo?, sykmeldingId: String): SporsmalOgSvarDTO? {
+private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(
+    arbeidsgiver: Arbeidsgiverinfo?,
+    sykmeldingId: String
+): SporsmalOgSvarDTO? {
     if (arbeidsgiver?.aktivtArbeidsforhold == false) {
-        log.info("Ber ikke om ny nærmeste leder for arbeidsforhold som ikke er aktivt: $sykmeldingId")
+        log.info(
+            "Ber ikke om ny nærmeste leder for arbeidsforhold som ikke er aktivt: $sykmeldingId"
+        )
         return SporsmalOgSvarDTO(
             tekst = "Skal finne ny nærmeste leder",
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
@@ -108,10 +120,11 @@ private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(arbeidsgiver:
             tekst = riktigNarmesteLeder.sporsmaltekst,
             shortName = ShortNameDTO.NY_NARMESTE_LEDER,
             svartype = SvartypeDTO.JA_NEI,
-            svar = when (riktigNarmesteLeder.svar) {
-                JaEllerNei.JA -> JaEllerNei.NEI
-                JaEllerNei.NEI -> JaEllerNei.JA
-            }.name,
+            svar =
+                when (riktigNarmesteLeder.svar) {
+                    JaEllerNei.JA -> JaEllerNei.NEI
+                    JaEllerNei.NEI -> JaEllerNei.JA
+                }.name,
         )
     }
     return null
@@ -129,12 +142,28 @@ private fun SykmeldingUserEvent.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? 
     return null
 }
 
-fun SykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
-    return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, this.statusEvent.tilStatusEventDTO(), null, null)
+fun SykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(
+    sykmeldingId: String
+): SykmeldingStatusKafkaEventDTO {
+    return SykmeldingStatusKafkaEventDTO(
+        sykmeldingId,
+        this.timestamp,
+        this.statusEvent.tilStatusEventDTO(),
+        null,
+        null
+    )
 }
 
-fun SykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
-    return SykmeldingStatusKafkaEventDTO(sykmeldingId, this.timestamp, STATUS_BEKREFTET, null, tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe))
+fun SykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(
+    sykmeldingId: String
+): SykmeldingStatusKafkaEventDTO {
+    return SykmeldingStatusKafkaEventDTO(
+        sykmeldingId,
+        this.timestamp,
+        STATUS_BEKREFTET,
+        null,
+        tilSporsmalOgSvarDTOListe(this.sporsmalOgSvarListe)
+    )
 }
 
 fun StatusEventDTO.tilStatusEventDTO(): String {
@@ -147,11 +176,18 @@ fun StatusEventDTO.tilStatusEventDTO(): String {
     }
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO.tilArbeidsgiverStatusDTO(): ArbeidsgiverStatusDTO {
-    return ArbeidsgiverStatusDTO(orgnummer = this.orgnummer, juridiskOrgnummer = this.juridiskOrgnummer, orgNavn = this.orgNavn)
+fun no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO.tilArbeidsgiverStatusDTO():
+    ArbeidsgiverStatusDTO {
+    return ArbeidsgiverStatusDTO(
+        orgnummer = this.orgnummer,
+        juridiskOrgnummer = this.juridiskOrgnummer,
+        orgNavn = this.orgNavn
+    )
 }
 
-fun tilSporsmalOgSvarDTOListe(sporsmalListe: List<no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO>?): List<SporsmalOgSvarDTO>? {
+fun tilSporsmalOgSvarDTOListe(
+    sporsmalListe: List<no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO>?
+): List<SporsmalOgSvarDTO>? {
     return if (sporsmalListe.isNullOrEmpty()) {
         null
     } else {
@@ -159,22 +195,32 @@ fun tilSporsmalOgSvarDTOListe(sporsmalListe: List<no.nav.syfo.sykmeldingstatus.a
     }
 }
 
-fun tilSporsmalOgSvarDTO(sporsmalOgSvar: no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO): SporsmalOgSvarDTO =
-    SporsmalOgSvarDTO(tekst = sporsmalOgSvar.tekst, shortName = sporsmalOgSvar.shortName.tilShortNameDTO(), svartype = sporsmalOgSvar.svartype.tilSvartypeDTO(), svar = sporsmalOgSvar.svar)
+fun tilSporsmalOgSvarDTO(
+    sporsmalOgSvar: no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
+): SporsmalOgSvarDTO =
+    SporsmalOgSvarDTO(
+        tekst = sporsmalOgSvar.tekst,
+        shortName = sporsmalOgSvar.shortName.tilShortNameDTO(),
+        svartype = sporsmalOgSvar.svartype.tilSvartypeDTO(),
+        svar = sporsmalOgSvar.svar
+    )
 
 fun no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.tilShortNameDTO(): ShortNameDTO {
     return when (this) {
-        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.ARBEIDSSITUASJON -> ShortNameDTO.ARBEIDSSITUASJON
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.ARBEIDSSITUASJON ->
+            ShortNameDTO.ARBEIDSSITUASJON
         no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.PERIODE -> ShortNameDTO.PERIODE
         no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FRAVAER -> ShortNameDTO.FRAVAER
         no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FORSIKRING -> ShortNameDTO.FORSIKRING
-        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.NY_NARMESTE_LEDER -> ShortNameDTO.NY_NARMESTE_LEDER
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.NY_NARMESTE_LEDER ->
+            ShortNameDTO.NY_NARMESTE_LEDER
     }
 }
 
 fun no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.tilSvartypeDTO(): SvartypeDTO {
     return when (this) {
-        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.ARBEIDSSITUASJON -> SvartypeDTO.ARBEIDSSITUASJON
+        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.ARBEIDSSITUASJON ->
+            SvartypeDTO.ARBEIDSSITUASJON
         no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.PERIODER -> SvartypeDTO.PERIODER
         no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.JA_NEI -> SvartypeDTO.JA_NEI
     }

@@ -26,8 +26,9 @@ val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
     }
 }
 
-fun getWellKnown(wellKnownUrl: String) =
-    runBlocking { HttpClient(Apache, config).get(wellKnownUrl).body<WellKnown>() }
+fun getWellKnown(wellKnownUrl: String) = runBlocking {
+    HttpClient(Apache, config).get(wellKnownUrl).body<WellKnown>()
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnown(
@@ -37,8 +38,9 @@ data class WellKnown(
     val issuer: String,
 )
 
-fun getWellKnownTokenX(wellKnownUrl: String) =
-    runBlocking { HttpClient(Apache, config).get(wellKnownUrl).body<WellKnownTokenX>() }
+fun getWellKnownTokenX(wellKnownUrl: String) = runBlocking {
+    HttpClient(Apache, config).get(wellKnownUrl).body<WellKnownTokenX>()
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class WellKnownTokenX(

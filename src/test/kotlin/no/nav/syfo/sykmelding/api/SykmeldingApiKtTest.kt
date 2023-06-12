@@ -24,35 +24,33 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 
-class SykmeldingApiKtTest : FunSpec({
+class SykmeldingApiKtTest :
+    FunSpec({
+        val sykmeldingService = mockkClass(SykmeldingService::class)
+        val mockPayload = mockk<Payload>()
 
-    val sykmeldingService = mockkClass(SykmeldingService::class)
-    val mockPayload = mockk<Payload>()
+        beforeTest {
+            clearAllMocks()
+            coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns getSykmeldingDTO()
+            coEvery { sykmeldingService.hentSykmeldinger(any()) } returns listOf(getSykmeldingDTO())
+        }
 
-    beforeTest {
-        clearAllMocks()
-        coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns getSykmeldingDTO()
-        coEvery { sykmeldingService.hentSykmeldinger(any()) } returns listOf(getSykmeldingDTO())
-    }
-
-    context("Sykmelding Api test") {
-        with(TestApplicationEngine()) {
-            every { mockPayload.subject } returns "123"
-            setUpTestApplication()
-            setUpAuth()
-            application.routing {
-                authenticate("tokenx") {
-                    route("/api/v2") {
-                        registerSykmeldingApiV2(sykmeldingService)
+        context("Sykmelding Api test") {
+            with(TestApplicationEngine()) {
+                every { mockPayload.subject } returns "123"
+                setUpTestApplication()
+                setUpAuth()
+                application.routing {
+                    authenticate("tokenx") {
+                        route("/api/v2") { registerSykmeldingApiV2(sykmeldingService) }
                     }
                 }
-            }
-            test("Hent sykmeldinger") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Hent sykmeldinger") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -60,19 +58,24 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        objectMapper
+                            .readValue<List<Sykmelding>>(response.content!!)
+                            .size shouldBeEqualTo 1
+                    }
                 }
-            }
-            test("Hent sykmeldinger med fom og tom") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger?fom=2020-01-20&tom=2020-02-10") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Hent sykmeldinger med fom og tom") {
+                    with(
+                        handleRequest(
+                            HttpMethod.Get,
+                            "/api/v2/sykmeldinger?fom=2020-01-20&tom=2020-02-10"
+                        ) {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -80,19 +83,24 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        objectMapper
+                            .readValue<List<Sykmelding>>(response.content!!)
+                            .size shouldBeEqualTo 1
+                    }
                 }
-            }
-            test("Hent sykmeldinger med fom og tom og exclude") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Hent sykmeldinger med fom og tom og exclude") {
+                    with(
+                        handleRequest(
+                            HttpMethod.Get,
+                            "/api/v2/sykmeldinger?exclude=AVBRUTT&fom=2020-01-20&tom=2020-02-10"
+                        ) {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -100,32 +108,32 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    objectMapper.readValue<List<Sykmelding>>(response.content!!).size shouldBeEqualTo 1
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        objectMapper
+                            .readValue<List<Sykmelding>>(response.content!!)
+                            .size shouldBeEqualTo 1
+                    }
                 }
             }
         }
-    }
-    context("Sykmelding API with Authorization") {
-        with(TestApplicationEngine()) {
-            setUpTestApplication()
-            setUpAuth()
-            application.routing {
-                authenticate("tokenx") {
-                    route("/api/v2") {
-                        registerSykmeldingApiV2(sykmeldingService)
+        context("Sykmelding API with Authorization") {
+            with(TestApplicationEngine()) {
+                setUpTestApplication()
+                setUpAuth()
+                application.routing {
+                    authenticate("tokenx") {
+                        route("/api/v2") { registerSykmeldingApiV2(sykmeldingService) }
                     }
                 }
-            }
-            test("Sykmelding by id OK") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger/sykmeldingid") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Sykmelding by id OK") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger/sykmeldingid") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -133,18 +141,18 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
                 }
-            }
-            test("Sykmeldinger OK") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Sykmeldinger OK") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -152,18 +160,18 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
                 }
-            }
-            test("Sykmeldinger OK, with cookie") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
-                        addHeader(
-                            "Cookie",
-                            "selvbetjening-idtoken=${
+                test("Sykmeldinger OK, with cookie") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
+                            addHeader(
+                                "Cookie",
+                                "selvbetjening-idtoken=${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -171,18 +179,18 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                    }
                 }
-            }
-            test("Unauthorized, incorrect audience") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Unauthorized, incorrect audience") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "loginservice2",
@@ -190,18 +198,18 @@ class SykmeldingApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    }
                 }
-            }
-            test("Unauthorized, nivå 3") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Unauthorized, nivå 3") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -210,17 +218,17 @@ class SykmeldingApiKtTest : FunSpec({
                                     level = "Level3",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    }
                 }
-            }
-            test("Unauthorized, missing token") {
-                with(handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {}) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                test("Unauthorized, missing token") {
+                    with(handleRequest(HttpMethod.Get, "/api/v2/sykmeldinger") {}) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    }
                 }
             }
         }
-    }
-})
+    })

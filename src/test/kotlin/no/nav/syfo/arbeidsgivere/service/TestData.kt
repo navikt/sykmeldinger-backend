@@ -1,11 +1,11 @@
 package no.nav.syfo.arbeidsgivere.service
 
-import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
-import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
+import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
 
 fun getArbeidsgiverforhold(
     fom: LocalDate = LocalDate.of(2020, 6, 1),

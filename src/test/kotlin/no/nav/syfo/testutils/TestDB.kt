@@ -2,6 +2,9 @@ package no.nav.syfo.testutils
 
 import io.mockk.every
 import io.mockk.mockk
+import java.sql.Timestamp
+import java.time.LocalDate
+import java.time.OffsetDateTime
 import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
@@ -26,20 +29,18 @@ import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
-import java.sql.Timestamp
-import java.time.LocalDate
-import java.time.OffsetDateTime
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
 
 class TestDB private constructor() {
     companion object {
         var database: DatabaseInterface
-        private val psqlContainer: PsqlContainer = PsqlContainer()
-            .withExposedPorts(5432)
-            .withUsername("username")
-            .withPassword("password")
-            .withDatabaseName("database")
+        private val psqlContainer: PsqlContainer =
+            PsqlContainer()
+                .withExposedPorts(5432)
+                .withUsername("username")
+                .withPassword("password")
+                .withDatabaseName("database")
 
         init {
             psqlContainer.start()
@@ -54,7 +55,7 @@ class TestDB private constructor() {
         fun clearAllData() {
             return database.connection.use {
                 it.prepareStatement(
-                    """
+                        """
                     DELETE FROM narmesteleder;
                     DELETE FROM sykmeldingstatus;
                     DELETE FROM arbeidsforhold;
@@ -62,19 +63,19 @@ class TestDB private constructor() {
                     DELETE FROM sykmeldt;
                     DELETE FROM behandlingsutfall;
                 """,
-                ).use { ps ->
-                    ps.executeUpdate()
-                }
+                    )
+                    .use { ps -> ps.executeUpdate() }
                 it.commit()
             }
         }
     }
 }
 
-fun Any.toPGObject() = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(this)
-}
+fun Any.toPGObject() =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(this)
+    }
 
 fun getBehandlingsutfall(status: RegelStatusDTO): BehandlingsutfallDTO {
     return BehandlingsutfallDTO(
@@ -99,7 +100,10 @@ fun getStatus(
 
 fun DatabaseInterface.insertSykmeldt(fnr: String) {
     connection.use { connection ->
-        connection.prepareStatement("INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)")
+        connection
+            .prepareStatement(
+                "INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)"
+            )
             .use {
                 it.setString(1, fnr)
                 it.setString(2, "fornavn")
@@ -111,9 +115,15 @@ fun DatabaseInterface.insertSykmeldt(fnr: String) {
     }
 }
 
-fun DatabaseInterface.insertBehandlingsutfall(sykmeldingId: String, behandlingsutfall: BehandlingsutfallDTO) {
+fun DatabaseInterface.insertBehandlingsutfall(
+    sykmeldingId: String,
+    behandlingsutfall: BehandlingsutfallDTO
+) {
     connection.use { connection ->
-        connection.prepareStatement("""insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);""")
+        connection
+            .prepareStatement(
+                """insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);"""
+            )
             .use {
                 it.setString(1, sykmeldingId)
                 it.setString(2, behandlingsutfall.status.name)
@@ -126,45 +136,57 @@ fun DatabaseInterface.insertBehandlingsutfall(sykmeldingId: String, behandlingsu
 
 fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatusDTO) {
     connection.use { connection ->
-        connection.prepareStatement(
-            """
+        connection
+            .prepareStatement(
+                """
             insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values (?, ?, ?, ?, ?)
-            """.trimIndent(),
-        ).use {
-            it.setString(1, sykmeldingId)
-            it.setString(2, status.statusEvent)
-            it.setTimestamp(3, Timestamp.from(status.timestamp.toInstant()))
-            it.setObject(4, status.arbeidsgiver?.toPGObject())
-            it.setObject(
-                5,
-                status.sporsmalOgSvarListe.map { spm ->
-                    SporsmalOgSvarDTO(
-                        tekst = spm.tekst,
-                        shortName = ShortNameDTO.valueOf(spm.shortName.name),
-                        svartype = SvartypeDTO.valueOf(spm.svar.svarType.name),
-                        svar = spm.svar.svar,
-                    )
-                }.toPGObject(),
+            """
+                    .trimIndent(),
             )
-            it.executeUpdate()
-        }
+            .use {
+                it.setString(1, sykmeldingId)
+                it.setString(2, status.statusEvent)
+                it.setTimestamp(3, Timestamp.from(status.timestamp.toInstant()))
+                it.setObject(4, status.arbeidsgiver?.toPGObject())
+                it.setObject(
+                    5,
+                    status.sporsmalOgSvarListe
+                        .map { spm ->
+                            SporsmalOgSvarDTO(
+                                tekst = spm.tekst,
+                                shortName = ShortNameDTO.valueOf(spm.shortName.name),
+                                svartype = SvartypeDTO.valueOf(spm.svar.svarType.name),
+                                svar = spm.svar.svar,
+                            )
+                        }
+                        .toPGObject(),
+                )
+                it.executeUpdate()
+            }
         connection.commit()
     }
 }
 
-fun DatabaseInterface.insertSymelding(sykmeldingId: String, fnr: String, sykmelding: SykmeldingDbModel) {
+fun DatabaseInterface.insertSymelding(
+    sykmeldingId: String,
+    fnr: String,
+    sykmelding: SykmeldingDbModel
+) {
     connection.use { connection ->
-        connection.prepareStatement(
-            """ 
+        connection
+            .prepareStatement(
+                """ 
                     insert into sykmelding(sykmelding_id, fnr, sykmelding) 
                     values (?, ?, ?)
-            """.trimIndent(),
-        ).use { preparedStatement ->
-            preparedStatement.setString(1, sykmeldingId)
-            preparedStatement.setString(2, fnr)
-            preparedStatement.setObject(3, sykmelding.toPGObject())
-            preparedStatement.executeUpdate()
-        }
+            """
+                    .trimIndent(),
+            )
+            .use { preparedStatement ->
+                preparedStatement.setString(1, sykmeldingId)
+                preparedStatement.setString(2, fnr)
+                preparedStatement.setObject(3, sykmelding.toPGObject())
+                preparedStatement.executeUpdate()
+            }
         connection.commit()
     }
 }
@@ -174,29 +196,32 @@ fun getSykmelding(): SykmeldingDbModel {
         mottattTidspunkt = OffsetDateTime.now(),
         legekontorOrgnummer = null,
         arbeidsgiver = null,
-        sykmeldingsperioder = listOf(
-            SykmeldingsperiodeDTO(
-                fom = LocalDate.now(),
-                tom = LocalDate.now().plusDays(1),
-                gradert = null,
-                behandlingsdager = null,
-                innspillTilArbeidsgiver = null,
-                type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                aktivitetIkkeMulig = AktivitetIkkeMuligDTO(
-                    medisinskArsak = MedisinskArsakDTO("Test", emptyList()),
-                    arbeidsrelatertArsak = null,
+        sykmeldingsperioder =
+            listOf(
+                SykmeldingsperiodeDTO(
+                    fom = LocalDate.now(),
+                    tom = LocalDate.now().plusDays(1),
+                    gradert = null,
+                    behandlingsdager = null,
+                    innspillTilArbeidsgiver = null,
+                    type = PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                    aktivitetIkkeMulig =
+                        AktivitetIkkeMuligDTO(
+                            medisinskArsak = MedisinskArsakDTO("Test", emptyList()),
+                            arbeidsrelatertArsak = null,
+                        ),
+                    reisetilskudd = false,
                 ),
-                reisetilskudd = false,
             ),
-        ),
-        medisinskVurdering = MedisinskVurderingDTO(
-            hovedDiagnose = DiagnoseDTO("ABC", "syk", "syk"),
-            biDiagnoser = emptyList(),
-            annenFraversArsak = null,
-            svangerskap = false,
-            yrkesskade = false,
-            yrkesskadeDato = null,
-        ),
+        medisinskVurdering =
+            MedisinskVurderingDTO(
+                hovedDiagnose = DiagnoseDTO("ABC", "syk", "syk"),
+                biDiagnoser = emptyList(),
+                annenFraversArsak = null,
+                svangerskap = false,
+                yrkesskade = false,
+                yrkesskadeDato = null,
+            ),
         prognose = null,
         utdypendeOpplysninger = emptyMap(),
         tiltakArbeidsplassen = null,
@@ -206,7 +231,8 @@ fun getSykmelding(): SykmeldingDbModel {
         meldingTilArbeidsgiver = null,
         kontaktMedPasient = KontaktMedPasientDTO(kontaktDato = null, begrunnelseIkkeKontakt = null),
         behandletTidspunkt = OffsetDateTime.now(),
-        behandler = BehandlerDTO("", "", "", adresse = AdresseDTO(null, null, null, null, null), "tlf"),
+        behandler =
+            BehandlerDTO("", "", "", adresse = AdresseDTO(null, null, null, null, null), "tlf"),
         syketilfelleStartDato = null,
         navnFastlege = null,
         egenmeldt = false,

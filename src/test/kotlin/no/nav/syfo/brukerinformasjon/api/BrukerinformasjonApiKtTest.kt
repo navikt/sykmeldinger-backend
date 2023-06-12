@@ -21,34 +21,43 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 
-class BrukerinformasjonApiKtTest : FunSpec({
+class BrukerinformasjonApiKtTest :
+    FunSpec({
+        val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
 
-    val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
+        beforeTest {
+            clearMocks(arbeidsgiverService)
+            coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
+                listOf(
+                    Arbeidsgiverinfo(
+                        orgnummer = "orgnummer",
+                        juridiskOrgnummer = "juridiskOrgnummer",
+                        navn = "",
+                        stillingsprosent = "50.0",
+                        stilling = "",
+                        aktivtArbeidsforhold = true,
+                        naermesteLeder = null
+                    )
+                )
+        }
 
-    beforeTest {
-        clearMocks(arbeidsgiverService)
-        coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null))
-    }
+        context("Test brukerinformasjon-api med tilgangskontroll") {
+            with(TestApplicationEngine()) {
+                setUpTestApplication()
+                setUpAuth()
 
-    context("Test brukerinformasjon-api med tilgangskontroll") {
-        with(TestApplicationEngine()) {
-            setUpTestApplication()
-            setUpAuth()
-
-            application.routing {
-                authenticate("tokenx") {
-                    route("/api/v2") {
-                        registrerBrukerinformasjonApi(arbeidsgiverService)
+                application.routing {
+                    authenticate("tokenx") {
+                        route("/api/v2") { registrerBrukerinformasjonApi(arbeidsgiverService) }
                     }
                 }
-            }
 
-            test("Får hentet riktig informasjon for innlogget bruker") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/brukerinformasjon") {
-                        addHeader(
-                            "AUTHORIZATION",
-                            "Bearer ${
+                test("Får hentet riktig informasjon for innlogget bruker") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/brukerinformasjon") {
+                            addHeader(
+                                "AUTHORIZATION",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -56,24 +65,38 @@ class BrukerinformasjonApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.OK
-                    coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                    objectMapper.readValue<Brukerinformasjon>(response.content!!) shouldBeEqualTo Brukerinformasjon(
-                        arbeidsgivere = listOf(Arbeidsgiverinfo(orgnummer = "orgnummer", juridiskOrgnummer = "juridiskOrgnummer", navn = "", stillingsprosent = "50.0", stilling = "", aktivtArbeidsforhold = true, naermesteLeder = null)),
-                        strengtFortroligAdresse = false,
-                    )
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.OK
+                        coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
+                        objectMapper.readValue<Brukerinformasjon>(
+                            response.content!!
+                        ) shouldBeEqualTo
+                            Brukerinformasjon(
+                                arbeidsgivere =
+                                    listOf(
+                                        Arbeidsgiverinfo(
+                                            orgnummer = "orgnummer",
+                                            juridiskOrgnummer = "juridiskOrgnummer",
+                                            navn = "",
+                                            stillingsprosent = "50.0",
+                                            stilling = "",
+                                            aktivtArbeidsforhold = true,
+                                            naermesteLeder = null
+                                        )
+                                    ),
+                                strengtFortroligAdresse = false,
+                            )
+                    }
                 }
-            }
 
-            test("Skal ikke kunne bruke apiet med token med feil audience") {
-                with(
-                    handleRequest(HttpMethod.Get, "/api/v2/brukerinformasjon") {
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Skal ikke kunne bruke apiet med token med feil audience") {
+                    with(
+                        handleRequest(HttpMethod.Get, "/api/v2/brukerinformasjon") {
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "annenservice",
@@ -81,12 +104,12 @@ class BrukerinformasjonApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    }
                 }
             }
         }
-    }
-})
+    })

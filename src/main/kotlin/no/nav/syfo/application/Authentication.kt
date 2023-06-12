@@ -30,15 +30,14 @@ fun Application.setupAuth(
             verifier(jwkProviderTokenX, tokenXIssuer)
             validate { credentials ->
                 when {
-                    hasClientIdAudience(credentials, clientIdTokenX) && erNiva4(credentials) ->
-                        {
-                            val principal = JWTPrincipal(credentials.payload)
-                            BrukerPrincipal(
-                                fnr = finnFnrFraToken(principal),
-                                principal = principal,
-                                token = this.getToken()!!,
-                            )
-                        }
+                    hasClientIdAudience(credentials, clientIdTokenX) && erNiva4(credentials) -> {
+                        val principal = JWTPrincipal(credentials.payload)
+                        BrukerPrincipal(
+                            fnr = finnFnrFraToken(principal),
+                            principal = principal,
+                            token = this.getToken()!!,
+                        )
+                    }
                     else -> unauthorized(credentials)
                 }
             }
@@ -71,7 +70,10 @@ fun erNiva4(credentials: JWTCredential): Boolean {
 }
 
 fun finnFnrFraToken(principal: JWTPrincipal): String {
-    return if (principal.payload.getClaim("pid") != null && !principal.payload.getClaim("pid").asString().isNullOrEmpty()) {
+    return if (
+        principal.payload.getClaim("pid") != null &&
+            !principal.payload.getClaim("pid").asString().isNullOrEmpty()
+    ) {
         log.debug("Bruker fnr fra pid-claim")
         principal.payload.getClaim("pid").asString()
     } else {

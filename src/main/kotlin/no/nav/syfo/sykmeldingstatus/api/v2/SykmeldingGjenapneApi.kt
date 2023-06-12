@@ -6,13 +6,13 @@ import io.ktor.server.auth.authentication
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.metrics.GJENAPNET_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 fun Route.registerSykmeldingGjenapneApiV2(sykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/gjenapne") {
@@ -21,7 +21,8 @@ fun Route.registerSykmeldingGjenapneApiV2(sykmeldingStatusService: SykmeldingSta
         val fnr = principal.fnr
 
         sykmeldingStatusService.registrerStatus(
-            sykmeldingStatusEventDTO = SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC)),
+            sykmeldingStatusEventDTO =
+                SykmeldingStatusEventDTO(StatusEventDTO.APEN, OffsetDateTime.now(ZoneOffset.UTC)),
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,

@@ -1,23 +1,25 @@
 package no.nav.syfo.arbeidsgivere.narmesteleder.db
 
-import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.application.database.toList
 import java.sql.ResultSet
 import java.time.ZoneOffset
+import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.toList
 
 class NarmestelederDb(
     private val database: DatabaseInterface,
 ) {
     fun getNarmesteleder(ansattFnr: String): List<NarmestelederDbModel> {
         return database.connection.use { connection ->
-            connection.prepareStatement(
-                """
+            connection
+                .prepareStatement(
+                    """
                     SELECT * FROM narmesteleder WHERE bruker_fnr = ?;
                 """,
-            ).use { ps ->
-                ps.setString(1, ansattFnr)
-                ps.executeQuery().toList { toNarmestelederDbModel() }
-            }
+                )
+                .use { ps ->
+                    ps.setString(1, ansattFnr)
+                    ps.executeQuery().toList { toNarmestelederDbModel() }
+                }
         }
     }
 }

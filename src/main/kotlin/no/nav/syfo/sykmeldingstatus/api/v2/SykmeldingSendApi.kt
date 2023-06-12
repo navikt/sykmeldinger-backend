@@ -41,7 +41,11 @@ fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatus
         when (endreEgenmeldingsdagerEvent) {
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
-                sykmeldingStatusService.endreEgenmeldingsdager(sykmeldingId, endreEgenmeldingsdagerEvent, fnr)
+                sykmeldingStatusService.endreEgenmeldingsdager(
+                    sykmeldingId,
+                    endreEgenmeldingsdagerEvent,
+                    fnr
+                )
 
                 call.respond(HttpStatusCode.Accepted)
             }
@@ -50,9 +54,10 @@ fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatus
 }
 
 // Workaround pga. bug i ktor: https://github.com/ktorio/ktor/issues/901
-suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? = try {
-    kotlin.runCatching { receiveNullable<T>() }.getOrNull()
-} catch (e: Exception) {
-    log.error("An error occurred while receiving body content: ${e.message}")
-    null
-}
+suspend inline fun <reified T : Any> ApplicationCall.safeReceiveOrNull(): T? =
+    try {
+        kotlin.runCatching { receiveNullable<T>() }.getOrNull()
+    } catch (e: Exception) {
+        log.error("An error occurred while receiving body content: ${e.message}")
+        null
+    }

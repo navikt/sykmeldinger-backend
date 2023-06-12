@@ -21,38 +21,39 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 
-class SykmeldingSendApiKtTest : FunSpec({
-    val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
+class SykmeldingSendApiKtTest :
+    FunSpec({
+        val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-    beforeTest {
-        clearAllMocks()
-        coEvery { sykmeldingStatusService.registrerUserEvent(any(), any(), any()) } returns Unit
-    }
+        beforeTest {
+            clearAllMocks()
+            coEvery { sykmeldingStatusService.registrerUserEvent(any(), any(), any()) } returns Unit
+        }
 
-    context("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
-        with(TestApplicationEngine()) {
-            setUpTestApplication()
-            setUpAuth()
+        context("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
+            with(TestApplicationEngine()) {
+                setUpTestApplication()
+                setUpAuth()
 
-            application.routing {
-                authenticate("tokenx") {
-                    route("/api/v3") {
-                        registrerSykmeldingSendApiV3(
-                            sykmeldingStatusService,
-                        )
+                application.routing {
+                    authenticate("tokenx") {
+                        route("/api/v3") {
+                            registrerSykmeldingSendApiV3(
+                                sykmeldingStatusService,
+                            )
+                        }
                     }
                 }
-            }
 
-            test("Bruker skal få sende sin egen sykmelding") {
-                val sykmeldingId = "123"
-                with(
-                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader(
-                            "AUTHORIZATION",
-                            "Bearer ${
+                test("Bruker skal få sende sin egen sykmelding") {
+                    val sykmeldingId = "123"
+                    with(
+                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
+                            setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
+                            addHeader("Content-Type", ContentType.Application.Json.toString())
+                            addHeader(
+                                "AUTHORIZATION",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -60,21 +61,21 @@ class SykmeldingSendApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Accepted
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Accepted
+                    }
                 }
-            }
 
-            test("Får bad request ved empty body") {
-                val sykmeldingId = "123"
-                with(
-                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader(
-                            "AUTHORIZATION",
-                            "Bearer ${
+                test("Får bad request ved empty body") {
+                    val sykmeldingId = "123"
+                    with(
+                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
+                            addHeader("Content-Type", ContentType.Application.Json.toString())
+                            addHeader(
+                                "AUTHORIZATION",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -82,22 +83,33 @@ class SykmeldingSendApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    }
                 }
-            }
 
-            test("Får bad request ved validateringsfeil") {
-                val sykmeldingId = "123"
-                with(
-                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent().copy(erOpplysningeneRiktige = SporsmalSvar(sporsmaltekst = "", svar = JaEllerNei.NEI))))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader(
-                            "AUTHORIZATION",
-                            "Bearer ${
+                test("Får bad request ved validateringsfeil") {
+                    val sykmeldingId = "123"
+                    with(
+                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
+                            setBody(
+                                objectMapper.writeValueAsString(
+                                    opprettSykmeldingUserEvent()
+                                        .copy(
+                                            erOpplysningeneRiktige =
+                                                SporsmalSvar(
+                                                    sporsmaltekst = "",
+                                                    svar = JaEllerNei.NEI
+                                                )
+                                        )
+                                )
+                            )
+                            addHeader("Content-Type", ContentType.Application.Json.toString())
+                            addHeader(
+                                "AUTHORIZATION",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -105,28 +117,32 @@ class SykmeldingSendApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.BadRequest
+                    }
                 }
-            }
 
-            test("Skal ikke kunne sende annen brukers sykmelding") {
-                coEvery {
-                    sykmeldingStatusService.registrerUserEvent(
-                        any(),
-                        any(),
-                        any(),
-                    )
-                } throws SykmeldingStatusNotFoundException("Not Found", RuntimeException("Ingen tilgang"))
-                with(
-                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Skal ikke kunne sende annen brukers sykmelding") {
+                    coEvery {
+                        sykmeldingStatusService.registrerUserEvent(
+                            any(),
+                            any(),
+                            any(),
+                        )
+                    } throws
+                        SykmeldingStatusNotFoundException(
+                            "Not Found",
+                            RuntimeException("Ingen tilgang")
+                        )
+                    with(
+                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
+                            setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
+                            addHeader("Content-Type", ContentType.Application.Json.toString())
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "clientId",
@@ -134,21 +150,21 @@ class SykmeldingSendApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.NotFound
+                    }
                 }
-            }
 
-            test("Skal ikke kunne bruke apiet med token med feil audience") {
-                with(
-                    handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
-                        setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
-                        addHeader("Content-Type", ContentType.Application.Json.toString())
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${
+                test("Skal ikke kunne bruke apiet med token med feil audience") {
+                    with(
+                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
+                            setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
+                            addHeader("Content-Type", ContentType.Application.Json.toString())
+                            addHeader(
+                                "Authorization",
+                                "Bearer ${
                                 generateJWT(
                                     "client",
                                     "annenservice",
@@ -156,27 +172,29 @@ class SykmeldingSendApiKtTest : FunSpec({
                                     issuer = "issuer",
                                 )
                             }",
-                        )
-                    },
-                ) {
-                    response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                            )
+                        },
+                    ) {
+                        response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
+                    }
                 }
             }
         }
-    }
-})
+    })
 
 fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
     return SykmeldingUserEvent(
-        erOpplysningeneRiktige = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = JaEllerNei.JA,
-        ),
+        erOpplysningeneRiktige =
+            SporsmalSvar(
+                sporsmaltekst = "",
+                svar = JaEllerNei.JA,
+            ),
         uriktigeOpplysninger = null,
-        arbeidssituasjon = SporsmalSvar(
-            sporsmaltekst = "",
-            svar = ArbeidssituasjonDTO.ANNET,
-        ),
+        arbeidssituasjon =
+            SporsmalSvar(
+                sporsmaltekst = "",
+                svar = ArbeidssituasjonDTO.ANNET,
+            ),
         arbeidsgiverOrgnummer = null,
         riktigNarmesteLeder = null,
         harBruktEgenmelding = null,

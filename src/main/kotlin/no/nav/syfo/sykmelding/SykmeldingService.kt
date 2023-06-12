@@ -13,9 +13,10 @@ class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
 ) {
 
-    suspend fun hentSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? = withContext(Dispatchers.IO) {
-        sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)
-    }
+    suspend fun hentSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? =
+        withContext(Dispatchers.IO) {
+            sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)
+        }
 
     suspend fun hentSykmeldinger(fnr: String): List<SykmeldingDTO> {
         return sykmeldingDb.getSykmeldinger(fnr)
@@ -27,7 +28,8 @@ class SykmeldingService(
             if (!sykmeldingExists) {
                 MISSING_DATA_COUNTER.labels("sykmelding").inc()
             }
-            val behandlingsutfallExsists: Boolean = sykmeldingDb.behandlingsutfallExists(sykmeldingId)
+            val behandlingsutfallExsists: Boolean =
+                sykmeldingDb.behandlingsutfallExists(sykmeldingId)
             if (!behandlingsutfallExsists) {
                 MISSING_DATA_COUNTER.labels("behandlingsutfall").inc()
             }
@@ -41,7 +43,9 @@ class SykmeldingService(
             }
 
             val allDataExists: Boolean = sykmeldingDb.getSykmelding(sykmeldingId, fnr) != null
-            log.info("404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId")
+            log.info(
+                "404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId"
+            )
         }
     }
 }
