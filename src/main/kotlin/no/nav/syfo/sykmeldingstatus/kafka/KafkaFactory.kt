@@ -11,13 +11,18 @@ import org.apache.kafka.clients.producer.ProducerConfig
 
 class KafkaFactory private constructor() {
     companion object {
-        fun getSykmeldingStatusKafkaProducer(environment: Environment): SykmeldingStatusKafkaProducer {
-            val kafkaStatusProducerConfig = KafkaUtils.getAivenKafkaConfig().toProducerConfig(
-                "${environment.applicationName}-producer",
-                JacksonKafkaSerializer::class,
-            )
+        fun getSykmeldingStatusKafkaProducer(
+            environment: Environment
+        ): SykmeldingStatusKafkaProducer {
+            val kafkaStatusProducerConfig =
+                KafkaUtils.getAivenKafkaConfig()
+                    .toProducerConfig(
+                        "${environment.applicationName}-producer",
+                        JacksonKafkaSerializer::class,
+                    )
             kafkaStatusProducerConfig[ProducerConfig.RETRIES_CONFIG] = "10"
-            val kafkaProducer = KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>(kafkaStatusProducerConfig)
+            val kafkaProducer =
+                KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>(kafkaStatusProducerConfig)
             return SykmeldingStatusKafkaProducer(kafkaProducer, environment.sykmeldingStatusTopic)
         }
     }

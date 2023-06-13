@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
@@ -18,51 +21,55 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
-import java.sql.ResultSet
-import java.sql.Timestamp
-import java.time.ZoneOffset
 
-private val objectMapper: ObjectMapper = jacksonObjectMapper().apply {
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
-}
+private val objectMapper: ObjectMapper =
+    jacksonObjectMapper().apply {
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
+    }
 
-private fun toPGObject(jsonObject: Any) = PGobject().also {
-    it.type = "json"
-    it.value = objectMapper.writeValueAsString(jsonObject)
-}
+private fun toPGObject(jsonObject: Any) =
+    PGobject().also {
+        it.type = "json"
+        it.value = objectMapper.writeValueAsString(jsonObject)
+    }
 
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
 
-    suspend fun insertStatus(event: SykmeldingStatusKafkaEventDTO) = withContext(Dispatchers.IO) {
-        try {
-            databaseInterface.connection.use { connection ->
-                connection.prepareStatement(
-                    """
+    suspend fun insertStatus(event: SykmeldingStatusKafkaEventDTO) =
+        withContext(Dispatchers.IO) {
+            try {
+                databaseInterface.connection.use { connection ->
+                    connection
+                        .prepareStatement(
+                            """
             insert into sykmeldingstatus(sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values(?, ?, ?, ?, ?) on conflict do nothing;
         """,
-                ).use { ps ->
-                    var index = 1
-                    ps.setString(index++, event.sykmeldingId)
-                    ps.setString(index++, event.statusEvent)
-                    ps.setTimestamp(index++, Timestamp.from(event.timestamp.toInstant()))
-                    ps.setObject(index++, event.arbeidsgiver?.let { toPGObject(it) })
-                    ps.setObject(index, event.sporsmals?.let { toPGObject(it) })
-                    ps.executeUpdate()
+                        )
+                        .use { ps ->
+                            var index = 1
+                            ps.setString(index++, event.sykmeldingId)
+                            ps.setString(index++, event.statusEvent)
+                            ps.setTimestamp(index++, Timestamp.from(event.timestamp.toInstant()))
+                            ps.setObject(index++, event.arbeidsgiver?.let { toPGObject(it) })
+                            ps.setObject(index, event.sporsmals?.let { toPGObject(it) })
+                            ps.executeUpdate()
+                        }
+                    connection.commit()
                 }
-                connection.commit()
+            } catch (ex: PSQLException) {
+                log.warn(ex.message)
             }
-        } catch (ex: PSQLException) {
-            log.warn(ex.message)
         }
-    }
 
-    suspend fun getLatestStatus(sykmeldingId: String, fnr: String): SykmeldingStatusEventDTO = withContext(Dispatchers.IO) {
-        databaseInterface.connection.use { connection ->
-            connection.prepareStatement(
-                """
+    suspend fun getLatestStatus(sykmeldingId: String, fnr: String): SykmeldingStatusEventDTO =
+        withContext(Dispatchers.IO) {
+            databaseInterface.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """
                 select
                     ss.event,
                     ss.timestamp,
@@ -74,18 +81,24 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                     where ss.sykmelding_id = ?
                         and timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = ss.sykmelding_id)
                 """,
-            ).use { ps ->
-                ps.setString(1, fnr)
-                ps.setString(2, sykmeldingId)
-                ps.executeQuery().toStatusEventDTO(sykmeldingId)
+                    )
+                    .use { ps ->
+                        ps.setString(1, fnr)
+                        ps.setString(2, sykmeldingId)
+                        ps.executeQuery().toStatusEventDTO(sykmeldingId)
+                    }
             }
         }
-    }
 
-    suspend fun getSykmeldingStatus(sykmeldingId: String, fnr: String): SykmeldingStatusKafkaEventDTO = withContext(Dispatchers.IO) {
-        databaseInterface.connection.use { connection ->
-            connection.prepareStatement(
-                """
+    suspend fun getSykmeldingStatus(
+        sykmeldingId: String,
+        fnr: String
+    ): SykmeldingStatusKafkaEventDTO =
+        withContext(Dispatchers.IO) {
+            databaseInterface.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """
                 select
                     ss.event,
                     ss.timestamp,
@@ -96,13 +109,14 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                     where ss.sykmelding_id = ?
                         and timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = ss.sykmelding_id)
                 """,
-            ).use { ps ->
-                ps.setString(1, fnr)
-                ps.setString(2, sykmeldingId)
-                ps.executeQuery().toSykmeldingStatusEvent(sykmeldingId)
+                    )
+                    .use { ps ->
+                        ps.setString(1, fnr)
+                        ps.setString(2, sykmeldingId)
+                        ps.executeQuery().toSykmeldingStatusEvent(sykmeldingId)
+                    }
             }
         }
-    }
 }
 
 private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEventDTO {
@@ -123,10 +137,13 @@ private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingS
         SykmeldingStatusKafkaEventDTO(
             sykmeldingId = sykmeldingId,
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            arbeidsgiver = getObject("arbeidsgiver")?.let { objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString()) },
-            sporsmals = getString("sporsmal")?.let {
-                objectMapper.readValue<List<SporsmalOgSvarDTO>>(it)
-            } ?: emptyList(),
+            arbeidsgiver =
+                getObject("arbeidsgiver")?.let {
+                    objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+                },
+            sporsmals =
+                getString("sporsmal")?.let { objectMapper.readValue<List<SporsmalOgSvarDTO>>(it) }
+                    ?: emptyList(),
             statusEvent = getString("event"),
         )
     } else {

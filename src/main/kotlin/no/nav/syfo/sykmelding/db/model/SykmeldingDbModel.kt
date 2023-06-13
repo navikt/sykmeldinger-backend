@@ -1,5 +1,7 @@
 package no.nav.syfo.sykmelding.db.model
 
+import java.time.LocalDate
+import java.time.OffsetDateTime
 import no.nav.syfo.sykmelding.model.ArbeidsgiverDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
 import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
@@ -10,8 +12,6 @@ import no.nav.syfo.sykmelding.model.PrognoseDTO
 import no.nav.syfo.sykmelding.model.SporsmalSvarDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmelding.model.UtenlandskSykmelding
-import java.time.LocalDate
-import java.time.OffsetDateTime
 
 data class SykmeldingDbModel(
     val mottattTidspunkt: OffsetDateTime,

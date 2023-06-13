@@ -23,6 +23,8 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import java.util.UUID
+import java.util.concurrent.ExecutionException
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
@@ -44,8 +46,6 @@ import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandl
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
-import java.util.UUID
-import java.util.concurrent.ExecutionException
 
 fun createApplicationEngine(
     env: Environment,
@@ -95,9 +95,7 @@ fun createApplicationEngine(
             allowMethod(HttpMethod.Get)
             allowMethod(HttpMethod.Post)
             allowMethod(HttpMethod.Options)
-            env.allowedOrigin.forEach {
-                hosts.add("https://$it")
-            }
+            env.allowedOrigin.forEach { hosts.add("https://$it") }
             allowHeader("nav_csrf_protection")
             allowCredentials = true
             allowNonSimpleContentTypes = true
@@ -105,15 +103,18 @@ fun createApplicationEngine(
 
         val arbeidsgiverService = ArbeidsgiverService(narmestelederDb, arbeidsforholdDb)
 
-        val sykmeldingStatusService = SykmeldingStatusService(sykmeldingStatusKafkaProducer, arbeidsgiverService, sykmeldingStatusDb)
+        val sykmeldingStatusService =
+            SykmeldingStatusService(
+                sykmeldingStatusKafkaProducer,
+                arbeidsgiverService,
+                sykmeldingStatusDb
+            )
         val sykmeldingService = SykmeldingService(sykmeldingDb)
 
         routing {
             registerNaisApi(applicationState)
             if (env.cluster == "dev-gcp") {
-                staticResources("/api/v1/docs/", "api") {
-                    default("api/index.html")
-                }
+                staticResources("/api/v1/docs/", "api") { default("api/index.html") }
             }
             authenticate("tokenx") {
                 route("/api/v2") {
@@ -123,9 +124,7 @@ fun createApplicationEngine(
                     registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
                     registrerBrukerinformasjonApi(arbeidsgiverService)
                 }
-                route("/api/v3") {
-                    registrerSykmeldingSendApiV3(sykmeldingStatusService)
-                }
+                route("/api/v3") { registrerSykmeldingSendApiV3(sykmeldingStatusService) }
             }
         }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())

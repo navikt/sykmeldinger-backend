@@ -1,7 +1,7 @@
 package no.nav.syfo.sykmelding.model
 
-import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import java.time.OffsetDateTime
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 
 data class SykmeldingStatusDTO(
     val statusEvent: String,

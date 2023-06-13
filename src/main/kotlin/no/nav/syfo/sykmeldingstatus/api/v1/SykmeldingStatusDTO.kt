@@ -10,7 +10,11 @@ data class SykmeldingStatusEventDTO(
 )
 
 enum class StatusEventDTO {
-    APEN, AVBRUTT, UTGATT, SENDT, BEKREFTET
+    APEN,
+    AVBRUTT,
+    UTGATT,
+    SENDT,
+    BEKREFTET
 }
 
 data class ArbeidsgiverStatusDTO(
@@ -34,7 +38,11 @@ data class SporsmalOgSvarDTO(
 )
 
 enum class ShortNameDTO {
-    ARBEIDSSITUASJON, NY_NARMESTE_LEDER, FRAVAER, PERIODE, FORSIKRING
+    ARBEIDSSITUASJON,
+    NY_NARMESTE_LEDER,
+    FRAVAER,
+    PERIODE,
+    FORSIKRING
 }
 
 enum class SvartypeDTO {

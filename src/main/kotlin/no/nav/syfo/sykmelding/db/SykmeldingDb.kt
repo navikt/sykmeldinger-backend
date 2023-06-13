@@ -1,6 +1,8 @@
 package no.nav.syfo.sykmelding.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.sql.ResultSet
+import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
@@ -18,15 +20,15 @@ import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
-import java.sql.ResultSet
-import java.time.ZoneOffset
 
 class SykmeldingDb(private val database: DatabaseInterface) {
 
-    suspend fun getSykmelding(sykmeldingId: String, fnr: String): SykmeldingDTO? = withContext(Dispatchers.IO) {
-        database.connection.use { connection ->
-            connection.prepareStatement(
-                """
+    suspend fun getSykmelding(sykmeldingId: String, fnr: String): SykmeldingDTO? =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """
                 select
                 b.sykmelding_id,
                 sykmelding,
@@ -46,18 +48,21 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
                 where sykmelding.sykmelding_id = ? and sykmelding.fnr = ?;
                 """,
-            ).use { preparedStatement ->
-                preparedStatement.setString(1, sykmeldingId)
-                preparedStatement.setString(2, fnr)
-                preparedStatement.executeQuery().toList { toSykmelding() }.firstOrNull()
+                    )
+                    .use { preparedStatement ->
+                        preparedStatement.setString(1, sykmeldingId)
+                        preparedStatement.setString(2, fnr)
+                        preparedStatement.executeQuery().toList { toSykmelding() }.firstOrNull()
+                    }
             }
         }
-    }
 
-    suspend fun getSykmeldinger(fnr: String): List<SykmeldingDTO> = withContext(Dispatchers.IO) {
-        database.connection.use { connection ->
-            connection.prepareStatement(
-                """
+    suspend fun getSykmeldinger(fnr: String): List<SykmeldingDTO> =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """
                 select
                 b.sykmelding_id,
                 sykmelding,
@@ -77,85 +82,113 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 inner join sykmeldt s on sykmelding.fnr = s.fnr
                 where sykmelding.fnr = ?;
                 """,
-            ).use { preparedStatement ->
-                preparedStatement.setString(1, fnr)
-                preparedStatement.executeQuery().toList { toSykmelding() }
+                    )
+                    .use { preparedStatement ->
+                        preparedStatement.setString(1, fnr)
+                        preparedStatement.executeQuery().toList { toSykmelding() }
+                    }
             }
         }
-    }
 
-    suspend fun sykmeldingExists(sykmeldingId: String): Boolean = withContext(Dispatchers.IO) {
-        database.connection.use { connection ->
-            connection.prepareStatement("""select true from sykmelding where sykmelding_id = ? limit 1""").use {
-                it.setString(1, sykmeldingId)
-                it.executeQuery().next()
+    suspend fun sykmeldingExists(sykmeldingId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """select true from sykmelding where sykmelding_id = ? limit 1"""
+                    )
+                    .use {
+                        it.setString(1, sykmeldingId)
+                        it.executeQuery().next()
+                    }
             }
         }
-    }
 
-    suspend fun behandlingsutfallExists(sykmeldingId: String): Boolean = withContext(Dispatchers.IO) {
-        database.connection.use { connection ->
-            connection.prepareStatement("""select true from behandlingsutfall where sykmelding_id = ?""").use {
-                it.setString(1, sykmeldingId)
-                it.executeQuery().next()
+    suspend fun behandlingsutfallExists(sykmeldingId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """select true from behandlingsutfall where sykmelding_id = ?"""
+                    )
+                    .use {
+                        it.setString(1, sykmeldingId)
+                        it.executeQuery().next()
+                    }
             }
         }
-    }
 
-    suspend fun sykmeldingStatusExists(sykmeldingId: String): Boolean = withContext(Dispatchers.IO) {
-        database.connection.use { connection ->
-            connection.prepareStatement("""select true from sykmeldingstatus where sykmelding_id = ?""").use {
-                it.setString(1, sykmeldingId)
-                it.executeQuery().next()
+    suspend fun sykmeldingStatusExists(sykmeldingId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                connection
+                    .prepareStatement(
+                        """select true from sykmeldingstatus where sykmelding_id = ?"""
+                    )
+                    .use {
+                        it.setString(1, sykmeldingId)
+                        it.executeQuery().next()
+                    }
             }
         }
-    }
 
-    suspend fun sykmeldtExists(fnr: String): Boolean = withContext(Dispatchers.IO) {
-        database.connection.use { connection ->
-            connection.prepareStatement("""select true from sykmeldt where fnr = ?""").use {
-                it.setString(1, fnr)
-                it.executeQuery().next()
+    suspend fun sykmeldtExists(fnr: String): Boolean =
+        withContext(Dispatchers.IO) {
+            database.connection.use { connection ->
+                connection.prepareStatement("""select true from sykmeldt where fnr = ?""").use {
+                    it.setString(1, fnr)
+                    it.executeQuery().next()
+                }
             }
         }
-    }
 }
 
 private fun ResultSet.toSykmelding(): SykmeldingDTO {
     val sykmelding: SykmeldingDbModel = objectMapper.readValue(getString("sykmelding"))
     return SykmeldingDTO(
-        pasient = PasientDTO(
-            fnr = getString("fnr"),
-            fornavn = getString("fornavn"),
-            mellomnavn = getString("mellomnavn"),
-            etternavn = getString("etternavn"),
-        ),
+        pasient =
+            PasientDTO(
+                fnr = getString("fnr"),
+                fornavn = getString("fornavn"),
+                mellomnavn = getString("mellomnavn"),
+                etternavn = getString("etternavn"),
+            ),
         id = getString("sykmelding_id"),
         mottattTidspunkt = sykmelding.mottattTidspunkt,
-        behandlingsutfall = BehandlingsutfallDTO(
-            status = RegelStatusDTO.valueOf(getString("behandlingsutfall")),
-            ruleHits = objectMapper.readValue(getString("rule_hits")),
-        ),
+        behandlingsutfall =
+            BehandlingsutfallDTO(
+                status = RegelStatusDTO.valueOf(getString("behandlingsutfall")),
+                ruleHits = objectMapper.readValue(getString("rule_hits")),
+            ),
         arbeidsgiver = sykmelding.arbeidsgiver,
         legekontorOrgnummer = sykmelding.legekontorOrgnummer,
         sykmeldingsperioder = sykmelding.sykmeldingsperioder,
-        sykmeldingStatus = SykmeldingStatusDTO(
-            statusEvent = getString("event"),
-            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            arbeidsgiver = getObject("arbeidsgiver")?.let { objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString()) },
-            sporsmalOgSvarListe = getString("sporsmal")?.let {
-                objectMapper.readValue<List<SporsmalOgSvarDTO>>(it).map { sporsmalOgSvarDTO ->
-                    SporsmalDTO(
-                        tekst = sporsmalOgSvarDTO.tekst,
-                        shortName = ShortNameDTO.valueOf(sporsmalOgSvarDTO.shortName.name),
-                        svar = SvarDTO(
-                            svar = sporsmalOgSvarDTO.svar,
-                            svarType = SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name),
-                        ),
-                    )
-                }
-            } ?: emptyList(),
-        ),
+        sykmeldingStatus =
+            SykmeldingStatusDTO(
+                statusEvent = getString("event"),
+                timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+                arbeidsgiver =
+                    getObject("arbeidsgiver")?.let {
+                        objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+                    },
+                sporsmalOgSvarListe =
+                    getString("sporsmal")?.let {
+                        objectMapper.readValue<List<SporsmalOgSvarDTO>>(it).map { sporsmalOgSvarDTO
+                            ->
+                            SporsmalDTO(
+                                tekst = sporsmalOgSvarDTO.tekst,
+                                shortName = ShortNameDTO.valueOf(sporsmalOgSvarDTO.shortName.name),
+                                svar =
+                                    SvarDTO(
+                                        svar = sporsmalOgSvarDTO.svar,
+                                        svarType =
+                                            SvartypeDTO.valueOf(sporsmalOgSvarDTO.svartype.name),
+                                    ),
+                            )
+                        }
+                    }
+                        ?: emptyList(),
+            ),
         medisinskVurdering = sykmelding.medisinskVurdering,
         prognose = sykmelding.prognose,
         utdypendeOpplysninger = sykmelding.utdypendeOpplysninger,
