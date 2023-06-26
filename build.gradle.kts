@@ -23,6 +23,7 @@ val flywayVersion = "9.20.0"
 val postgresVersion = "42.6.0"
 val hikariVersion = "5.0.1"
 val commonsCodecVersion = "1.16.0"
+val ktfmtVersion = "0.44"
 
 plugins {
     kotlin("jvm") version "1.8.22"
@@ -144,7 +145,7 @@ tasks {
     }
 
     spotless {
-        kotlin { ktfmt("0.44").kotlinlangStyle() }
+        kotlin { ktfmt(ktfmtVersion).kotlinlangStyle() }
 
         check {
             dependsOn("spotlessApply")
