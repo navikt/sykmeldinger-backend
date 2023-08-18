@@ -71,6 +71,3 @@ spec:
     enabled: true
   ingresses:
     - "https://sykmeldinger-backend.dev.nav.no"
-  env:
-    - name: ALLOWED_ORIGIN
-      value: www-gcp.dev.nav.no,sykmeldinger-backend.dev.nav.no
