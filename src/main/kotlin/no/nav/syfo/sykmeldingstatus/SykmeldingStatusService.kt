@@ -1,7 +1,10 @@
 package no.nav.syfo.sykmeldingstatus
 
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.log
@@ -12,6 +15,9 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.objectMapper
+import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -27,6 +33,7 @@ class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val arbeidsgiverService: ArbeidsgiverService,
     private val sykmeldingStatusDb: SykmeldingStatusDb,
+    private val sykmeldingService: SykmeldingService
 ) {
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> =
@@ -130,12 +137,16 @@ class SykmeldingStatusService(
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
 
+            val statusMetadata = createStatusMetadata(fnr, sykmeldingId, nesteStatus)
+
             val sykmeldingStatusKafkaEventDTO =
                 sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
                     timestamp,
                     sykmeldingId,
-                    arbeidsgiver
+                    arbeidsgiver,
+                    statusMetadata
                 )
+
             sykmeldingStatusKafkaProducer.send(
                 sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
                 source = "user",
@@ -149,6 +160,93 @@ class SykmeldingStatusService(
                 else -> Unit
             }
         }
+    }
+
+    suspend fun createStatusMetadata(
+        sykmeldtFnr: String,
+        sykmeldingId: String,
+        nesteStatus: StatusEventDTO
+    ): StatusMetadata? {
+        val currentSykmelding = fetchSykmelding(sykmeldingService, sykmeldtFnr, sykmeldingId)
+
+        val currentSykmeldingFirstFomDate =
+            if (currentSykmelding != null) {
+                finnForsteFom(currentSykmelding.sykmeldingsperioder)
+            } else {
+                return null
+            }
+
+        val lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate =
+            lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate(
+                sykmeldingService,
+                sykmeldtFnr,
+                currentSykmeldingFirstFomDate
+            )
+
+        return if (
+            nesteStatus == StatusEventDTO.BEKREFTET &&
+                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate != null
+        ) {
+            val forrigeOrgnummer =
+                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
+                    .arbeidsgiver
+                    ?.orgnummer
+            val forrigeStatus =
+                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
+                    .statusEvent
+            val forrigeSykmeldingsId =
+                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.id
+
+            StatusMetadata(forrigeOrgnummer, forrigeStatus, forrigeSykmeldingsId)
+        } else {
+            null
+        }
+    }
+
+    private fun isWorkingdaysBetween(a: LocalDate, b: LocalDate): Boolean {
+        return ((1..(ChronoUnit.DAYS.between(a, b) - 1))
+            .map { a.plusDays(it) }
+            .filter { it.dayOfWeek !in arrayOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) }
+            .count()) != 0
+    }
+
+    private suspend fun lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate(
+        sykmeldingService: SykmeldingService,
+        fnr: String,
+        currentSykmeldingFirstFomDate: LocalDate
+    ): SykmeldingDTO? {
+
+        val sykmeldinger = sykmeldingService.hentSykmeldinger(fnr)
+        log.info("sykmeldinger: $sykmeldinger")
+
+        val lastSykmelding =
+            sykmeldinger.firstOrNull {
+                sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
+            }
+        return lastSykmelding
+    }
+
+    private fun sisteTomIKantMedDag(
+        perioder: List<SykmeldingsperiodeDTO>,
+        dag: LocalDate
+    ): Boolean {
+        val sisteTom =
+            perioder.maxByOrNull { it.tom }?.tom
+                ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
+        return !isWorkingdaysBetween(sisteTom, dag)
+    }
+
+    private suspend fun fetchSykmelding(
+        sykmeldingService: SykmeldingService,
+        fnr: String,
+        sykmeldingId: String
+    ): SykmeldingDTO? {
+        return sykmeldingService.hentSykmelding(fnr, sykmeldingId)
+    }
+
+    private fun finnForsteFom(perioder: List<SykmeldingsperiodeDTO>): LocalDate {
+        return perioder.minByOrNull { it.fom }?.fom
+            ?: throw IllegalStateException("Skal ikke kunne ha periode uten fom")
     }
 
     suspend fun endreEgenmeldingsdager(
@@ -310,3 +408,9 @@ fun SykmeldingUserEvent.toStatusEvent(): StatusEventDTO {
     }
     return StatusEventDTO.BEKREFTET
 }
+
+data class StatusMetadata(
+    val forrigeOrgnummer: String?,
+    val forrigeStatus: String,
+    val forrigeSykmeldingsId: String
+)

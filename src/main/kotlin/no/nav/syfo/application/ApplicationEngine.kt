@@ -103,13 +103,15 @@ fun createApplicationEngine(
 
         val arbeidsgiverService = ArbeidsgiverService(narmestelederDb, arbeidsforholdDb)
 
+        val sykmeldingService = SykmeldingService(sykmeldingDb)
+
         val sykmeldingStatusService =
             SykmeldingStatusService(
                 sykmeldingStatusKafkaProducer,
                 arbeidsgiverService,
-                sykmeldingStatusDb
+                sykmeldingStatusDb,
+                sykmeldingService
             )
-        val sykmeldingService = SykmeldingService(sykmeldingDb)
 
         routing {
             registerNaisApi(applicationState)
