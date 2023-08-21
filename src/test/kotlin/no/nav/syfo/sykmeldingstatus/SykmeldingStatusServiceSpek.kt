@@ -20,6 +20,18 @@ import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.model.AdresseDTO
+import no.nav.syfo.sykmelding.model.BehandlerDTO
+import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
+import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
+import no.nav.syfo.sykmelding.model.PasientDTO
+import no.nav.syfo.sykmelding.model.PeriodetypeDTO
+import no.nav.syfo.sykmelding.model.RegelStatusDTO
+import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
@@ -43,11 +55,13 @@ class SykmeldingStatusServiceSpek :
 
         val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
         val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
+        val sykmeldingService = mockkClass(SykmeldingService::class)
         val sykmeldingStatusService =
             SykmeldingStatusService(
                 sykmeldingStatusKafkaProducer,
                 arbeidsgiverService,
-                sykmeldingStatusDb
+                sykmeldingStatusDb,
+                sykmeldingService
             )
 
         fun checkStatusFails(
@@ -167,6 +181,8 @@ class SykmeldingStatusServiceSpek :
                     any(),
                 )
             } throws SykmeldingStatusNotFoundException("not found")
+            coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns null
+            coEvery { sykmeldingService.hentSykmeldinger(any()) } returns emptyList()
         }
 
         context("Hent nyeste status") {
@@ -908,6 +924,187 @@ class SykmeldingStatusServiceSpek :
             }
             test("Skal ikke kunne gjenåpne en avbrutt egenmelding") {
                 checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT, erEgenmeldt = true)
+            }
+        }
+        context("Test å lage StatusMetadata") {
+            test("Happy-case") {
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO()
+
+                val tidligereSykmeldinge =
+                    SykmeldingDTO(
+                        id = "1",
+                        utdypendeOpplysninger = emptyMap(),
+                        kontaktMedPasient = KontaktMedPasientDTO(null, null),
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeDTO(
+                                    LocalDate.now().minusDays(7),
+                                    LocalDate.now().minusDays(1),
+                                    null,
+                                    null,
+                                    null,
+                                    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    null,
+                                    false,
+                                ),
+                            ),
+                        sykmeldingStatus =
+                            SykmeldingStatusDTO(
+                                "SENDT",
+                                OffsetDateTime.now(ZoneOffset.UTC),
+                                ArbeidsgiverStatusDTO("orgnummer", "juridiskOrgnummer", "orgNavn"),
+                                emptyList(),
+                            ),
+                        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
+                        medisinskVurdering = getMedisinskVurdering(),
+                        behandler =
+                            BehandlerDTO(
+                                "fornavn",
+                                null,
+                                "etternavn",
+                                AdresseDTO(null, null, null, null, null),
+                                null,
+                            ),
+                        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+                        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+                        skjermesForPasient = false,
+                        meldingTilNAV = null,
+                        prognose = null,
+                        arbeidsgiver = null,
+                        tiltakNAV = null,
+                        syketilfelleStartDato = null,
+                        tiltakArbeidsplassen = null,
+                        navnFastlege = null,
+                        meldingTilArbeidsgiver = null,
+                        legekontorOrgnummer = null,
+                        andreTiltak = null,
+                        egenmeldt = false,
+                        harRedusertArbeidsgiverperiode = false,
+                        papirsykmelding = false,
+                        merknader = null,
+                        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
+                        rulesetVersion = null,
+                        utenlandskSykmelding = null,
+                    )
+                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
+                    listOf(tidligereSykmeldinge)
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(),
+                    sykmeldingId,
+                    fnr
+                )
+
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+
+                val statusMetadata =
+                    sykmeldingStatusService.createStatusMetadata(
+                        fnr,
+                        sykmeldingId,
+                        StatusEventDTO.BEKREFTET
+                    )
+
+                statusMetadata?.forrigeStatus shouldBeEqualTo "SENDT"
+                statusMetadata?.forrigeOrgnummer shouldBeEqualTo "orgnummer"
+                statusMetadata?.forrigeSykmeldingsId shouldBeEqualTo "1"
+            }
+
+            test("ikke kant i kant sykmelding") {
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO()
+
+                val tidligereSykmeldinge =
+                    SykmeldingDTO(
+                        id = "1",
+                        utdypendeOpplysninger = emptyMap(),
+                        kontaktMedPasient = KontaktMedPasientDTO(null, null),
+                        sykmeldingsperioder =
+                            listOf(
+                                SykmeldingsperiodeDTO(
+                                    LocalDate.now().minusDays(7),
+                                    LocalDate.now().minusDays(4),
+                                    null,
+                                    null,
+                                    null,
+                                    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
+                                    null,
+                                    false,
+                                ),
+                            ),
+                        sykmeldingStatus =
+                            SykmeldingStatusDTO(
+                                "SENDT",
+                                OffsetDateTime.now(ZoneOffset.UTC),
+                                ArbeidsgiverStatusDTO("orgnummer", "juridiskOrgnummer", "orgNavn"),
+                                emptyList(),
+                            ),
+                        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
+                        medisinskVurdering = getMedisinskVurdering(),
+                        behandler =
+                            BehandlerDTO(
+                                "fornavn",
+                                null,
+                                "etternavn",
+                                AdresseDTO(null, null, null, null, null),
+                                null,
+                            ),
+                        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+                        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
+                        skjermesForPasient = false,
+                        meldingTilNAV = null,
+                        prognose = null,
+                        arbeidsgiver = null,
+                        tiltakNAV = null,
+                        syketilfelleStartDato = null,
+                        tiltakArbeidsplassen = null,
+                        navnFastlege = null,
+                        meldingTilArbeidsgiver = null,
+                        legekontorOrgnummer = null,
+                        andreTiltak = null,
+                        egenmeldt = false,
+                        harRedusertArbeidsgiverperiode = false,
+                        papirsykmelding = false,
+                        merknader = null,
+                        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
+                        rulesetVersion = null,
+                        utenlandskSykmelding = null,
+                    )
+                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
+                    listOf(tidligereSykmeldinge)
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(),
+                    sykmeldingId,
+                    fnr
+                )
+
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+
+                val statusMetadata =
+                    sykmeldingStatusService.createStatusMetadata(
+                        fnr,
+                        sykmeldingId,
+                        StatusEventDTO.BEKREFTET
+                    )
+
+                statusMetadata?.forrigeStatus shouldBeEqualTo null
+                statusMetadata?.forrigeOrgnummer shouldBeEqualTo null
+                statusMetadata?.forrigeSykmeldingsId shouldBeEqualTo null
             }
         }
     })
