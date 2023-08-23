@@ -216,14 +216,37 @@ class SykmeldingStatusService(
         currentSykmeldingFirstFomDate: LocalDate
     ): SykmeldingDTO? {
 
-        val sykmeldinger = sykmeldingService.hentSykmeldinger(fnr)
-        log.info("sykmeldinger: $sykmeldinger")
+        val alleSykmeldinger = sykmeldingService.hentSykmeldinger(fnr)
 
         val lastSykmelding =
-            sykmeldinger.firstOrNull {
-                sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
-            }
-        return lastSykmelding
+            alleSykmeldinger
+                .filter { it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() }
+                .firstOrNull {
+                    sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
+                }
+                ?: return null
+
+        val sykmeldingerMedOverlappendePerioder =
+            alleSykmeldinger
+                .filter {
+                    it.sykmeldingsperioder.any { periodA ->
+                        lastSykmelding.sykmeldingsperioder
+                            .filter { periodB -> periodB != periodA }
+                            .any { periodB ->
+                                periodA.fom in periodB.range() || periodA.tom in periodB.range()
+                            }
+                    }
+                }
+                .filter {
+                    it.sykmeldingStatus.arbeidsgiver?.orgnummer !=
+                        lastSykmelding.sykmeldingStatus.arbeidsgiver?.orgnummer
+                }
+
+        return if (sykmeldingerMedOverlappendePerioder.isNotEmpty()) {
+            null
+        } else {
+            lastSykmelding
+        }
     }
 
     private fun sisteTomIKantMedDag(
@@ -414,3 +437,5 @@ data class StatusMetadata(
     val forrigeStatus: String,
     val forrigeSykmeldingsId: String
 )
+
+fun SykmeldingsperiodeDTO.range(): ClosedRange<LocalDate> = fom.rangeTo(tom)
