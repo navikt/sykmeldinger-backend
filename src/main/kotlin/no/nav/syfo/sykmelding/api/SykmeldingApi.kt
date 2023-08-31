@@ -15,8 +15,9 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-
-        call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr))
+        val sykmeldinger = sykmeldingService.hentSykmeldinger(fnr = fnr)
+        securelog.info("getting sykmeldinger for fnr: $fnr, sykmeldingIds ${sykmeldinger.map { it.id }}")
+        call.respond(sykmeldinger)
     }
 
     get("/sykmeldinger/{sykmeldingid}") {
