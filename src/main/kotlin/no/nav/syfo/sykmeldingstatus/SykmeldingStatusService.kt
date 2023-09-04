@@ -173,7 +173,7 @@ class SykmeldingStatusService(
             if (currentSykmelding != null) {
                 finnForsteFom(currentSykmelding.sykmeldingsperioder)
             } else {
-                return null
+                throw IllegalStateException("Skal finnes ein sykmelding med sykmeldingsid: $sykmeldingId")
             }
 
         val lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate =
@@ -203,11 +203,13 @@ class SykmeldingStatusService(
         }
     }
 
-    private fun isWorkingdaysBetween(a: LocalDate, b: LocalDate): Boolean {
-        return ((1..(ChronoUnit.DAYS.between(a, b) - 1))
-            .map { a.plusDays(it) }
-            .filter { it.dayOfWeek !in arrayOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) }
-            .count()) != 0
+    private fun isWorkingdaysBetween(tom: LocalDate, fom: LocalDate): Boolean {
+        val daysBetween = ChronoUnit.DAYS.between(tom, fom)
+        return when (fom.dayOfWeek) {
+            DayOfWeek.MONDAY -> daysBetween > 2
+            DayOfWeek.SUNDAY -> daysBetween > 1
+            else -> daysBetween > 0
+        }
     }
 
     private suspend fun lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate(
@@ -218,13 +220,19 @@ class SykmeldingStatusService(
 
         val alleSykmeldinger = sykmeldingService.hentSykmeldinger(fnr)
 
-        val lastSykmelding =
+        val sykmeldinger =
             alleSykmeldinger
-                .filter { it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() }
-                .firstOrNull {
+                .filter { it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
+                    it.sykmeldingStatus.statusMetadata.lastOrgnummer != null }
+                .filter {
                     sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
                 }
-                ?: return null
+
+        if (sykmeldinger.distinctBy { it.sykmeldingStatus.arbeidsgiver?.orgnummer }.size != 1) {
+            return null
+        }
+
+        val lastSykmelding = sykmeldinger.first()
 
         val sykmeldingerMedOverlappendePerioder =
             alleSykmeldinger
@@ -248,6 +256,17 @@ class SykmeldingStatusService(
             lastSykmelding
         }
     }
+
+    /*
+    * Sykmelding 1:
+    * status: sendt
+    * dato: 1.1.2023 ->  1.2.2023
+    *
+    * Sykmelding 2:
+    * status: bekreftet
+    * dato: 2.2.2023 ->  1.3.2023
+    *
+    * */
 
     private fun sisteTomIKantMedDag(
         perioder: List<SykmeldingsperiodeDTO>,
