@@ -166,7 +166,7 @@ class SykmeldingStatusService(
         sykmeldtFnr: String,
         sykmeldingId: String,
         nesteStatus: StatusEventDTO
-    ): StatusMetadata? {
+    ): TidligereArbeidsgiver? {
         val currentSykmelding = fetchSykmelding(sykmeldingService, sykmeldtFnr, sykmeldingId)
 
         val currentSykmeldingFirstFomDate =
@@ -187,17 +187,19 @@ class SykmeldingStatusService(
             nesteStatus == StatusEventDTO.BEKREFTET &&
                 lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate != null
         ) {
+
+            val forrigeOrgNavn =
+                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
+                    .arbeidsgiver
+                    ?.orgNavn
             val forrigeOrgnummer =
                 lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
                     .arbeidsgiver
                     ?.orgnummer
-            val forrigeStatus =
-                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
-                    .statusEvent
             val forrigeSykmeldingsId =
                 lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.id
 
-            StatusMetadata(forrigeOrgnummer, forrigeStatus, forrigeSykmeldingsId)
+            TidligereArbeidsgiver(forrigeOrgNavn, forrigeOrgnummer, forrigeSykmeldingsId)
         } else {
             null
         }
@@ -223,7 +225,7 @@ class SykmeldingStatusService(
         val sykmeldinger =
             alleSykmeldinger
                 .filter { it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
-                    it.sykmeldingStatus.statusMetadata.lastOrgnummer != null }
+                    it.sykmeldingStatus.tidligereArbeidsgiver.orgnummer != null }
                 .filter {
                     sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
                 }
@@ -256,17 +258,6 @@ class SykmeldingStatusService(
             lastSykmelding
         }
     }
-
-    /*
-    * Sykmelding 1:
-    * status: sendt
-    * dato: 1.1.2023 ->  1.2.2023
-    *
-    * Sykmelding 2:
-    * status: bekreftet
-    * dato: 2.2.2023 ->  1.3.2023
-    *
-    * */
 
     private fun sisteTomIKantMedDag(
         perioder: List<SykmeldingsperiodeDTO>,
@@ -451,10 +442,10 @@ fun SykmeldingUserEvent.toStatusEvent(): StatusEventDTO {
     return StatusEventDTO.BEKREFTET
 }
 
-data class StatusMetadata(
-    val forrigeOrgnummer: String?,
-    val forrigeStatus: String,
-    val forrigeSykmeldingsId: String
+data class TidligereArbeidsgiver(
+    val orgNavn: String?,
+    val orgnummer: String?,
+    val sykmeldingsId: String
 )
 
 fun SykmeldingsperiodeDTO.range(): ClosedRange<LocalDate> = fom.rangeTo(tom)
