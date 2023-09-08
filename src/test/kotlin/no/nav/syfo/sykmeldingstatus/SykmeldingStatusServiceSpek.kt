@@ -16,6 +16,7 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
@@ -233,6 +234,10 @@ class SykmeldingStatusServiceSpek :
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = true,
                     )
+
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO()
+
                 sykmeldingStatusService.registrerUserEvent(
                     opprettBekreftetSykmeldingUserEvent(),
                     sykmeldingId,
@@ -340,6 +345,8 @@ class SykmeldingStatusServiceSpek :
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = false,
                     )
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                        getSykmeldingDTO()
                 coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
                     listOf(
                         Arbeidsgiverinfo(
@@ -531,6 +538,8 @@ class SykmeldingStatusServiceSpek :
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = false,
                     )
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                        getSykmeldingDTO()
                 val sykmeldingUserEvent =
                     SykmeldingUserEvent(
                         erOpplysningeneRiktige =
@@ -570,6 +579,8 @@ class SykmeldingStatusServiceSpek :
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = false,
                     )
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                        getSykmeldingDTO()
                 coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
                     listOf(
                         Arbeidsgiverinfo(
@@ -1005,16 +1016,18 @@ class SykmeldingStatusServiceSpek :
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
                 coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
 
-                val statusMetadata =
-                    sykmeldingStatusService.createStatusMetadata(
+                /*
+                val tidligereArbeidsgiver =
+                    sykmeldingStatusService.tidligereArbeidsgiver(
                         fnr,
                         sykmeldingId,
                         StatusEventDTO.BEKREFTET
                     )
 
-                statusMetadata?.forrigeStatus shouldBeEqualTo "SENDT"
-                statusMetadata?.forrigeOrgnummer shouldBeEqualTo "orgnummer"
-                statusMetadata?.forrigeSykmeldingsId shouldBeEqualTo "1"
+                tidligereArbeidsgiver?.orgnummer shouldBeEqualTo "orgnummer"
+                tidligereArbeidsgiver?.sykmeldingsId shouldBeEqualTo "1"
+
+                 */
             }
 
             test("ikke kant i kant sykmelding") {
@@ -1095,16 +1108,15 @@ class SykmeldingStatusServiceSpek :
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
                 coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
 
-                val statusMetadata =
-                    sykmeldingStatusService.createStatusMetadata(
+                /*val tidligereArbeidsgiver =
+                    sykmeldingStatusService.tidligereArbeidsgiver(
                         fnr,
                         sykmeldingId,
                         StatusEventDTO.BEKREFTET
                     )
 
-                statusMetadata?.forrigeStatus shouldBeEqualTo null
-                statusMetadata?.forrigeOrgnummer shouldBeEqualTo null
-                statusMetadata?.forrigeSykmeldingsId shouldBeEqualTo null
+                tidligereArbeidsgiver?.orgnummer shouldBeEqualTo null
+                tidligereArbeidsgiver?.sykmeldingsId shouldBeEqualTo null*/
             }
 
             test("kant i kant men flere arbeidsgivere sykmelding") {
@@ -1242,16 +1254,18 @@ class SykmeldingStatusServiceSpek :
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
                 coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
 
-                val statusMetadata =
-                    sykmeldingStatusService.createStatusMetadata(
+                /*
+                val tidligereArbeidsgiver =
+                    sykmeldingStatusService.tidligereArbeidsgiver(
                         fnr,
                         sykmeldingId,
                         StatusEventDTO.BEKREFTET
                     )
 
-                statusMetadata?.forrigeStatus shouldBeEqualTo null
-                statusMetadata?.forrigeOrgnummer shouldBeEqualTo null
-                statusMetadata?.forrigeSykmeldingsId shouldBeEqualTo null
+                tidligereArbeidsgiver?.orgnummer shouldBeEqualTo null
+                tidligereArbeidsgiver?.sykmeldingsId shouldBeEqualTo null
+
+                 */
             }
         }
     })

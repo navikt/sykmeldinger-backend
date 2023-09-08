@@ -4,18 +4,8 @@ import java.time.OffsetDateTime
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.log
 import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
-import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
-import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
-import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
-import no.nav.syfo.model.sykmeldingstatus.STATUS_SENDT
-import no.nav.syfo.model.sykmeldingstatus.STATUS_UTGATT
-import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.model.sykmeldingstatus.*
 import no.nav.syfo.objectMapper
-import no.nav.syfo.sykmeldingstatus.TidligereArbeidsgiver
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -27,7 +17,7 @@ fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
     timestamp: OffsetDateTime,
     sykmeldingId: String,
     arbeidsgiver: Arbeidsgiverinfo?,
-    tidligereArbeidsgiver: TidligereArbeidsgiver?,
+    tidligereArbeidsgiver: TidligereArbeidsgiverDTO?,
 ): SykmeldingStatusKafkaEventDTO {
     return SykmeldingStatusKafkaEventDTO(
         sykmeldingId = sykmeldingId,
@@ -42,14 +32,7 @@ fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
                 )
             },
         sporsmals = toSporsmalSvarListe(arbeidsgiver, sykmeldingId),
-        tidligereArbeidsgiver =
-            tidligereArbeidsgiver?.let {
-                TidligereArbeidsgiverDTO(
-                    orgNavn = it.orgNavn,
-                    orgnummer = it.orgnummer,
-                    sykmeldingsId = it.sykmeldingsId
-                )
-            }
+        tidligereArbeidsgiver = tidligereArbeidsgiver
     )
 }
 
