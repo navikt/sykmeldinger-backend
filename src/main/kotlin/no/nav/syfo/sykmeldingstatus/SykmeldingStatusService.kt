@@ -10,6 +10,7 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.log
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
@@ -137,14 +138,17 @@ class SykmeldingStatusService(
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
 
-            val statusMetadata = createStatusMetadata(fnr, sykmeldingId, nesteStatus)
+            val tidligereArbeidsgiver = when(nesteStatus) {
+                StatusEventDTO.BEKREFTET -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
+                else -> null
+            }
 
             val sykmeldingStatusKafkaEventDTO =
                 sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
                     timestamp,
                     sykmeldingId,
                     arbeidsgiver,
-                    statusMetadata
+                    tidligereArbeidsgiver
                 )
 
             sykmeldingStatusKafkaProducer.send(
@@ -162,70 +166,64 @@ class SykmeldingStatusService(
         }
     }
 
-    suspend fun createStatusMetadata(
+    private suspend fun tidligereArbeidsgiver(
         sykmeldtFnr: String,
         sykmeldingId: String,
         nesteStatus: StatusEventDTO
-    ): TidligereArbeidsgiver? {
-        val currentSykmelding = fetchSykmelding(sykmeldingService, sykmeldtFnr, sykmeldingId)
+    ): TidligereArbeidsgiverDTO? {
+        val currentSykmelding = fetchSykmelding(sykmeldtFnr, sykmeldingId)
 
         val currentSykmeldingFirstFomDate =
             if (currentSykmelding != null) {
                 finnForsteFom(currentSykmelding.sykmeldingsperioder)
             } else {
-                throw IllegalStateException("Skal finnes ein sykmelding med sykmeldingsid: $sykmeldingId")
+                throw IllegalStateException(
+                    "Skal finnes ein sykmelding med sykmeldingsid: $sykmeldingId"
+                )
             }
 
-        val lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate =
-            lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate(
-                sykmeldingService,
-                sykmeldtFnr,
-                currentSykmeldingFirstFomDate
-            )
-
-        return if (
-            nesteStatus == StatusEventDTO.BEKREFTET &&
-                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate != null
-        ) {
-
-            val forrigeOrgNavn =
-                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
-                    .arbeidsgiver
-                    ?.orgNavn
-            val forrigeOrgnummer =
-                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.sykmeldingStatus
-                    .arbeidsgiver
-                    ?.orgnummer
-            val forrigeSykmeldingsId =
-                lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate.id
-
-            TidligereArbeidsgiver(forrigeOrgNavn, forrigeOrgnummer, forrigeSykmeldingsId)
+        return if (nesteStatus == StatusEventDTO.BEKREFTET) {
+            return opprettTidligereArbeidsgiver(sykmeldtFnr, currentSykmeldingFirstFomDate)
         } else {
             null
         }
     }
 
-    private fun isWorkingdaysBetween(tom: LocalDate, fom: LocalDate): Boolean {
-        val daysBetween = ChronoUnit.DAYS.between(tom, fom)
-        return when (fom.dayOfWeek) {
-            DayOfWeek.MONDAY -> daysBetween > 2
-            DayOfWeek.SUNDAY -> daysBetween > 1
-            else -> daysBetween > 0
+    private suspend fun opprettTidligereArbeidsgiver(
+        sykmeldtFnr: String,
+        currentSykmeldingFirstFomDate: LocalDate
+    ): TidligereArbeidsgiverDTO? {
+        val sisteSykmelding = findLastSendtSykmelding(sykmeldtFnr, currentSykmeldingFirstFomDate)
+        return sisteSykmelding?.sykmeldingStatus?.arbeidsgiver?.let {
+            TidligereArbeidsgiverDTO(
+                orgNavn = it.orgNavn,
+                orgnummer = it.orgnummer,
+                sykmeldingsId = sisteSykmelding.id
+            )
         }
     }
 
-    private suspend fun lastSykmeldingNoWorkingdaysBetweenCurrentSykmeldingFirstFomDate(
-        sykmeldingService: SykmeldingService,
+    private fun isWorkingdaysBetween(tom: LocalDate, fom: LocalDate): Boolean {
+        val daysBetween = ChronoUnit.DAYS.between(tom, fom).toInt()
+        return when (fom.dayOfWeek) {
+            DayOfWeek.MONDAY -> daysBetween > 3
+            DayOfWeek.SUNDAY -> daysBetween > 2
+            else -> daysBetween > 1
+        }
+    }
+
+    private suspend fun findLastSendtSykmelding(
         fnr: String,
         currentSykmeldingFirstFomDate: LocalDate
     ): SykmeldingDTO? {
 
         val alleSykmeldinger = sykmeldingService.hentSykmeldinger(fnr)
-
-        val sykmeldinger =
-            alleSykmeldinger
-                .filter { it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
-                    it.sykmeldingStatus.tidligereArbeidsgiver.orgnummer != null }
+        log.info("antall sykmeldinger ${alleSykmeldinger.size}")
+        val sykmeldinger = alleSykmeldinger
+                .filter {
+                    it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
+                        it.sykmeldingStatus.arbeidsgiver?.orgnummer != null
+                }
                 .filter {
                     sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
                 }
@@ -233,10 +231,9 @@ class SykmeldingStatusService(
         if (sykmeldinger.distinctBy { it.sykmeldingStatus.arbeidsgiver?.orgnummer }.size != 1) {
             return null
         }
+        return sykmeldinger.firstOrNull()
 
-        val lastSykmelding = sykmeldinger.first()
-
-        val sykmeldingerMedOverlappendePerioder =
+        /*val sykmeldingerMedOverlappendePerioder =
             alleSykmeldinger
                 .filter {
                     it.sykmeldingsperioder.any { periodA ->
@@ -251,12 +248,12 @@ class SykmeldingStatusService(
                     it.sykmeldingStatus.arbeidsgiver?.orgnummer !=
                         lastSykmelding.sykmeldingStatus.arbeidsgiver?.orgnummer
                 }
-
-        return if (sykmeldingerMedOverlappendePerioder.isNotEmpty()) {
+*/
+     /*   return if (sykmeldingerMedOverlappendePerioder.isNotEmpty()) {
             null
         } else {
             lastSykmelding
-        }
+        }*/
     }
 
     private fun sisteTomIKantMedDag(
@@ -269,11 +266,7 @@ class SykmeldingStatusService(
         return !isWorkingdaysBetween(sisteTom, dag)
     }
 
-    private suspend fun fetchSykmelding(
-        sykmeldingService: SykmeldingService,
-        fnr: String,
-        sykmeldingId: String
-    ): SykmeldingDTO? {
+    private suspend fun fetchSykmelding(fnr: String, sykmeldingId: String): SykmeldingDTO? {
         return sykmeldingService.hentSykmelding(fnr, sykmeldingId)
     }
 
@@ -441,11 +434,5 @@ fun SykmeldingUserEvent.toStatusEvent(): StatusEventDTO {
     }
     return StatusEventDTO.BEKREFTET
 }
-
-data class TidligereArbeidsgiver(
-    val orgNavn: String?,
-    val orgnummer: String?,
-    val sykmeldingsId: String
-)
 
 fun SykmeldingsperiodeDTO.range(): ClosedRange<LocalDate> = fom.rangeTo(tom)
