@@ -31,7 +31,9 @@ fun getSykmeldingStatus(
 
 fun getSykmeldingDTO(
     merknader: List<MerknadDTO>? = null,
-    timestamps: OffsetDateTime? = null
+    timestamps: OffsetDateTime? = null,
+    fom: LocalDate = LocalDate.now(),
+    tom: LocalDate = LocalDate.now()
 ): SykmeldingDTO {
     return SykmeldingDTO(
         id = "1",
@@ -40,8 +42,8 @@ fun getSykmeldingDTO(
         sykmeldingsperioder =
             listOf(
                 SykmeldingsperiodeDTO(
-                    LocalDate.now(),
-                    LocalDate.now(),
+                    fom,
+                    tom,
                     null,
                     null,
                     null,

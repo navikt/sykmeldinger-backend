@@ -1,7 +1,6 @@
 package no.nav.syfo.sykmeldingstatus
 
 import io.kotest.core.spec.style.FunSpec
-import io.mockk.MockKMatcherScope
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -22,21 +21,17 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.SykmeldingService
-import no.nav.syfo.sykmelding.model.AdresseDTO
-import no.nav.syfo.sykmelding.model.BehandlerDTO
-import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
-import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
-import no.nav.syfo.sykmelding.model.PasientDTO
-import no.nav.syfo.sykmelding.model.PeriodetypeDTO
-import no.nav.syfo.sykmelding.model.RegelStatusDTO
-import no.nav.syfo.sykmelding.model.SykmeldingDTO
-import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
-import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.matchStatusWithEmptySporsmals
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettBekreftetSykmeldingUserEvent
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettSendtSykmeldingUserEvent
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettTidligereSykmelding
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.statusEquals
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSLEDIG
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.FRILANSER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
@@ -551,7 +546,7 @@ class SykmeldingStatusServiceSpek :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.FRILANSER,
+                                svar = FRILANSER,
                             ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -937,69 +932,15 @@ class SykmeldingStatusServiceSpek :
                 checkStatusFails(StatusEventDTO.APEN, StatusEventDTO.AVBRUTT, erEgenmeldt = true)
             }
         }
-        context("Test å lage StatusMetadata") {
+        context("Bruker går fra arbeidstaker til arbeidsledig") {
             test("Happy-case") {
                 coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO()
+                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
 
-                val tidligereSykmeldinge =
-                    SykmeldingDTO(
-                        id = "1",
-                        utdypendeOpplysninger = emptyMap(),
-                        kontaktMedPasient = KontaktMedPasientDTO(null, null),
-                        sykmeldingsperioder =
-                            listOf(
-                                SykmeldingsperiodeDTO(
-                                    LocalDate.now().minusDays(7),
-                                    LocalDate.now().minusDays(1),
-                                    null,
-                                    null,
-                                    null,
-                                    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                    null,
-                                    false,
-                                ),
-                            ),
-                        sykmeldingStatus =
-                            SykmeldingStatusDTO(
-                                "SENDT",
-                                OffsetDateTime.now(ZoneOffset.UTC),
-                                ArbeidsgiverStatusDTO("orgnummer", "juridiskOrgnummer", "orgNavn"),
-                                emptyList(),
-                            ),
-                        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
-                        medisinskVurdering = getMedisinskVurdering(),
-                        behandler =
-                            BehandlerDTO(
-                                "fornavn",
-                                null,
-                                "etternavn",
-                                AdresseDTO(null, null, null, null, null),
-                                null,
-                            ),
-                        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        skjermesForPasient = false,
-                        meldingTilNAV = null,
-                        prognose = null,
-                        arbeidsgiver = null,
-                        tiltakNAV = null,
-                        syketilfelleStartDato = null,
-                        tiltakArbeidsplassen = null,
-                        navnFastlege = null,
-                        meldingTilArbeidsgiver = null,
-                        legekontorOrgnummer = null,
-                        andreTiltak = null,
-                        egenmeldt = false,
-                        harRedusertArbeidsgiverperiode = false,
-                        papirsykmelding = false,
-                        merknader = null,
-                        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
-                        rulesetVersion = null,
-                        utenlandskSykmelding = null,
-                    )
+                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+
                 coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                    listOf(tidligereSykmeldinge)
+                    listOf(tidligereSykmelding, getSykmeldingDTO())
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1012,86 +953,18 @@ class SykmeldingStatusServiceSpek :
                     sykmeldingId,
                     fnr
                 )
-
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
-                coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-
-                /*
-                val tidligereArbeidsgiver =
-                    sykmeldingStatusService.tidligereArbeidsgiver(
-                        fnr,
-                        sykmeldingId,
-                        StatusEventDTO.BEKREFTET
-                    )
-
-                tidligereArbeidsgiver?.orgnummer shouldBeEqualTo "orgnummer"
-                tidligereArbeidsgiver?.sykmeldingsId shouldBeEqualTo "1"
-
-                 */
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == tidligereArbeidsgiver }, any(), any()) }
             }
 
             test("ikke kant i kant sykmelding") {
+                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
                 coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO()
+                    getSykmeldingDTO(fom = 17.januar(2023), tom = 31.januar(2023))
 
-                val tidligereSykmeldinge =
-                    SykmeldingDTO(
-                        id = "1",
-                        utdypendeOpplysninger = emptyMap(),
-                        kontaktMedPasient = KontaktMedPasientDTO(null, null),
-                        sykmeldingsperioder =
-                            listOf(
-                                SykmeldingsperiodeDTO(
-                                    LocalDate.now().minusDays(7),
-                                    LocalDate.now().minusDays(4),
-                                    null,
-                                    null,
-                                    null,
-                                    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                    null,
-                                    false,
-                                ),
-                            ),
-                        sykmeldingStatus =
-                            SykmeldingStatusDTO(
-                                "SENDT",
-                                OffsetDateTime.now(ZoneOffset.UTC),
-                                ArbeidsgiverStatusDTO("orgnummer", "juridiskOrgnummer", "orgNavn"),
-                                emptyList(),
-                            ),
-                        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
-                        medisinskVurdering = getMedisinskVurdering(),
-                        behandler =
-                            BehandlerDTO(
-                                "fornavn",
-                                null,
-                                "etternavn",
-                                AdresseDTO(null, null, null, null, null),
-                                null,
-                            ),
-                        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        skjermesForPasient = false,
-                        meldingTilNAV = null,
-                        prognose = null,
-                        arbeidsgiver = null,
-                        tiltakNAV = null,
-                        syketilfelleStartDato = null,
-                        tiltakArbeidsplassen = null,
-                        navnFastlege = null,
-                        meldingTilArbeidsgiver = null,
-                        legekontorOrgnummer = null,
-                        andreTiltak = null,
-                        egenmeldt = false,
-                        harRedusertArbeidsgiverperiode = false,
-                        papirsykmelding = false,
-                        merknader = null,
-                        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
-                        rulesetVersion = null,
-                        utenlandskSykmelding = null,
-                    )
                 coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                    listOf(tidligereSykmeldinge)
+                    listOf(tidligereSykmelding)
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1106,138 +979,20 @@ class SykmeldingStatusServiceSpek :
                 )
 
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
-                coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-
-                /*val tidligereArbeidsgiver =
-                    sykmeldingStatusService.tidligereArbeidsgiver(
-                        fnr,
-                        sykmeldingId,
-                        StatusEventDTO.BEKREFTET
-                    )
-
-                tidligereArbeidsgiver?.orgnummer shouldBeEqualTo null
-                tidligereArbeidsgiver?.sykmeldingsId shouldBeEqualTo null*/
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == null }, any(), any()) }
             }
 
-            test("kant i kant men flere arbeidsgivere sykmelding") {
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO()
+            test("kant til kant men flere arbeidsgivere") {
+                val tidligereSykmeldingArbeidsgiver1 = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), "orgnummer1")
 
-                val tidligereSykmeldingArbeidsgiver1 =
-                    SykmeldingDTO(
-                        id = "1",
-                        utdypendeOpplysninger = emptyMap(),
-                        kontaktMedPasient = KontaktMedPasientDTO(null, null),
-                        sykmeldingsperioder =
-                            listOf(
-                                SykmeldingsperiodeDTO(
-                                    LocalDate.now().minusDays(7),
-                                    LocalDate.now().minusDays(1),
-                                    null,
-                                    null,
-                                    null,
-                                    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                    null,
-                                    false,
-                                ),
-                            ),
-                        sykmeldingStatus =
-                            SykmeldingStatusDTO(
-                                "SENDT",
-                                OffsetDateTime.now(ZoneOffset.UTC),
-                                ArbeidsgiverStatusDTO("orgnummer", "juridiskOrgnummer", "orgNavn"),
-                                emptyList(),
-                            ),
-                        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
-                        medisinskVurdering = getMedisinskVurdering(),
-                        behandler =
-                            BehandlerDTO(
-                                "fornavn",
-                                null,
-                                "etternavn",
-                                AdresseDTO(null, null, null, null, null),
-                                null,
-                            ),
-                        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        skjermesForPasient = false,
-                        meldingTilNAV = null,
-                        prognose = null,
-                        arbeidsgiver = null,
-                        tiltakNAV = null,
-                        syketilfelleStartDato = null,
-                        tiltakArbeidsplassen = null,
-                        navnFastlege = null,
-                        meldingTilArbeidsgiver = null,
-                        legekontorOrgnummer = null,
-                        andreTiltak = null,
-                        egenmeldt = false,
-                        harRedusertArbeidsgiverperiode = false,
-                        papirsykmelding = false,
-                        merknader = null,
-                        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
-                        rulesetVersion = null,
-                        utenlandskSykmelding = null,
-                    )
+                val tidligereSykmeldingArbeidsgiver2 = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), "orgnummer2")
 
-                val tidligereSykmeldingArbeidsgiver2 =
-                    SykmeldingDTO(
-                        id = "2",
-                        utdypendeOpplysninger = emptyMap(),
-                        kontaktMedPasient = KontaktMedPasientDTO(null, null),
-                        sykmeldingsperioder =
-                            listOf(
-                                SykmeldingsperiodeDTO(
-                                    LocalDate.now().minusDays(6),
-                                    LocalDate.now().minusDays(1),
-                                    null,
-                                    null,
-                                    null,
-                                    PeriodetypeDTO.AKTIVITET_IKKE_MULIG,
-                                    null,
-                                    false,
-                                ),
-                            ),
-                        sykmeldingStatus =
-                            SykmeldingStatusDTO(
-                                "SENDT",
-                                OffsetDateTime.now(ZoneOffset.UTC),
-                                ArbeidsgiverStatusDTO("orgnummer2", "juridiskOrgnummer", "orgNavn"),
-                                emptyList(),
-                            ),
-                        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
-                        medisinskVurdering = getMedisinskVurdering(),
-                        behandler =
-                            BehandlerDTO(
-                                "fornavn",
-                                null,
-                                "etternavn",
-                                AdresseDTO(null, null, null, null, null),
-                                null,
-                            ),
-                        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-                        skjermesForPasient = false,
-                        meldingTilNAV = null,
-                        prognose = null,
-                        arbeidsgiver = null,
-                        tiltakNAV = null,
-                        syketilfelleStartDato = null,
-                        tiltakArbeidsplassen = null,
-                        navnFastlege = null,
-                        meldingTilArbeidsgiver = null,
-                        legekontorOrgnummer = null,
-                        andreTiltak = null,
-                        egenmeldt = false,
-                        harRedusertArbeidsgiverperiode = false,
-                        papirsykmelding = false,
-                        merknader = null,
-                        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
-                        rulesetVersion = null,
-                        utenlandskSykmelding = null,
-                    )
                 coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                    listOf(tidligereSykmeldingArbeidsgiver1, tidligereSykmeldingArbeidsgiver2)
+                        listOf(tidligereSykmeldingArbeidsgiver1, tidligereSykmeldingArbeidsgiver2)
+
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
+
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1252,98 +1007,115 @@ class SykmeldingStatusServiceSpek :
                 )
 
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
-                coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == null }, any(), any()) }
+            }
 
-                /*
-                val tidligereArbeidsgiver =
-                    sykmeldingStatusService.tidligereArbeidsgiver(
-                        fnr,
-                        sykmeldingId,
-                        StatusEventDTO.BEKREFTET
+            test("kant til kant fredag og mandag") {
+
+                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 6.januar(2023))
+
+                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
+                        listOf(tidligereSykmelding)
+
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO(fom = 9.januar(2023), tom = 31.januar(2023))
+
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
                     )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(),
+                    sykmeldingId,
+                    fnr
+                )
 
-                tidligereArbeidsgiver?.orgnummer shouldBeEqualTo null
-                tidligereArbeidsgiver?.sykmeldingsId shouldBeEqualTo null
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == tidligereArbeidsgiver }, any(), any()) }
+            }
 
-                 */
+            test("Ikke kant til kant torsdag og mandag") {
+
+                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 5.januar(2023))
+
+                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
+                        listOf(tidligereSykmelding)
+
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO(fom = 9.januar(2023), tom = 31.januar(2023))
+
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(),
+                    sykmeldingId,
+                    fnr
+                )
+
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == null }, any(), any()) }
+            }
+
+            test("arbeidstaker til arbeidsledig") {
+                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+
+                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
+                        listOf(tidligereSykmelding)
+
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
+
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                    sykmeldingId,
+                    fnr
+                )
+
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == tidligereArbeidsgiver }, any(), any()) }
+            }
+
+            test("arbeidstaker til frilanser") {
+                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+
+                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
+                        listOf(tidligereSykmelding)
+
+                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = FRILANSER),
+                    sykmeldingId,
+                    fnr
+                )
+
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == null }, any(), any()) }
             }
         }
     })
 
-fun MockKMatcherScope.statusEquals(statusEvent: String) =
-    match<SykmeldingStatusKafkaEventDTO> { statusEvent == it.statusEvent }
-
-fun MockKMatcherScope.matchStatusWithEmptySporsmals(statusEvent: String) =
-    match<SykmeldingStatusKafkaEventDTO> {
-        statusEvent == it.statusEvent && it.sporsmals?.isEmpty() ?: true
-    }
-
-fun opprettSendtSykmeldingUserEvent(): SykmeldingUserEvent =
-    SykmeldingUserEvent(
-        erOpplysningeneRiktige =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = JaEllerNei.JA,
-            ),
-        uriktigeOpplysninger = null,
-        arbeidssituasjon =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
-            ),
-        arbeidsgiverOrgnummer =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = "orgnummer",
-            ),
-        riktigNarmesteLeder =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = JaEllerNei.JA,
-            ),
-        harBruktEgenmelding = null,
-        egenmeldingsperioder = null,
-        harForsikring = null,
-        harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null,
-    )
-
-fun opprettBekreftetSykmeldingUserEvent(): SykmeldingUserEvent =
-    SykmeldingUserEvent(
-        erOpplysningeneRiktige =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = JaEllerNei.JA,
-            ),
-        uriktigeOpplysninger = null,
-        arbeidssituasjon =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = ArbeidssituasjonDTO.FRILANSER,
-            ),
-        arbeidsgiverOrgnummer = null,
-        riktigNarmesteLeder = null,
-        harBruktEgenmelding =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = JaEllerNei.JA,
-            ),
-        egenmeldingsperioder =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar =
-                    listOf(
-                        Egenmeldingsperiode(
-                            fom = LocalDate.now().minusWeeks(1),
-                            tom = LocalDate.now(),
-                        ),
-                    ),
-            ),
-        harForsikring =
-            SporsmalSvar(
-                sporsmaltekst = "",
-                svar = JaEllerNei.JA,
-            ),
-        harBruktEgenmeldingsdager = null,
-        egenmeldingsdager = null,
-    )
