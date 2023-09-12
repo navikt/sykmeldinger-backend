@@ -67,8 +67,3 @@ spec:
           cluster: prod-gcp
   secureLogs:
     enabled: true
-  ingresses:
-    - "https://sykmeldinger-backend.nav.no"
-  env:
-    - name: ALLOWED_ORIGIN
-      value: www.nav.no

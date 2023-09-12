@@ -10,7 +10,6 @@ data class Environment(
     val tokenXWellKnownUrl: String = getEnvVar("TOKEN_X_WELL_KNOWN_URL"),
     val clientIdTokenX: String = getEnvVar("TOKEN_X_CLIENT_ID"),
     val tokenXPrivateJwk: RSAKey = RSAKey.parse(getEnvVar("TOKEN_X_PRIVATE_JWK")),
-    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN").split(","),
     val databaseUsername: String = getEnvVar("DB_USERNAME"),
     val databasePassword: String = getEnvVar("DB_PASSWORD"),
     val dbHost: String = getEnvVar("DB_HOST"),

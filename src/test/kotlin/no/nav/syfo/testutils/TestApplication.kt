@@ -26,7 +26,6 @@ fun getTestEnvironment(): Environment =
         tokenXWellKnownUrl = "https://tokenx",
         clientIdTokenX = "clientId",
         tokenXPrivateJwk = getDefaultRSAKey(),
-        allowedOrigin = emptyList(),
         dbHost = "",
         dbPort = "",
         dbName = "",

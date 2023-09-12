@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nav.syfo.log
 import no.nav.syfo.metrics.MISSING_DATA_COUNTER
+import no.nav.syfo.sykmelding.db.MinimalSykmelding
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 
@@ -21,6 +22,15 @@ class SykmeldingService(
     suspend fun hentSykmeldinger(fnr: String): List<SykmeldingDTO> {
         return sykmeldingDb.getSykmeldinger(fnr)
     }
+
+    suspend fun getOlderSykmeldinger(fnr: String): List<MinimalSykmelding> =
+        sykmeldingDb.getOlderSykmeldinger(fnr)
+
+    suspend fun getProsessingSykmeldinger(fnr: String): List<MinimalSykmelding> =
+        sykmeldingDb.getProcessingSykmeldinger(fnr)
+
+    suspend fun getUnsentSykmeldinger(fnr: String): List<MinimalSykmelding> =
+        sykmeldingDb.getUnsentSykmeldinger(fnr)
 
     fun logInfo(sykmeldingId: String, fnr: String) {
         CoroutineScope(Dispatchers.IO).launch {

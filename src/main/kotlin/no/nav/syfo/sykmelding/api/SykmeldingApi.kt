@@ -15,8 +15,11 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-
-        call.respond(sykmeldingService.hentSykmeldinger(fnr = fnr))
+        val sykmeldinger = sykmeldingService.hentSykmeldinger(fnr = fnr)
+        securelog.info(
+            "getting sykmeldinger for fnr: $fnr, sykmeldingIds ${sykmeldinger.map { it.id }}"
+        )
+        call.respond(sykmeldinger)
     }
 
     get("/sykmeldinger/{sykmeldingid}") {
@@ -41,5 +44,39 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
                 else -> call.respond(sykmelding)
             }
         }
+    }
+
+    /** Returns a size reduced version of the sykmelding optimized for the list view */
+    get("/sykmeldinger/minimal/{category}") {
+        val category: SykmeldingCategory? = call.parameters["category"]?.safeParseCategory()
+        if (category == null) {
+            call.respond(HttpStatusCode.BadRequest, "Missing category")
+            return@get
+        }
+
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+
+        call.respond(
+            when (category) {
+                SykmeldingCategory.UNSENT -> sykmeldingService.getUnsentSykmeldinger(fnr)
+                SykmeldingCategory.PROCESSING -> sykmeldingService.getProsessingSykmeldinger(fnr)
+                SykmeldingCategory.OLDER -> sykmeldingService.getOlderSykmeldinger(fnr)
+            },
+        )
+    }
+}
+
+enum class SykmeldingCategory {
+    UNSENT,
+    OLDER,
+    PROCESSING
+}
+
+fun String.safeParseCategory(): SykmeldingCategory? {
+    return try {
+        SykmeldingCategory.valueOf(this)
+    } catch (e: IllegalArgumentException) {
+        null
     }
 }
