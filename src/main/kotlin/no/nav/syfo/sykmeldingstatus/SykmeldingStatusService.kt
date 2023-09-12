@@ -166,7 +166,7 @@ class SykmeldingStatusService(
         }
     }
 
-    private suspend fun tidligereArbeidsgiver(
+    internal suspend fun tidligereArbeidsgiver(
         sykmeldtFnr: String,
         sykmeldingId: String,
         nesteStatus: StatusEventDTO
