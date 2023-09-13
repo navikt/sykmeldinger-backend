@@ -69,5 +69,3 @@ spec:
           cluster: dev-gcp
   secureLogs:
     enabled: true
-  ingresses:
-    - "https://sykmeldinger-backend.dev.nav.no"
