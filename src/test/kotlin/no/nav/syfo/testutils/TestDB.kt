@@ -8,6 +8,7 @@ import java.time.OffsetDateTime
 import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
@@ -89,12 +90,14 @@ fun getStatus(
     timestamp: OffsetDateTime,
     arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null,
     sporsmals: List<SporsmalDTO> = emptyList(),
+    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         statusEvent = status,
         timestamp = timestamp,
         arbeidsgiver = arbeidsgiverStatusDTO,
         sporsmalOgSvarListe = sporsmals,
+        tidligereArbeidsgiver = tidligereArbeidsgiver
     )
 }
 
@@ -139,7 +142,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
         connection
             .prepareStatement(
                 """
-            insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal) values (?, ?, ?, ?, ?)
+            insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal, tidligere_arbeidsgiver) values (?, ?, ?, ?, ?, ?)
             """
                     .trimIndent(),
             )
@@ -161,6 +164,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
                         }
                         .toPGObject(),
                 )
+                it.setObject(6, status.tidligereArbeidsgiver?.toPGObject())
                 it.executeUpdate()
             }
         connection.commit()

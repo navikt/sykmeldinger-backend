@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.log
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
@@ -104,7 +105,8 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                     ss.event,
                     ss.timestamp,
                     ss.arbeidsgiver,
-                    ss.sporsmal
+                    ss.sporsmal,
+                    ss.tidligere_arbeidsgiver
                     from sykmeldingstatus ss
                 inner join sykmelding syk on syk.sykmelding_id = ss.sykmelding_id and syk.fnr = ?
                     where ss.sykmelding_id = ?
@@ -146,6 +148,10 @@ private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingS
                 getString("sporsmal")?.let { objectMapper.readValue<List<SporsmalOgSvarDTO>>(it) }
                     ?: emptyList(),
             statusEvent = getString("event"),
+            tidligereArbeidsgiver =
+                getObject("tidligere_arbeidsgiver")?.let {
+                    objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
+                }
         )
     } else {
         throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")

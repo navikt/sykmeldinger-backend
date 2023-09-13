@@ -139,10 +139,11 @@ class SykmeldingStatusService(
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
 
-            val tidligereArbeidsgiver = when(sykmeldingUserEvent.arbeidssituasjon.svar) {
-                 ARBEIDSLEDIG -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
-                else -> null
-            }
+            val tidligereArbeidsgiver =
+                when (sykmeldingUserEvent.arbeidssituasjon.svar) {
+                    ARBEIDSLEDIG -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
+                    else -> null
+                }
 
             val sykmeldingStatusKafkaEventDTO =
                 sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
@@ -220,7 +221,8 @@ class SykmeldingStatusService(
 
         val alleSykmeldinger = sykmeldingService.getSykmeldinger(fnr)
         log.info("antall sykmeldinger ${alleSykmeldinger.size}")
-        val sykmeldinger = alleSykmeldinger
+        val sykmeldinger =
+            alleSykmeldinger
                 .filter {
                     it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
                         it.sykmeldingStatus.tidligereArbeidsgiver?.orgnummer != null
@@ -235,22 +237,22 @@ class SykmeldingStatusService(
         return sykmeldinger.firstOrNull()
 
         /*val sykmeldingerMedOverlappendePerioder =
-            alleSykmeldinger
-                .filter {
-                    it.sykmeldingsperioder.any { periodA ->
-                        lastSykmelding.sykmeldingsperioder
-                            .filter { periodB -> periodB != periodA }
-                            .any { periodB ->
-                                periodA.fom in periodB.range() || periodA.tom in periodB.range()
+                    alleSykmeldinger
+                        .filter {
+                            it.sykmeldingsperioder.any { periodA ->
+                                lastSykmelding.sykmeldingsperioder
+                                    .filter { periodB -> periodB != periodA }
+                                    .any { periodB ->
+                                        periodA.fom in periodB.range() || periodA.tom in periodB.range()
+                                    }
                             }
-                    }
-                }
-                .filter {
-                    it.sykmeldingStatus.arbeidsgiver?.orgnummer !=
-                        lastSykmelding.sykmeldingStatus.arbeidsgiver?.orgnummer
-                }
-*/
-     /*   return if (sykmeldingerMedOverlappendePerioder.isNotEmpty()) {
+                        }
+                        .filter {
+                            it.sykmeldingStatus.arbeidsgiver?.orgnummer !=
+                                lastSykmelding.sykmeldingStatus.arbeidsgiver?.orgnummer
+                        }
+        */
+        /*   return if (sykmeldingerMedOverlappendePerioder.isNotEmpty()) {
             null
         } else {
             lastSykmelding
