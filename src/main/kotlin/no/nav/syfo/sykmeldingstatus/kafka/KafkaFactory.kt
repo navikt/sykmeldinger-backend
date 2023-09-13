@@ -15,7 +15,7 @@ class KafkaFactory private constructor() {
             environment: Environment
         ): SykmeldingStatusKafkaProducer {
             val kafkaStatusProducerConfig =
-                KafkaUtils.getAivenKafkaConfig()
+                KafkaUtils.getAivenKafkaConfig("status-producer")
                     .toProducerConfig(
                         "${environment.applicationName}-producer",
                         JacksonKafkaSerializer::class,
