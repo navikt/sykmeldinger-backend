@@ -25,7 +25,7 @@ import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.matchStatusWithEmptySporsmals
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettBekreftetSykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettSendtSykmeldingUserEvent
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettTidligereSykmelding
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettSykmelding
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.statusEquals
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -43,414 +43,431 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingStatusServiceSpek :
-    FunSpec({
-        val sykmeldingId = "id"
-        val fnr = "fnr"
+    FunSpec(
+        {
+            val sykmeldingId = "id"
+            val fnr = "fnr"
 
-        val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
+            val sykmeldingStatusKafkaProducer = mockkClass(SykmeldingStatusKafkaProducer::class)
 
-        val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
-        val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
-        val sykmeldingService = mockkClass(SykmeldingService::class)
-        val sykmeldingStatusService =
-            SykmeldingStatusService(
-                sykmeldingStatusKafkaProducer,
-                arbeidsgiverService,
-                sykmeldingStatusDb,
-                sykmeldingService
-            )
+            val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
+            val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
+            val sykmeldingService = mockkClass(SykmeldingService::class)
+            val sykmeldingStatusService =
+                SykmeldingStatusService(
+                    sykmeldingStatusKafkaProducer,
+                    arbeidsgiverService,
+                    sykmeldingStatusDb,
+                    sykmeldingService
+                )
 
-        fun checkStatusFails(
-            newStatus: StatusEventDTO,
-            oldStatus: StatusEventDTO,
-            erAvvist: Boolean = false,
-            erEgenmeldt: Boolean = false,
-        ) {
-            runBlocking {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    getSykmeldingStatus(
-                        oldStatus,
-                        erAvvist = erAvvist,
-                        erEgenmeldt = erEgenmeldt,
-                    )
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
-                    listOf(
-                        Arbeidsgiverinfo(
-                            orgnummer = "orgnummer",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = true,
-                            naermesteLeder = null,
-                        ),
-                    )
-                val expextedErrorMessage =
-                    "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
-                val error =
-                    assertFailsWith<InvalidSykmeldingStatusException> {
-                        when (newStatus) {
-                            StatusEventDTO.SENDT ->
-                                sykmeldingStatusService.registrerUserEvent(
-                                    opprettSendtSykmeldingUserEvent(),
-                                    sykmeldingId,
-                                    fnr,
-                                )
-                            StatusEventDTO.BEKREFTET ->
-                                sykmeldingStatusService.registrerUserEvent(
-                                    opprettBekreftetSykmeldingUserEvent(),
-                                    sykmeldingId,
-                                    fnr,
-                                )
-                            else ->
-                                sykmeldingStatusService.registrerStatus(
-                                    getSykmeldingStatus(newStatus),
-                                    sykmeldingId,
-                                    "user",
-                                    fnr,
-                                )
+            fun checkStatusFails(
+                newStatus: StatusEventDTO,
+                oldStatus: StatusEventDTO,
+                erAvvist: Boolean = false,
+                erEgenmeldt: Boolean = false,
+            ) {
+                runBlocking {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        getSykmeldingStatus(
+                            oldStatus,
+                            erAvvist = erAvvist,
+                            erEgenmeldt = erEgenmeldt,
+                        )
+                    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
+                        listOf(
+                            Arbeidsgiverinfo(
+                                orgnummer = "orgnummer",
+                                juridiskOrgnummer = "",
+                                navn = "",
+                                stillingsprosent = "",
+                                stilling = "",
+                                aktivtArbeidsforhold = true,
+                                naermesteLeder = null,
+                            ),
+                        )
+                    val expextedErrorMessage =
+                        "Kan ikke endre status fra $oldStatus til $newStatus for sykmeldingID $sykmeldingId"
+                    val error =
+                        assertFailsWith<InvalidSykmeldingStatusException> {
+                            when (newStatus) {
+                                StatusEventDTO.SENDT ->
+                                    sykmeldingStatusService.registrerUserEvent(
+                                        opprettSendtSykmeldingUserEvent(),
+                                        sykmeldingId,
+                                        fnr,
+                                    )
+
+                                StatusEventDTO.BEKREFTET ->
+                                    sykmeldingStatusService.registrerUserEvent(
+                                        opprettBekreftetSykmeldingUserEvent(),
+                                        sykmeldingId,
+                                        fnr,
+                                    )
+
+                                else ->
+                                    sykmeldingStatusService.registrerStatus(
+                                        getSykmeldingStatus(newStatus),
+                                        sykmeldingId,
+                                        "user",
+                                        fnr,
+                                    )
+                            }
                         }
-                    }
-                error.message shouldBeEqualTo expextedErrorMessage
+                    error.message shouldBeEqualTo expextedErrorMessage
+                }
             }
-        }
 
-        fun checkStatusOk(
-            newStatus: StatusEventDTO,
-            oldStatus: StatusEventDTO,
-            erAvvist: Boolean = false,
-            erEgenmeldt: Boolean = false,
-        ) {
-            runBlocking {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    getSykmeldingStatus(
-                        oldStatus,
-                        erAvvist = erAvvist,
-                        erEgenmeldt = erEgenmeldt,
-                    )
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
-                    listOf(
-                        Arbeidsgiverinfo(
-                            orgnummer = "orgnummer",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = true,
-                            naermesteLeder = null,
-                        ),
-                    )
-                when (newStatus) {
-                    StatusEventDTO.SENDT ->
-                        sykmeldingStatusService.registrerUserEvent(
-                            opprettSendtSykmeldingUserEvent(),
-                            sykmeldingId,
-                            fnr,
+            fun checkStatusOk(
+                newStatus: StatusEventDTO,
+                oldStatus: StatusEventDTO,
+                erAvvist: Boolean = false,
+                erEgenmeldt: Boolean = false,
+            ) {
+                runBlocking {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        getSykmeldingStatus(
+                            oldStatus,
+                            erAvvist = erAvvist,
+                            erEgenmeldt = erEgenmeldt,
                         )
-                    StatusEventDTO.BEKREFTET ->
-                        sykmeldingStatusService.registrerUserEvent(
-                            opprettBekreftetSykmeldingUserEvent(),
-                            sykmeldingId,
-                            fnr,
+                    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
+                        listOf(
+                            Arbeidsgiverinfo(
+                                orgnummer = "orgnummer",
+                                juridiskOrgnummer = "",
+                                navn = "",
+                                stillingsprosent = "",
+                                stilling = "",
+                                aktivtArbeidsforhold = true,
+                                naermesteLeder = null,
+                            ),
                         )
-                    else ->
-                        sykmeldingStatusService.registrerStatus(
-                            getSykmeldingStatus(newStatus),
-                            sykmeldingId,
-                            "user",
-                            fnr,
+                    when (newStatus) {
+                        StatusEventDTO.SENDT ->
+                            sykmeldingStatusService.registrerUserEvent(
+                                opprettSendtSykmeldingUserEvent(),
+                                sykmeldingId,
+                                fnr,
+                            )
+
+                        StatusEventDTO.BEKREFTET ->
+                            sykmeldingStatusService.registrerUserEvent(
+                                opprettBekreftetSykmeldingUserEvent(),
+                                sykmeldingId,
+                                fnr,
+                            )
+
+                        else ->
+                            sykmeldingStatusService.registrerStatus(
+                                getSykmeldingStatus(newStatus),
+                                sykmeldingId,
+                                "user",
+                                fnr,
+                            )
+                    }
+
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusKafkaProducer.send(
+                            any(),
+                            any(),
+                            any()
+                        )
+                    }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                }
+            }
+
+            beforeTest {
+                clearAllMocks()
+                coEvery { sykmeldingStatusDb.insertStatus(any()) } just Runs
+                coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
+                coEvery {
+                    sykmeldingStatusDb.getLatestStatus(
+                        any(),
+                        any(),
+                    )
+                } throws SykmeldingStatusNotFoundException("not found")
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns null
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns emptyList()
+            }
+
+            context("Hent nyeste status") {
+                test("Skal hente sendt status fra db") {
+                    val status =
+                        getSykmeldingStatus(
+                            StatusEventDTO.SENDT,
+                            OffsetDateTime.now(ZoneOffset.UTC),
+                            erAvvist = true,
+                            erEgenmeldt = false,
+                        )
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns status
+                    val sisteStatusEventDTO =
+                        sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
+                    sisteStatusEventDTO shouldBeEqualTo
+                        SykmeldingStatusEventDTO(
+                            StatusEventDTO.SENDT,
+                            status.timestamp,
+                            erAvvist = true,
+                            erEgenmeldt = false,
                         )
                 }
 
-                coVerify(exactly = 1) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
-            }
-        }
-
-        beforeTest {
-            clearAllMocks()
-            coEvery { sykmeldingStatusDb.insertStatus(any()) } just Runs
-            coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
-            coEvery {
-                sykmeldingStatusDb.getLatestStatus(
-                    any(),
-                    any(),
-                )
-            } throws SykmeldingStatusNotFoundException("not found")
-            coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns null
-            coEvery { sykmeldingService.hentSykmeldinger(any()) } returns emptyList()
-        }
-
-        context("Hent nyeste status") {
-            test("Skal hente sendt status fra db") {
-                val status =
-                    getSykmeldingStatus(
-                        StatusEventDTO.SENDT,
-                        OffsetDateTime.now(ZoneOffset.UTC),
-                        erAvvist = true,
-                        erEgenmeldt = false,
-                    )
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns status
-                val sisteStatusEventDTO =
-                    sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
-                sisteStatusEventDTO shouldBeEqualTo
-                    SykmeldingStatusEventDTO(
-                        StatusEventDTO.SENDT,
-                        status.timestamp,
-                        erAvvist = true,
-                        erEgenmeldt = false,
-                    )
-            }
-
-            test("Ikke tilgang til sykmeldingstatus") {
-                coEvery {
-                    sykmeldingStatusDb.getLatestStatus(
-                        any(),
-                        any(),
-                    )
-                } throws
-                    SykmeldingStatusNotFoundException(
+                test("Ikke tilgang til sykmeldingstatus") {
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } throws
+                        SykmeldingStatusNotFoundException(
+                            "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+                        )
+                    val exception =
+                        assertFailsWith<SykmeldingStatusNotFoundException> {
+                            sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
+                        }
+                    exception.message shouldBeEqualTo
                         "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
-                    )
-                val exception =
-                    assertFailsWith<SykmeldingStatusNotFoundException> {
-                        sykmeldingStatusService.hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
-                    }
-                exception.message shouldBeEqualTo
-                    "Fant ikke sykmeldingstatus for sykmelding id $sykmeldingId"
+                }
             }
-        }
 
-        context("Test av BEKREFT for sluttbruker") {
-            test("Happy-case") {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.APEN,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = true,
-                    )
+            context("Test av BEKREFT for sluttbruker") {
+                test("Happy-case") {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.APEN,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = true,
+                        )
 
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO()
+                    coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                        getSykmeldingDTO()
 
-                sykmeldingStatusService.registrerUserEvent(
-                    opprettBekreftetSykmeldingUserEvent(),
-                    sykmeldingId,
-                    fnr
-                )
-                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
-                coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            }
-            test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
-                coEvery {
-                    sykmeldingStatusDb.getLatestStatus(
-                        any(),
-                        any(),
-                    )
-                } throws SykmeldingStatusNotFoundException("Ingen tilgang")
-
-                assertFailsWith<SykmeldingStatusNotFoundException> {
                     sykmeldingStatusService.registrerUserEvent(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr
                     )
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
                 }
+                test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } throws SykmeldingStatusNotFoundException("Ingen tilgang")
 
-                coVerify { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
-                coVerify(exactly = 0) { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
-            }
-        }
+                    assertFailsWith<SykmeldingStatusNotFoundException> {
+                        sykmeldingStatusService.registrerUserEvent(
+                            opprettBekreftetSykmeldingUserEvent(),
+                            sykmeldingId,
+                            fnr
+                        )
+                    }
 
-        context("Test bekrefting av avvist sykmelding") {
-            test("Får bekrefte avvist sykmelding med status APEN") {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.APEN,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = true,
-                    )
-
-                sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
-
-                coVerify(exactly = 1) {
-                    sykmeldingStatusKafkaProducer.send(
-                        matchStatusWithEmptySporsmals("BEKREFTET"),
-                        "user",
-                        "fnr",
-                    )
+                    coVerify { sykmeldingStatusDb.getLatestStatus(any(), any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 0) {
+                        sykmeldingStatusKafkaProducer.send(
+                            any(),
+                            any(),
+                            any()
+                        )
+                    }
                 }
-                coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
             }
 
-            test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.BEKREFTET,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = true,
-                    )
+            context("Test bekrefting av avvist sykmelding") {
+                test("Får bekrefte avvist sykmelding med status APEN") {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.APEN,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = true,
+                        )
 
-                assertFailsWith<InvalidSykmeldingStatusException> {
                     sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
+
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusKafkaProducer.send(
+                            matchStatusWithEmptySporsmals("BEKREFTET"),
+                            "user",
+                            "fnr",
+                        )
+                    }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
                 }
 
-                coVerify(exactly = 0) {
-                    sykmeldingStatusKafkaProducer.send(
-                        matchStatusWithEmptySporsmals("BEKREFTET"),
-                        "user",
-                        "fnr",
-                    )
+                test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.BEKREFTET,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = true,
+                        )
+
+                    assertFailsWith<InvalidSykmeldingStatusException> {
+                        sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
+                    }
+
+                    coVerify(exactly = 0) {
+                        sykmeldingStatusKafkaProducer.send(
+                            matchStatusWithEmptySporsmals("BEKREFTET"),
+                            "user",
+                            "fnr",
+                        )
+                    }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
                 }
-                coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+
+                test("Får ikke bekrefte sykmelding som ikke er avvist") {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.BEKREFTET,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = false,
+                        )
+
+                    assertFailsWith<InvalidSykmeldingStatusException> {
+                        sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
+                    }
+
+                    coVerify(exactly = 0) {
+                        sykmeldingStatusKafkaProducer.send(
+                            matchStatusWithEmptySporsmals("BEKREFTET"),
+                            "user",
+                            "fnr",
+                        )
+                    }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                }
             }
 
-            test("Får ikke bekrefte sykmelding som ikke er avvist") {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.BEKREFTET,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = false,
-                    )
-
-                assertFailsWith<InvalidSykmeldingStatusException> {
-                    sykmeldingStatusService.registrerBekreftetAvvist(sykmeldingId, "user", fnr)
-                }
-
-                coVerify(exactly = 0) {
-                    sykmeldingStatusKafkaProducer.send(
-                        matchStatusWithEmptySporsmals("BEKREFTET"),
-                        "user",
-                        "fnr",
-                    )
-                }
-                coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
-            }
-        }
-
-        context("Test user event") {
-            test("Test SEND user event") {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.APEN,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = false,
-                    )
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+            context("Test user event") {
+                test("Test SEND user event") {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.APEN,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = false,
+                        )
+                    coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
                         getSykmeldingDTO()
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
-                    listOf(
-                        Arbeidsgiverinfo(
-                            orgnummer = "123456789",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = true,
-                            naermesteLeder = null,
-                        ),
-                    )
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
-                        erOpplysningeneRiktige =
+                    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
+                        listOf(
+                            Arbeidsgiverinfo(
+                                orgnummer = "123456789",
+                                juridiskOrgnummer = "",
+                                navn = "",
+                                stillingsprosent = "",
+                                stilling = "",
+                                aktivtArbeidsforhold = true,
+                                naermesteLeder = null,
+                            ),
+                        )
+                    val sykmeldingUserEvent =
+                        SykmeldingUserEvent(
+                            erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = JaEllerNei.JA,
                             ),
-                        uriktigeOpplysninger = null,
-                        arbeidssituasjon =
+                            uriktigeOpplysninger = null,
+                            arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                             ),
-                        arbeidsgiverOrgnummer =
+                            arbeidsgiverOrgnummer =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = "123456789",
                             ),
-                        riktigNarmesteLeder =
+                            riktigNarmesteLeder =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = JaEllerNei.NEI,
                             ),
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = null,
-                        harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
-                    )
+                            harBruktEgenmelding = null,
+                            egenmeldingsperioder = null,
+                            harForsikring = null,
+                            harBruktEgenmeldingsdager = null,
+                            egenmeldingsdager = null,
+                        )
 
-                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
+                    sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, "test", "fnr")
 
-                coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                coVerify(exactly = 1) {
-                    sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
+                    coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
+                    }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
                 }
-                coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
-            }
-            test("test SENDT user event - Siste status er sendt") {
-                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.SENDT,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = false,
-                    )
-                coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
-                    listOf(
-                        Arbeidsgiverinfo(
-                            orgnummer = "123456789",
-                            juridiskOrgnummer = "",
-                            navn = "",
-                            stillingsprosent = "",
-                            stilling = "",
-                            aktivtArbeidsforhold = true,
-                            naermesteLeder = null,
-                        ),
-                    )
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
-                        erOpplysningeneRiktige =
+                test("test SENDT user event - Siste status er sendt") {
+                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.SENDT,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = false,
+                        )
+                    coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
+                        listOf(
+                            Arbeidsgiverinfo(
+                                orgnummer = "123456789",
+                                juridiskOrgnummer = "",
+                                navn = "",
+                                stillingsprosent = "",
+                                stilling = "",
+                                aktivtArbeidsforhold = true,
+                                naermesteLeder = null,
+                            ),
+                        )
+                    val sykmeldingUserEvent =
+                        SykmeldingUserEvent(
+                            erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = JaEllerNei.JA,
                             ),
-                        uriktigeOpplysninger = null,
-                        arbeidssituasjon =
+                            uriktigeOpplysninger = null,
+                            arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
                             ),
-                        arbeidsgiverOrgnummer =
+                            arbeidsgiverOrgnummer =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = "feilOrnummer",
                             ),
-                        riktigNarmesteLeder =
+                            riktigNarmesteLeder =
                             SporsmalSvar(
                                 sporsmaltekst = "",
                                 svar = JaEllerNei.NEI,
                             ),
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = null,
-                        harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
-                    )
-
-                assertFailsWith(InvalidSykmeldingStatusException::class) {
-                    runBlocking {
-                        sykmeldingStatusService.registrerUserEvent(
-                            sykmeldingUserEvent,
-                            "test",
-                            "fnr"
+                            harBruktEgenmelding = null,
+                            egenmeldingsperioder = null,
+                            harForsikring = null,
+                            harBruktEgenmeldingsdager = null,
+                            egenmeldingsdager = null,
                         )
+
+                    assertFailsWith(InvalidSykmeldingStatusException::class) {
+                        runBlocking {
+                            sykmeldingStatusService.registrerUserEvent(
+                                sykmeldingUserEvent,
+                                "test",
+                                "fnr"
+                            )
+                        }
                     }
-                }
 
                 coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
                 coVerify(exactly = 0) {
@@ -533,7 +550,7 @@ class SykmeldingStatusServiceSpek :
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = false,
                     )
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
                         getSykmeldingDTO()
                 val sykmeldingUserEvent =
                     SykmeldingUserEvent(
@@ -574,7 +591,7 @@ class SykmeldingStatusServiceSpek :
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = false,
                     )
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
                         getSykmeldingDTO()
                 coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
                     listOf(
@@ -934,13 +951,14 @@ class SykmeldingStatusServiceSpek :
         }
         context("Bruker går fra arbeidstaker til arbeidsledig") {
             test("Happy-case") {
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
+                val tidligereSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), status = "SENDT")
+                val nySykmelding = opprettSykmelding(fom = 16.januar(2023), tom = 31.januar(2023), status = "APEN")
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
 
-                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    nySykmelding
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                    listOf(tidligereSykmelding, getSykmeldingDTO())
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -949,7 +967,7 @@ class SykmeldingStatusServiceSpek :
                         erAvvist = true,
                     )
                 sykmeldingStatusService.registrerUserEvent(
-                    opprettBekreftetSykmeldingUserEvent(),
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                     sykmeldingId,
                     fnr
                 )
@@ -959,12 +977,13 @@ class SykmeldingStatusServiceSpek :
             }
 
             test("ikke kant i kant sykmelding") {
-                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 17.januar(2023), tom = 31.januar(2023))
+                val tidligereSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+                val nySykmelding = opprettSykmelding(fom = 17.januar(2023), tom = 31.januar(2023), status = "APEN")
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                    listOf(tidligereSykmelding)
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -973,7 +992,7 @@ class SykmeldingStatusServiceSpek :
                         erAvvist = true,
                     )
                 sykmeldingStatusService.registrerUserEvent(
-                    opprettBekreftetSykmeldingUserEvent(),
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                     sykmeldingId,
                     fnr
                 )
@@ -983,16 +1002,15 @@ class SykmeldingStatusServiceSpek :
             }
 
             test("kant til kant men flere arbeidsgivere") {
-                val tidligereSykmeldingArbeidsgiver1 = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), "orgnummer1")
+                val tidligereSykmeldingArbeidsgiver1 = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), "orgnummer1", status = "SENDT")
+                val tidligereSykmeldingArbeidsgiver2 = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), "orgnummer2", status = "SENDT")
+                val nySykmelding = opprettSykmelding(fom = 16.januar(2023), tom = 31.januar(2023), status = "APEN")
 
-                val tidligereSykmeldingArbeidsgiver2 = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), "orgnummer2")
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmeldingArbeidsgiver1, tidligereSykmeldingArbeidsgiver2)
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                        listOf(tidligereSykmeldingArbeidsgiver1, tidligereSykmeldingArbeidsgiver2)
-
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
-
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1011,15 +1029,14 @@ class SykmeldingStatusServiceSpek :
             }
 
             test("kant til kant fredag og mandag") {
+                val tidligereSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 6.januar(2023), status = "SENDT")
+                val nySykmelding = opprettSykmelding(fom = 9.januar(2023), tom = 31.januar(2023), status = "APEN")
 
-                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 6.januar(2023))
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding)
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding)
-
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 9.januar(2023), tom = 31.januar(2023))
-
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1028,7 +1045,7 @@ class SykmeldingStatusServiceSpek :
                         erAvvist = true,
                     )
                 sykmeldingStatusService.registrerUserEvent(
-                    opprettBekreftetSykmeldingUserEvent(),
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                     sykmeldingId,
                     fnr
                 )
@@ -1039,15 +1056,13 @@ class SykmeldingStatusServiceSpek :
             }
 
             test("Ikke kant til kant torsdag og mandag") {
+                val tidligereSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 5.januar(2023))
 
-                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 5.januar(2023))
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding)
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding)
-
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
                     getSykmeldingDTO(fom = 9.januar(2023), tom = 31.januar(2023))
-
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1066,14 +1081,14 @@ class SykmeldingStatusServiceSpek :
             }
 
             test("arbeidstaker til arbeidsledig") {
-                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+                val tidligereSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), status = "SENDT")
+                val nySykmelding = opprettSykmelding(fom = 16.januar(2023), tom = 31.januar(2023), status = "SENDT")
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding)
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
 
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
-
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1093,13 +1108,14 @@ class SykmeldingStatusServiceSpek :
             }
 
             test("arbeidstaker til frilanser") {
-                val tidligereSykmelding = opprettTidligereSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
+                val tidligereSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), status = "SENDT")
+                val nySykmelding = opprettSykmelding(fom = 16.januar(2023), tom = 31.januar(2023), status = "APEN")
 
-                coEvery { sykmeldingService.hentSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding)
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
 
-                coEvery { sykmeldingService.hentSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 16.januar(2023), tom = 31.januar(2023))
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1114,8 +1130,47 @@ class SykmeldingStatusServiceSpek :
                 )
 
                 coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify(exactly = 0) { sykmeldingService.getSykmeldinger(any()) }
                 coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == null }, any(), any()) }
             }
-        }
-    })
+
+            test("En bekreftet sykmelding kant til kant med en bekreftet sykmelding") {
+                val arbeidstakerSykmelding = opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023), status = "SENDT", orgnummer = "orgnummer")
+                val arbeidsledigSykmelding1 = opprettSykmelding(fom = 16.januar(2023), tom = 20.januar(2023), status = "BEKREFTET",
+                    tidligereArbeidsgiver = TidligereArbeidsgiverDTO(
+                        "orgNavn",
+                        orgnummer = "orgnummer",
+                        sykmeldingsId = "1",
+                    ),
+                )
+                val arbeidsledigSykmelding2 = opprettSykmelding(fom = 21.januar(2023), tom = 31.januar(2023), status = "APEN")
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(
+                        arbeidstakerSykmelding,
+                        arbeidsledigSykmelding1,
+                        arbeidsledigSykmelding2
+                    )
+
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
+                    arbeidsledigSykmelding2
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                    sykmeldingId,
+                    fnr
+                )
+
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify { sykmeldingStatusKafkaProducer.send(match { it.tidligereArbeidsgiver == tidligereArbeidsgiver }, any(), any()) }
+                }
+            }
+        },
+    )
 

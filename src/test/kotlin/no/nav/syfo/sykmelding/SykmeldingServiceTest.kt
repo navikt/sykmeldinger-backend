@@ -26,7 +26,7 @@ class SykmeldingServiceTest :
                 val expected = getSykmeldingDTO(timestamps = now)
 
                 coEvery { sykmeldingDb.getSykmeldinger(any()) } returns listOf(expected)
-                val returndSykmelding = sykmeldingService.hentSykmeldinger("12345678901")
+                val returndSykmelding = sykmeldingService.getSykmeldinger("12345678901")
                 returndSykmelding shouldBeEqualTo listOf(expected)
             }
         }

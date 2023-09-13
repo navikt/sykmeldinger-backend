@@ -14,12 +14,12 @@ class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
 ) {
 
-    suspend fun hentSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? =
+    suspend fun getSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? =
         withContext(Dispatchers.IO) {
             sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)
         }
 
-    suspend fun hentSykmeldinger(fnr: String): List<SykmeldingDTO> {
+    suspend fun getSykmeldinger(fnr: String): List<SykmeldingDTO> {
         return sykmeldingDb.getSykmeldinger(fnr)
     }
 

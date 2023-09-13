@@ -15,7 +15,7 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
     get("/sykmeldinger") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        val sykmeldinger = sykmeldingService.hentSykmeldinger(fnr = fnr)
+        val sykmeldinger = sykmeldingService.getSykmeldinger(fnr = fnr)
         securelog.info(
             "getting sykmeldinger for fnr: $fnr, sykmeldingIds ${sykmeldinger.map { it.id }}"
         )
@@ -32,7 +32,7 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
             call.respond(HttpStatusCode.NotFound)
         } else {
             log.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
-            when (val sykmelding = sykmeldingService.hentSykmelding(fnr, sykmeldingId)) {
+            when (val sykmelding = sykmeldingService.getSykmelding(fnr, sykmeldingId)) {
                 null ->
                     call.respond(HttpStatusCode.NotFound).also {
                         sykmeldingService.logInfo(sykmeldingId, fnr)

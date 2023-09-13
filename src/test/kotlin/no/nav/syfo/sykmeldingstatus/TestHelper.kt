@@ -1,6 +1,7 @@
 package no.nav.syfo.sykmeldingstatus
 
 import io.mockk.MockKMatcherScope
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.model.AdresseDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
@@ -23,9 +24,10 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 internal class TestHelper {
+
     companion object {
         internal fun Int.januar(year: Int) = LocalDate.of(year, 1, this)
-        internal fun opprettTidligereSykmelding(fom: LocalDate, tom: LocalDate, orgnummer: String = "orgnummer") = SykmeldingDTO(
+        internal fun opprettSykmelding(fom: LocalDate, tom: LocalDate, orgnummer: String = "orgnummer", status: String = "APEN", tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null) = SykmeldingDTO(
             id = "1",
             utdypendeOpplysninger = emptyMap(),
             kontaktMedPasient = KontaktMedPasientDTO(null, null),
@@ -44,10 +46,11 @@ internal class TestHelper {
             ),
             sykmeldingStatus =
             SykmeldingStatusDTO(
-                "SENDT",
-                OffsetDateTime.now(ZoneOffset.UTC),
-                ArbeidsgiverStatusDTO(orgnummer, "juridiskOrgnummer", "orgNavn"),
-                emptyList(),
+                statusEvent = status,
+                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer, "juridiskOrgnummer", "orgNavn"),
+                sporsmalOgSvarListe = emptyList(),
+                tidligereArbeidsgiver = tidligereArbeidsgiver
             ),
             behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
             medisinskVurdering = getMedisinskVurdering(),

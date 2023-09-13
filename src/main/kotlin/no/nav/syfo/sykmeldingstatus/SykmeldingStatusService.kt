@@ -23,6 +23,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
@@ -138,8 +139,8 @@ class SykmeldingStatusService(
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
 
-            val tidligereArbeidsgiver = when(nesteStatus) {
-                StatusEventDTO.BEKREFTET -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
+            val tidligereArbeidsgiver = when(sykmeldingUserEvent.arbeidssituasjon.svar) {
+                 ARBEIDSLEDIG -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
                 else -> null
             }
 
@@ -217,12 +218,12 @@ class SykmeldingStatusService(
         currentSykmeldingFirstFomDate: LocalDate
     ): SykmeldingDTO? {
 
-        val alleSykmeldinger = sykmeldingService.hentSykmeldinger(fnr)
+        val alleSykmeldinger = sykmeldingService.getSykmeldinger(fnr)
         log.info("antall sykmeldinger ${alleSykmeldinger.size}")
         val sykmeldinger = alleSykmeldinger
                 .filter {
                     it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
-                        it.sykmeldingStatus.arbeidsgiver?.orgnummer != null
+                        it.sykmeldingStatus.tidligereArbeidsgiver?.orgnummer != null
                 }
                 .filter {
                     sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
@@ -267,7 +268,7 @@ class SykmeldingStatusService(
     }
 
     private suspend fun fetchSykmelding(fnr: String, sykmeldingId: String): SykmeldingDTO? {
-        return sykmeldingService.hentSykmelding(fnr, sykmeldingId)
+        return sykmeldingService.getSykmelding(fnr, sykmeldingId)
     }
 
     private fun finnForsteFom(perioder: List<SykmeldingsperiodeDTO>): LocalDate {
