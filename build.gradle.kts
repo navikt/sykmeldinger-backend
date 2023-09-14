@@ -24,6 +24,7 @@ val postgresVersion = "42.6.0"
 val hikariVersion = "5.0.1"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
+val snakeYamlVersion = "2.0"
 
 plugins {
     kotlin("jvm") version "1.9.0"
@@ -89,6 +90,9 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
+
+    //due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2
+    implementation("org.yaml:snakeyaml:2.2")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
