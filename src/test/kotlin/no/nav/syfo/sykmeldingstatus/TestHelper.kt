@@ -110,15 +110,15 @@ internal class TestHelper {
                     ),
                 uriktigeOpplysninger = null,
                 arbeidssituasjon =
-                    SporsmalSvar(
-                        sporsmaltekst = "",
-                        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
-                    ),
+                SporsmalSvar(
+                    sporsmaltekst = "",
+                    svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                ),
                 arbeidsgiverOrgnummer =
-                    SporsmalSvar(
-                        sporsmaltekst = "",
-                        svar = "orgnummer",
-                    ),
+                SporsmalSvar(
+                    sporsmaltekst = "",
+                    svar = "orgnummer",
+                ),
                 riktigNarmesteLeder =
                     SporsmalSvar(
                         sporsmaltekst = "",
