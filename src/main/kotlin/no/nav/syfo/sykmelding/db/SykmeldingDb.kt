@@ -274,6 +274,7 @@ data class MinimalPeriod(
 
 data class SykmeldingMinimal(
     val papirsykmelding: Boolean,
+    val egenmeldt: Boolean?,
     val utenlandskSykmelding: UtenlandskSykmelding?,
     val sykmeldingsperioder: List<MinimalPeriod>,
 )
