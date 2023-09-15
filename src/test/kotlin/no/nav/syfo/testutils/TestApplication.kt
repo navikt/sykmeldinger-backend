@@ -25,7 +25,6 @@ fun getTestEnvironment(): Environment =
         cluster = "dev-fss",
         tokenXWellKnownUrl = "https://tokenx",
         clientIdTokenX = "clientId",
-        tokenXPrivateJwk = getDefaultRSAKey(),
         dbHost = "",
         dbPort = "",
         dbName = "",
