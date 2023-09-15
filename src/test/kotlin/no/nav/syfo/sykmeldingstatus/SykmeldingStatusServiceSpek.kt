@@ -8,10 +8,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -21,16 +17,12 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.matchStatusWithEmptySporsmals
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettBekreftetSykmeldingUserEvent
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettSendtSykmeldingUserEvent
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.opprettSykmelding
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.statusEquals
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSLEDIG
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSTAKER
 import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.FRILANSER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
@@ -41,6 +33,10 @@ import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek :
     FunSpec({
@@ -363,7 +359,7 @@ class SykmeldingStatusServiceSpek :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                svar = ARBEIDSTAKER,
                             ),
                         arbeidsgiverOrgnummer =
                             SporsmalSvar(
@@ -421,7 +417,7 @@ class SykmeldingStatusServiceSpek :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                svar = ARBEIDSTAKER,
                             ),
                         arbeidsgiverOrgnummer =
                             SporsmalSvar(
@@ -487,7 +483,7 @@ class SykmeldingStatusServiceSpek :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                svar = ARBEIDSTAKER,
                             ),
                         arbeidsgiverOrgnummer =
                             SporsmalSvar(
@@ -542,7 +538,7 @@ class SykmeldingStatusServiceSpek :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.FRILANSER,
+                                svar = FRILANSER,
                             ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -596,7 +592,7 @@ class SykmeldingStatusServiceSpek :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                svar = ARBEIDSTAKER,
                             ),
                         arbeidsgiverOrgnummer =
                             SporsmalSvar(
@@ -1073,13 +1069,14 @@ class SykmeldingStatusServiceSpek :
 
             test("Ikke kant til kant torsdag og mandag") {
                 val tidligereSykmelding =
-                    opprettSykmelding(fom = 1.januar(2023), tom = 5.januar(2023))
+                    opprettSykmelding(fom = 1.januar(2023), tom = 5.januar(2023), status = "SENDT")
+                val nySykmelding =
+                    opprettSykmelding(fom = 1.januar(2023), tom = 5.januar(2023), status = "APEN")
 
                 coEvery { sykmeldingService.getSykmeldinger(any()) } returns
                     listOf(tidligereSykmelding)
 
-                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
-                    getSykmeldingDTO(fom = 9.januar(2023), tom = 31.januar(2023))
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
@@ -1202,6 +1199,96 @@ class SykmeldingStatusServiceSpek :
 
                 coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
                     arbeidsledigSykmelding2
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                    sykmeldingId,
+                    fnr
+                )
+
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify {
+                    sykmeldingStatusKafkaProducer.send(
+                        match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
+                        any(),
+                        any()
+                    )
+                }
+            }
+
+            test("direkte overlappende sykmelding") {
+                val tidligereSykmelding =
+                    opprettSykmelding(
+                        fom = 1.januar(2023),
+                        tom = 31.januar(2023),
+                        status = "SENDT",
+                        tidligereArbeidsgiver =
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                orgnummer = "orgnummer",
+                                sykmeldingsId = "1",
+                            )
+                    )
+                val nySykmelding =
+                    opprettSykmelding(fom = 1.januar(2023), tom = 31.januar(2023), status = "APEN")
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
+
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns nySykmelding
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                    sykmeldingId,
+                    fnr
+                )
+
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify {
+                    sykmeldingStatusKafkaProducer.send(
+                        match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
+                        any(),
+                        any()
+                    )
+                }
+            }
+
+            test("indirekte overlappende sykmelding") {
+                val tidligereSykmelding =
+                    opprettSykmelding(
+                        fom = 1.januar(2023),
+                        tom = 31.januar(2023),
+                        status = "SENDT",
+                        tidligereArbeidsgiver =
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                orgnummer = "orgnummer",
+                                sykmeldingsId = "1",
+                            )
+                    )
+                val nySykmelding =
+                    opprettSykmelding(
+                        fom = 15.januar(2023),
+                        tom = 15.februar(2023),
+                        status = "APEN"
+                    )
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
+
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns nySykmelding
 
                 coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                     SykmeldingStatusEventDTO(
