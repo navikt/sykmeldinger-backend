@@ -10,7 +10,7 @@ val smCommonVersion = "1.0.19"
 val jacksonVersion = "2.15.2"
 val kluentVersion = "1.73"
 val mockkVersion = "1.13.7"
-val nimbusdsVersion = "9.31"
+val nimbusdsVersion = "9.34"
 val kotestVersion = "5.6.2"
 val testcontainersVersion = "1.18.3"
 val swaggerUiVersion = "5.3.1"
@@ -32,7 +32,6 @@ plugins {
 
 application {
     mainClass.set("no.nav.syfo.BootstrapKt")
-
 }
 
 val githubUser: String by project
@@ -74,7 +73,6 @@ dependencies {
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
 
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
