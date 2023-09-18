@@ -956,6 +956,40 @@ class SykmeldingStatusServiceSpek :
                     )
                 }
             }
+            test("bekreftet kant til kant med bekreftet") {
+                val tidligereSykmelding =
+                    opprettSykmelding(
+                        fom = 1.januar(2023),
+                        tom = 15.januar(2023),
+                        status = "BEKREFTET"
+                    )
+                val nySykmelding =
+                    opprettSykmelding(fom = 16.januar(2023), tom = 31.januar(2023), status = "APEN")
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
+
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns nySykmelding
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                    sykmeldingId,
+                    fnr
+                )
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify {
+                    sykmeldingStatusKafkaProducer.send(
+                        match { it.tidligereArbeidsgiver == null },
+                        any(),
+                        any()
+                    )
+                }
+            }
             test("ikke kant i kant sykmelding") {
                 val tidligereSykmelding =
                     opprettSykmelding(fom = 1.januar(2023), tom = 15.januar(2023))
@@ -1285,6 +1319,49 @@ class SykmeldingStatusServiceSpek :
                         tom = 15.februar(2023),
                         status = "APEN"
                     )
+                coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    listOf(tidligereSykmelding, nySykmelding)
+
+                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns nySykmelding
+
+                coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    SykmeldingStatusEventDTO(
+                        statusEvent = StatusEventDTO.APEN,
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                        erAvvist = true,
+                    )
+                sykmeldingStatusService.registrerUserEvent(
+                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                    sykmeldingId,
+                    fnr
+                )
+
+                val tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                coVerify {
+                    sykmeldingStatusKafkaProducer.send(
+                        match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
+                        any(),
+                        any()
+                    )
+                }
+            }
+
+            test("overlappende sykmelding inni en annen sykmelding") {
+                val tidligereSykmelding =
+                    opprettSykmelding(
+                        fom = 1.januar(2023),
+                        tom = 31.januar(2023),
+                        status = "SENDT",
+                        tidligereArbeidsgiver =
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                orgnummer = "orgnummer",
+                                sykmeldingsId = "1",
+                            )
+                    )
+                val nySykmelding =
+                    opprettSykmelding(fom = 5.januar(2023), tom = 20.januar(2023), status = "APEN")
                 coEvery { sykmeldingService.getSykmeldinger(any()) } returns
                     listOf(tidligereSykmelding, nySykmelding)
 
