@@ -11,6 +11,7 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.objectMapper
+import no.nav.syfo.securelog
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
@@ -25,7 +26,6 @@ import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
-import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -83,8 +83,6 @@ class SykmeldingStatusService(
                 Pair(StatusEventDTO.BEKREFTET, emptyList()),
                 Pair(StatusEventDTO.AVBRUTT, emptyList()),
             )
-
-        private val tjenestekall = LoggerFactory.getLogger("tjenestekall")
     }
 
     suspend fun registrerStatus(
@@ -158,7 +156,7 @@ class SykmeldingStatusService(
 
             // kun for testing i dev
             if (tidligereArbeidsgiver != null) {
-                tjenestekall.info("legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} ")
+                securelog.info("legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} ")
             }
 
             sykmeldingStatusKafkaProducer.send(
