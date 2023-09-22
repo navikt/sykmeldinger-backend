@@ -1,17 +1,7 @@
 package no.nav.syfo.sykmeldingstatus
 
 import io.kotest.core.spec.style.FunSpec
-import io.mockk.Runs
-import io.mockk.clearAllMocks
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.just
-import io.mockk.mockkClass
-import io.mockk.slot
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -25,9 +15,7 @@ import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSLEDIG
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSTAKER
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.FRILANSER
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.*
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
@@ -37,6 +25,10 @@ import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpek :
     FunSpec({
@@ -1257,7 +1249,7 @@ class SykmeldingStatusServiceSpek :
                 }
             }
 
-               test("direkte overlappende sykmelding") {
+            test("direkte overlappende sykmelding") {
                 val tidligereSykmelding =
                     opprettSykmelding(
                         fom = 1.januar(2023),
@@ -1438,11 +1430,11 @@ class SykmeldingStatusServiceSpek :
                         tom = 31.januar(2023),
                         status = "SENDT",
                         tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        )
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                orgnummer = "orgnummer",
+                                sykmeldingsId = "1",
+                            )
                     )
                 val nySykmelding =
                     opprettSykmelding(fom = 27.januar(2023), tom = 30.januar(2023), status = "APEN")
@@ -1479,11 +1471,11 @@ class SykmeldingStatusServiceSpek :
                         tom = 31.januar(2023),
                         status = "SENDT",
                         tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        )
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                orgnummer = "orgnummer",
+                                sykmeldingsId = "1",
+                            )
                     )
                 val nySykmelding =
                     opprettSykmelding(fom = 2.februar(2023), tom = 5.februar(2023), status = "APEN")
@@ -1520,11 +1512,11 @@ class SykmeldingStatusServiceSpek :
                         tom = 31.januar(2023),
                         status = "SENDT",
                         tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        )
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                orgnummer = "orgnummer",
+                                sykmeldingsId = "1",
+                            )
                     )
                 val nySykmelding =
                     opprettSykmelding(fom = 5.januar(2023), tom = 3.februar(2023), status = "APEN")

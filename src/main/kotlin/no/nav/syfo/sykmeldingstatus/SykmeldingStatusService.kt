@@ -1,15 +1,11 @@
 package no.nav.syfo.sykmeldingstatus
 
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.log
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.metrics.TIDLIGERE_ARBEIDSGIVER_COUNTER
 import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
@@ -31,6 +27,11 @@ import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
@@ -136,7 +137,6 @@ class SykmeldingStatusService(
                             sykmeldingId,
                             sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar,
                         )
-
                     else -> null
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
@@ -227,9 +227,12 @@ class SykmeldingStatusService(
         tidligereSmTom: LocalDate,
         tidligereSmFom: LocalDate,
         fom: LocalDate
-    ) = fom.isAfter(tidligereSmFom.minusDays(1)) && fom.isBefore(
-            tidligereSmTom.plusDays(1),
-    )
+    ) =
+        fom.isAfter(tidligereSmFom.minusDays(1)) &&
+            fom.isBefore(
+                    tidligereSmTom.plusDays(1),
+                )
+                .also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
 
     private suspend fun findLastSendtSykmelding(
         fnr: String,
@@ -266,7 +269,9 @@ class SykmeldingStatusService(
         val sisteTom =
             perioder.maxByOrNull { it.tom }?.tom
                 ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
-        return !isWorkingdaysBetween(sisteTom, dag)
+        return !isWorkingdaysBetween(sisteTom, dag).also {
+            if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("kant_til_kant").inc()
+        }
     }
 
     private suspend fun fetchSykmelding(fnr: String, sykmeldingId: String): SykmeldingDTO? {
@@ -289,10 +294,10 @@ class SykmeldingStatusService(
         val sykmeldingStatusKafkaEventDTOUpdated =
             sykmeldingStatusKafkaEventDTO.copy(
                 sporsmals =
-                updateEgenemeldingsdagerSporsmal(
-                    sykmeldingStatusKafkaEventDTO.sporsmals,
-                    egenmeldingsdagerEvent,
-                ),
+                    updateEgenemeldingsdagerSporsmal(
+                        sykmeldingStatusKafkaEventDTO.sporsmals,
+                        egenmeldingsdagerEvent,
+                    ),
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 erSvarOppdatering = true,
             )
@@ -324,7 +329,7 @@ class SykmeldingStatusService(
                                 shortName = ShortNameDTO.EGENMELDINGSDAGER,
                                 svartype = SvartypeDTO.DAGER,
                                 svar =
-                                objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
+                                    objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
                             ),
                         ),
                     )
@@ -382,7 +387,6 @@ class SykmeldingStatusService(
                     )
                 }
             }
-
             else -> {
                 log.warn(
                     "Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId",
@@ -406,11 +410,9 @@ class SykmeldingStatusService(
                 erAvvist == true -> {
                     statusStatesAvvistSykmelding[sisteStatus]
                 }
-
                 erEgenmeldt == true -> {
                     statusStatesEgenmelding[sisteStatus]
                 }
-
                 else -> {
                     statusStates[sisteStatus]
                 }

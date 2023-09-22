@@ -67,3 +67,11 @@ val MISSING_DATA_COUNTER: Counter =
         .labelNames("data")
         .help("Manglende data som gjør at bruker får 404")
         .register()
+
+val TIDLIGERE_ARBEIDSGIVER_COUNTER: Counter =
+    Counter.build()
+        .namespace(METRICS_NS)
+        .name("tidligere_arbeidsgiver_counter")
+        .labelNames("type")
+        .help("Antall arbeidstaker til arbeidsledig")
+        .register()
