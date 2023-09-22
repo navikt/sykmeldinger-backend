@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FunSpec
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -119,6 +120,25 @@ class SykmeldingStatusDbTest :
             status.statusEvent.name shouldBeEqualTo "BEKREFTET"
             status.erAvvist shouldBeEqualTo false
             status.erEgenmeldt shouldBeEqualTo false
+        }
+
+        test("update and get tidligere_arbeidsgiver") {
+            TestDB.database.insertStatus(
+                "1",
+                getStatus(StatusEventDTO.APEN.name, OffsetDateTime.now().minusDays(1))
+            )
+            TestDB.database.insertBehandlingsutfall("1", getBehandlingsutfall(RegelStatusDTO.OK))
+            TestDB.database.insertSymelding("1", "fnr", getSykmelding())
+            TestDB.database.insertStatus(
+                "1",
+                getStatus(
+                    StatusEventDTO.BEKREFTET.name,
+                    OffsetDateTime.now().minusHours(2),
+                    tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                )
+            )
+            val status = database.getSykmeldingStatus("1", "fnr")
+            status.tidligereArbeidsgiver?.orgnummer shouldBeEqualTo "orgnummer"
         }
     })
 
