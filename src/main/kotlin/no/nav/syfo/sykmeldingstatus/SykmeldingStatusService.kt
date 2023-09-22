@@ -67,8 +67,8 @@ class SykmeldingStatusService(
                         StatusEventDTO.APEN,
                         StatusEventDTO.SENDT,
                         StatusEventDTO.BEKREFTET,
-                        StatusEventDTO.AVBRUTT
-                    )
+                        StatusEventDTO.AVBRUTT,
+                    ),
                 ),
                 Pair(StatusEventDTO.UTGATT, listOf(StatusEventDTO.AVBRUTT)),
             )
@@ -136,6 +136,7 @@ class SykmeldingStatusService(
                             sykmeldingId,
                             sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar,
                         )
+
                     else -> null
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
@@ -151,12 +152,12 @@ class SykmeldingStatusService(
                     timestamp,
                     sykmeldingId,
                     arbeidsgiver,
-                    tidligereArbeidsgiver
+                    tidligereArbeidsgiver,
                 )
 
             if (tidligereArbeidsgiver != null) {
                 securelog.info(
-                    "legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} sykmeldingsId: $sykmeldingId"
+                    "legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} sykmeldingsId: $sykmeldingId",
                 )
             }
 
@@ -187,7 +188,7 @@ class SykmeldingStatusService(
                 finnForsteFom(currentSykmelding.sykmeldingsperioder)
             } else {
                 throw IllegalStateException(
-                    "Skal finnes ein sykmelding med sykmeldingsid: $sykmeldingId"
+                    "Skal finnes ein sykmelding med sykmeldingsid: $sykmeldingId",
                 )
             }
 
@@ -207,7 +208,7 @@ class SykmeldingStatusService(
             TidligereArbeidsgiverDTO(
                 orgNavn = it.orgNavn,
                 orgnummer = it.orgnummer,
-                sykmeldingsId = sisteSykmelding.id
+                sykmeldingsId = sisteSykmelding.id,
             )
         }
     }
@@ -221,6 +222,14 @@ class SykmeldingStatusService(
             else -> daysBetween > 1
         }
     }
+
+    private fun isOverlappende(
+        tidligereSmTom: LocalDate,
+        tidligereSmFom: LocalDate,
+        fom: LocalDate
+    ) = fom.isAfter(tidligereSmFom.minusDays(1)) && fom.isBefore(
+            tidligereSmTom.plusDays(1),
+    )
 
     private suspend fun findLastSendtSykmelding(
         fnr: String,
@@ -236,7 +245,12 @@ class SykmeldingStatusService(
                         it.sykmeldingStatus.tidligereArbeidsgiver?.orgnummer != null
                 }
                 .filter {
-                    sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate)
+                    sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate) ||
+                        isOverlappende(
+                            tidligereSmTom = it.sykmeldingsperioder.maxOf { it.tom },
+                            tidligereSmFom = it.sykmeldingsperioder.minOf { it.fom },
+                            fom = currentSykmeldingFirstFomDate,
+                        )
                 }
 
         if (sykmeldinger.distinctBy { it.sykmeldingStatus.arbeidsgiver?.orgnummer }.size != 1) {
@@ -275,10 +289,10 @@ class SykmeldingStatusService(
         val sykmeldingStatusKafkaEventDTOUpdated =
             sykmeldingStatusKafkaEventDTO.copy(
                 sporsmals =
-                    updateEgenemeldingsdagerSporsmal(
-                        sykmeldingStatusKafkaEventDTO.sporsmals,
-                        egenmeldingsdagerEvent
-                    ),
+                updateEgenemeldingsdagerSporsmal(
+                    sykmeldingStatusKafkaEventDTO.sporsmals,
+                    egenmeldingsdagerEvent,
+                ),
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 erSvarOppdatering = true,
             )
@@ -310,7 +324,7 @@ class SykmeldingStatusService(
                                 shortName = ShortNameDTO.EGENMELDINGSDAGER,
                                 svartype = SvartypeDTO.DAGER,
                                 svar =
-                                    objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
+                                objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
                             ),
                         ),
                     )
@@ -327,7 +341,7 @@ class SykmeldingStatusService(
     ): Arbeidsgiverinfo {
         return arbeidsgiverService.getArbeidsgivere(fnr).find { it.orgnummer == orgnummer }
             ?: throw InvalidSykmeldingStatusException(
-                "Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der"
+                "Kan ikke sende sykmelding $sykmeldingId til orgnummer $orgnummer fordi bruker ikke har arbeidsforhold der",
             )
     }
 
@@ -361,19 +375,20 @@ class SykmeldingStatusService(
                     )
                 } else {
                     log.warn(
-                        "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId"
+                        "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId",
                     )
                     throw InvalidSykmeldingStatusException(
-                        "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId"
+                        "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId",
                     )
                 }
             }
+
             else -> {
                 log.warn(
-                    "Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId"
+                    "Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId",
                 )
                 throw InvalidSykmeldingStatusException(
-                    "Kan ikke bekrefte sykmelding med id: $sykmeldingId fordi den ikke er avvist"
+                    "Kan ikke bekrefte sykmelding med id: $sykmeldingId fordi den ikke er avvist",
                 )
             }
         }
@@ -391,9 +406,11 @@ class SykmeldingStatusService(
                 erAvvist == true -> {
                     statusStatesAvvistSykmelding[sisteStatus]
                 }
+
                 erEgenmeldt == true -> {
                     statusStatesEgenmelding[sisteStatus]
                 }
+
                 else -> {
                     statusStates[sisteStatus]
                 }
@@ -402,10 +419,10 @@ class SykmeldingStatusService(
             return true
         }
         log.warn(
-            "Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId"
+            "Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId",
         )
         throw InvalidSykmeldingStatusException(
-            "Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId"
+            "Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId",
         )
     }
 
