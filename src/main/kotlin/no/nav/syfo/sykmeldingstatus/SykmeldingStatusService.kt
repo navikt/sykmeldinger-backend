@@ -214,6 +214,7 @@ class SykmeldingStatusService(
 
     private fun isWorkingdaysBetween(tom: LocalDate, fom: LocalDate): Boolean {
         val daysBetween = ChronoUnit.DAYS.between(tom, fom).toInt()
+        if (daysBetween < 0) return true
         return when (fom.dayOfWeek) {
             DayOfWeek.MONDAY -> daysBetween > 3
             DayOfWeek.SUNDAY -> daysBetween > 2
