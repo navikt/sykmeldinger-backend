@@ -1,6 +1,9 @@
 package no.nav.syfo.sykmeldingstatus
 
 import io.mockk.MockKMatcherScope
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.model.AdresseDTO
@@ -25,9 +28,6 @@ import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 fun getSykmeldingStatus(
     statusEventDTO: StatusEventDTO,

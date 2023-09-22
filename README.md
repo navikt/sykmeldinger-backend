@@ -14,6 +14,21 @@ Backend-app for sykmeldinger-frontend
 
 * JDK 17
 
+## Getting started
+#### Running locally
+``` bash
+./gradlew run
+```
+
+### Building the application
+#### Compile and package application
+To build locally and run the integration tests you can simply run
+``` bash
+./gradlew shadowJar
+```
+or on windows
+`gradlew.bat shadowJar`
+
 ### Upgrading the gradle wrapper
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
 

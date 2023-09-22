@@ -34,18 +34,11 @@ application {
     mainClass.set("no.nav.syfo.BootstrapKt")
 }
 
-val githubUser: String by project
-val githubPassword: String by project
-
 repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
     maven {
-        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
+        url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
 }
 
@@ -65,7 +58,17 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")// override transient version 1.13
+    constraints {
+        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
+            because("override transient version 1.13 from io.ktor:ktor-client-apache")
+        }
+    }
+    constraints {
+        implementation("org.yaml:snakeyaml:$snakeYamlVersion") {
+            because("due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2")
+        }
+    }
+
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
@@ -87,9 +90,6 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
-
-    //due to https://github.com/advisories/GHSA-mjmj-j48q-9wg2
-    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
@@ -114,7 +114,8 @@ swaggerSources {
 tasks {
 
     generateSwaggerUI {
-        outputDir = File(buildDir.path + "/resources/main/api")
+        val output: Provider<Directory> = layout.buildDirectory.dir("/resources/main/api")
+        outputDir = output.get().asFile
     }
 
     shadowJar {
