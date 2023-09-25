@@ -47,19 +47,6 @@ val SENDT_AV_BRUKER_COUNTER: Counter =
         .help("Antall sykmeldinger sendt av bruker")
         .register()
 
-val HTTP_CLIENT_HISTOGRAM: Histogram =
-    Histogram.Builder()
-        .labelNames("path")
-        .name("client_calls_duration_seconds")
-        .help("durations for outgoing requests in seconds")
-        .register()
-
-val CLIENT_ASSERTION_HISTOGRAM: Histogram =
-    Histogram.Builder()
-        .name("client_assertions_duration_seconds")
-        .help("durations for creating signed client assertions in seconds")
-        .register()
-
 val MISSING_DATA_COUNTER: Counter =
     Counter.build()
         .namespace(METRICS_NS)
