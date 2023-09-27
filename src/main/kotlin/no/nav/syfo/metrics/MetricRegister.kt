@@ -58,7 +58,7 @@ val MISSING_DATA_COUNTER: Counter =
 val TIDLIGERE_ARBEIDSGIVER_COUNTER: Counter =
     Counter.build()
         .namespace(METRICS_NS)
-        .name("tidligere_arbeidsgiver_counter")
+        .name("arbeidstaker_til_arbeidsledig_counter")
         .labelNames("type")
         .help("Antall arbeidstaker til arbeidsledig")
         .register()
