@@ -228,11 +228,10 @@ class SykmeldingStatusService(
         tidligereSmFom: LocalDate,
         fom: LocalDate
     ) =
-        fom.isAfter(tidligereSmFom.minusDays(1)) &&
+        (fom.isAfter(tidligereSmFom.minusDays(1)) &&
             fom.isBefore(
                     tidligereSmTom.plusDays(1),
-                )
-                .also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
+                )).also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
 
     private suspend fun findLastSendtSykmelding(
         fnr: String,
