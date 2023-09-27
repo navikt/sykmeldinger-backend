@@ -232,7 +232,7 @@ class SykmeldingStatusService(
             fom.isBefore(
                     tidligereSmTom.plusDays(1),
                 )
-                .also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
+                .also { if (it && isWorkingdaysBetween(tidligereSmTom, fom)) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
 
     private suspend fun findLastSendtSykmelding(
         fnr: String,
