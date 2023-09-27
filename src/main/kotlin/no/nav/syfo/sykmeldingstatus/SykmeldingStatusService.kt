@@ -3,6 +3,7 @@ package no.nav.syfo.sykmeldingstatus
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.log
+import no.nav.syfo.metrics.ANTALL_TIDLIGERE_ARBEIDSGIVERE
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.TIDLIGERE_ARBEIDSGIVER_COUNTER
@@ -16,6 +17,9 @@ import no.nav.syfo.securelog
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.INGEN
+import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.KANT_TIL_KANT
+import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.OVERLAPPENDE
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -230,8 +234,8 @@ class SykmeldingStatusService(
     ) =
         (fom.isAfter(tidligereSmFom.minusDays(1)) &&
             fom.isBefore(
-                    tidligereSmTom.plusDays(1),
-                )).also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
+                tidligereSmTom.plusDays(1),
+            ))
 
     private suspend fun findLastSendtSykmelding(
         fnr: String,
@@ -240,25 +244,54 @@ class SykmeldingStatusService(
 
         val alleSykmeldinger = sykmeldingService.getSykmeldinger(fnr)
         log.info("antall sykmeldinger ${alleSykmeldinger.size}")
+
         val sykmeldinger =
             alleSykmeldinger
                 .filter {
                     it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
                         it.sykmeldingStatus.tidligereArbeidsgiver?.orgnummer != null
                 }
-                .filter {
-                    sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate) ||
-                        isOverlappende(
-                            tidligereSmTom = it.sykmeldingsperioder.maxOf { it.tom },
-                            tidligereSmFom = it.sykmeldingsperioder.minOf { it.fom },
-                            fom = currentSykmeldingFirstFomDate,
+                .map {
+                    val tidligereArbeidsgiverType =
+                        tidligereArbeidsgiverType(
+                            currentSykmeldingFirstFomDate,
+                            it.sykmeldingsperioder
                         )
+                    it to tidligereArbeidsgiverType
                 }
+                .filter { it.second != INGEN }
 
-        if (sykmeldinger.distinctBy { it.sykmeldingStatus.arbeidsgiver?.orgnummer }.size != 1) {
+        val antallTidligereArbeidsgivere = sykmeldinger.distinctBy { it.first.sykmeldingStatus.arbeidsgiver?.orgnummer }.size
+        ANTALL_TIDLIGERE_ARBEIDSGIVERE.labels(antallTidligereArbeidsgivere.toString()).inc()
+        if (antallTidligereArbeidsgivere != 1) {
             return null
         }
-        return sykmeldinger.firstOrNull()
+
+        val sisteStatus = sykmeldinger.first()
+        TIDLIGERE_ARBEIDSGIVER_COUNTER.labels(sisteStatus.second.name).inc()
+        return sisteStatus.first
+    }
+
+    private fun tidligereArbeidsgiverType(
+        currentSykmeldingFirstFomDate: LocalDate,
+        sykmeldingsperioder: List<SykmeldingsperiodeDTO>
+    ): TidligereArbeidsgiverType {
+        val kantTilKant = sisteTomIKantMedDag(sykmeldingsperioder, currentSykmeldingFirstFomDate)
+        if (kantTilKant) return KANT_TIL_KANT
+        val overlappende =
+            isOverlappende(
+                tidligereSmTom = sykmeldingsperioder.maxOf { it.tom },
+                tidligereSmFom = sykmeldingsperioder.minOf { it.fom },
+                fom = currentSykmeldingFirstFomDate,
+            )
+        if (overlappende) return OVERLAPPENDE
+        return INGEN
+    }
+
+    enum class TidligereArbeidsgiverType {
+        KANT_TIL_KANT,
+        OVERLAPPENDE,
+        INGEN
     }
 
     private fun sisteTomIKantMedDag(
@@ -268,9 +301,7 @@ class SykmeldingStatusService(
         val sisteTom =
             perioder.maxByOrNull { it.tom }?.tom
                 ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
-        return !isWorkingdaysBetween(sisteTom, dag).also {
-            if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("kant_til_kant").inc()
-        }
+        return !isWorkingdaysBetween(sisteTom, dag)
     }
 
     private suspend fun fetchSykmelding(fnr: String, sykmeldingId: String): SykmeldingDTO? {
