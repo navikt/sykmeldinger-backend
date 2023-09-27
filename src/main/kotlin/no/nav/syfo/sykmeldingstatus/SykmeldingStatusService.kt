@@ -229,9 +229,10 @@ class SykmeldingStatusService(
         fom: LocalDate
     ) =
         (fom.isAfter(tidligereSmFom.minusDays(1)) &&
-            fom.isBefore(
+                fom.isBefore(
                     tidligereSmTom.plusDays(1),
-                )).also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
+                ))
+            .also { if (it) TIDLIGERE_ARBEIDSGIVER_COUNTER.labels("overlappende").inc() }
 
     private suspend fun findLastSendtSykmelding(
         fnr: String,
@@ -241,24 +242,24 @@ class SykmeldingStatusService(
         val alleSykmeldinger = sykmeldingService.getSykmeldinger(fnr)
         log.info("antall sykmeldinger ${alleSykmeldinger.size}")
         val sykmeldinger =
-            alleSykmeldinger
-                .filter {
-                    it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
-                        it.sykmeldingStatus.tidligereArbeidsgiver?.orgnummer != null
-                }
-                .filter {
-                    sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate) ||
-                        isOverlappende(
-                            tidligereSmTom = it.sykmeldingsperioder.maxOf { it.tom },
-                            tidligereSmFom = it.sykmeldingsperioder.minOf { it.fom },
-                            fom = currentSykmeldingFirstFomDate,
-                        )
-                }
-
+            alleSykmeldinger.filter {
+                it.sykmeldingStatus.statusEvent == StatusEventDTO.SENDT.toString() ||
+                    it.sykmeldingStatus.tidligereArbeidsgiver?.orgnummer != null
+            }
         if (sykmeldinger.distinctBy { it.sykmeldingStatus.arbeidsgiver?.orgnummer }.size != 1) {
             return null
         }
-        return sykmeldinger.firstOrNull()
+
+        val sisteStatus =
+            sykmeldinger.firstOrNull {
+                sisteTomIKantMedDag(it.sykmeldingsperioder, currentSykmeldingFirstFomDate) ||
+                    isOverlappende(
+                        tidligereSmTom = it.sykmeldingsperioder.maxOf { it.tom },
+                        tidligereSmFom = it.sykmeldingsperioder.minOf { it.fom },
+                        fom = currentSykmeldingFirstFomDate,
+                    )
+            }
+        return sisteStatus
     }
 
     private fun sisteTomIKantMedDag(
