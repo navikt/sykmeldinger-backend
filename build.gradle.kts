@@ -6,7 +6,7 @@ val ktorVersion = "2.3.4"
 val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.0"
+val smCommonVersion = "2.0.2"
 val jacksonVersion = "2.15.2"
 val kluentVersion = "1.73"
 val mockkVersion = "1.13.8"
@@ -21,7 +21,7 @@ val hikariVersion = "5.0.1"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
-val snappyJavaVersion = "1.1.10.4"
+val snappyJavaVersion = "1.1.10.5"
 
 plugins {
     id("application")
