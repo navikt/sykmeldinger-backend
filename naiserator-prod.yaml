@@ -65,8 +65,5 @@ spec:
         - application: sykepengesoknad
           namespace: flex
           cluster: prod-gcp
-    outbound:
-      rules:
-        - application: narmesteleder
   secureLogs:
     enabled: true
