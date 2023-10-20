@@ -127,29 +127,27 @@ class SykmeldingStatusService(
         }
 
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
-        if (
-            canChangeStatus(
-                nyStatusEvent = statusEvent,
-                sisteStatus = sisteStatus.statusEvent,
-                erAvvist = sisteStatus.erAvvist,
-                erEgenmeldt = sisteStatus.erEgenmeldt,
-                sykmeldingId = sykmeldingId,
-            )
-        ) {
-            val sykmeldingStatusKafkaEventDTO = SykmeldingStatusKafkaEventDTO(
-                sykmeldingId,
-                timestamp,
-                statusEvent.tilStatusEventDTO(),
-                null,
-                null,
-            )
-            sykmeldingStatusKafkaProducer.send(
-                sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
-                source = source,
-                fnr = fnr,
-            )
-            sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
-        }
+        requireCanChangeStatus(
+            nyStatusEvent = statusEvent,
+            sisteStatus = sisteStatus.statusEvent,
+            erAvvist = sisteStatus.erAvvist,
+            erEgenmeldt = sisteStatus.erEgenmeldt,
+            sykmeldingId = sykmeldingId,
+        )
+
+        val sykmeldingStatusKafkaEventDTO = SykmeldingStatusKafkaEventDTO(
+            sykmeldingId,
+            timestamp,
+            statusEvent.tilStatusEventDTO(),
+            null,
+            null,
+        )
+        sykmeldingStatusKafkaProducer.send(
+            sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
+            source = source,
+            fnr = fnr,
+        )
+        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
     }
 
     suspend fun createSendtStatus(
@@ -159,60 +157,58 @@ class SykmeldingStatusService(
     ) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         val nesteStatus = sykmeldingUserEvent.toStatusEvent()
-        if (
-            canChangeStatus(
-                nyStatusEvent = nesteStatus,
-                sisteStatus = sisteStatus.statusEvent,
-                erAvvist = sisteStatus.erAvvist,
-                erEgenmeldt = sisteStatus.erEgenmeldt,
-                sykmeldingId = sykmeldingId,
-            )
-        ) {
-            val arbeidsgiver =
-                when (nesteStatus) {
-                    StatusEventDTO.SENDT ->
-                        getArbeidsgiver(
-                            fnr,
-                            sykmeldingId,
-                            sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar,
-                        )
+        requireCanChangeStatus(
+            nyStatusEvent = nesteStatus,
+            sisteStatus = sisteStatus.statusEvent,
+            erAvvist = sisteStatus.erAvvist,
+            erEgenmeldt = sisteStatus.erEgenmeldt,
+            sykmeldingId = sykmeldingId,
+        )
 
-                    else -> null
-                }
-            val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-
-            val tidligereArbeidsgiver =
-                when (sykmeldingUserEvent.arbeidssituasjon.svar) {
-                    ARBEIDSLEDIG -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
-                    else -> null
-                }
-
-            val sykmeldingStatusKafkaEventDTO =
-                sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
-                    timestamp,
-                    sykmeldingId,
-                    arbeidsgiver,
-                    tidligereArbeidsgiver,
-                )
-
-            if (tidligereArbeidsgiver != null) {
-                securelog.info(
-                    "legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} sykmeldingsId: $sykmeldingId",
-                )
-            }
-
-            sykmeldingStatusKafkaProducer.send(
-                sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
-                source = "user",
-                fnr = fnr,
-            )
-            sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
-
+        val arbeidsgiver =
             when (nesteStatus) {
-                StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
-                StatusEventDTO.BEKREFTET -> BEKREFTET_AV_BRUKER_COUNTER.inc()
-                else -> Unit
+                StatusEventDTO.SENDT ->
+                    getArbeidsgiver(
+                        fnr,
+                        sykmeldingId,
+                        sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar,
+                    )
+
+                else -> null
             }
+        val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
+
+        val tidligereArbeidsgiver =
+            when (sykmeldingUserEvent.arbeidssituasjon.svar) {
+                ARBEIDSLEDIG -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
+                else -> null
+            }
+
+        val sykmeldingStatusKafkaEventDTO =
+            sykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
+                timestamp,
+                sykmeldingId,
+                arbeidsgiver,
+                tidligereArbeidsgiver,
+            )
+
+        if (tidligereArbeidsgiver != null) {
+            securelog.info(
+                "legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} sykmeldingsId: $sykmeldingId",
+            )
+        }
+
+        sykmeldingStatusKafkaProducer.send(
+            sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
+            source = "user",
+            fnr = fnr,
+        )
+        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
+
+        when (nesteStatus) {
+            StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
+            StatusEventDTO.BEKREFTET -> BEKREFTET_AV_BRUKER_COUNTER.inc()
+            else -> Unit
         }
     }
 
@@ -421,36 +417,27 @@ class SykmeldingStatusService(
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         when (sisteStatus.erAvvist) {
             true -> {
-                if (
-                    canChangeStatus(
-                        nyStatusEvent = StatusEventDTO.BEKREFTET,
-                        sisteStatus = sisteStatus.statusEvent,
-                        erAvvist = true,
-                        erEgenmeldt = sisteStatus.erEgenmeldt,
-                        sykmeldingId = sykmeldingId,
+                requireCanChangeStatus(
+                    nyStatusEvent = StatusEventDTO.BEKREFTET,
+                    sisteStatus = sisteStatus.statusEvent,
+                    erAvvist = true,
+                    erEgenmeldt = sisteStatus.erEgenmeldt,
+                    sykmeldingId = sykmeldingId,
+                )
+
+                val sykmeldingBekreftEventDTO =
+                    SykmeldingBekreftEventDTO(
+                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                        sporsmalOgSvarListe = emptyList(),
                     )
-                ) {
-                    val sykmeldingBekreftEventDTO =
-                        SykmeldingBekreftEventDTO(
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                            sporsmalOgSvarListe = emptyList(),
-                        )
-                    val sykmeldingStatusKafkaEventDTO =
-                        sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
-                    sykmeldingStatusKafkaProducer.send(
-                        sykmeldingStatusKafkaEventDTO,
-                        source,
-                        fnr,
-                    )
-                    sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
-                } else {
-                    log.warn(
-                        "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId",
-                    )
-                    throw InvalidSykmeldingStatusException(
-                        "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId",
-                    )
-                }
+                val sykmeldingStatusKafkaEventDTO =
+                    sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO,
+                    source,
+                    fnr,
+                )
+                sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
             }
 
             else -> {
@@ -464,30 +451,24 @@ class SykmeldingStatusService(
         }
     }
 
-    private fun canChangeStatus(
+    private fun requireCanChangeStatus(
         nyStatusEvent: StatusEventDTO,
         sisteStatus: StatusEventDTO,
         erAvvist: Boolean?,
         erEgenmeldt: Boolean?,
         sykmeldingId: String,
-    ): Boolean {
+    ) {
         val allowedStatuses =
             when {
-                erAvvist == true -> {
-                    statusStatesAvvistSykmelding[sisteStatus]
-                }
-
-                erEgenmeldt == true -> {
-                    statusStatesEgenmelding[sisteStatus]
-                }
-
-                else -> {
-                    statusStates[sisteStatus]
-                }
+                erAvvist == true -> statusStatesAvvistSykmelding[sisteStatus]
+                erEgenmeldt == true -> statusStatesEgenmelding[sisteStatus]
+                else -> statusStates[sisteStatus]
             }
+
         if (allowedStatuses != null && allowedStatuses.contains(nyStatusEvent)) {
-            return true
+            return
         }
+
         log.warn(
             "Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId",
         )

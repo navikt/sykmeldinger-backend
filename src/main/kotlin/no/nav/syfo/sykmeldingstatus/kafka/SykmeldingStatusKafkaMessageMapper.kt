@@ -171,15 +171,6 @@ fun StatusEventDTO.tilStatusEventDTO(): String {
     }
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO.tilArbeidsgiverStatusDTO():
-    ArbeidsgiverStatusDTO {
-    return ArbeidsgiverStatusDTO(
-        orgnummer = this.orgnummer,
-        juridiskOrgnummer = this.juridiskOrgnummer,
-        orgNavn = this.orgNavn,
-    )
-}
-
 fun tilSporsmalOgSvarDTOListe(
     sporsmalListe: List<no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO>?
 ): List<SporsmalOgSvarDTO>? {
