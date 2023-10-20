@@ -15,7 +15,7 @@ fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: Sykmeldi
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        sykmeldingStatusService.registrerBekreftetAvvist(
+        sykmeldingStatusService.createBekreftetAvvistStatus(
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,

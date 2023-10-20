@@ -30,6 +30,7 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
+import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -90,24 +91,58 @@ class SykmeldingStatusService(
             )
     }
 
-    suspend fun registrerStatus(
-        sykmeldingStatusEventDTO: SykmeldingStatusEventDTO,
+    suspend fun createAvbruttStatus(
+        sykmeldingId: String,
+        source: String,
+        fnr: String,
+    ) = createGjenapneOrAvbruttStatus(
+        StatusEventDTO.AVBRUTT,
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+        sykmeldingId,
+        source,
+        fnr,
+    )
+
+    suspend fun createGjenapneStatus(
+        sykmeldingId: String,
+        source: String,
+        fnr: String,
+    ) = createGjenapneOrAvbruttStatus(
+        StatusEventDTO.APEN,
+        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+        sykmeldingId,
+        source,
+        fnr,
+    )
+
+    private suspend fun createGjenapneOrAvbruttStatus(
+        statusEvent: StatusEventDTO,
+        timestamp: OffsetDateTime,
         sykmeldingId: String,
         source: String,
         fnr: String,
     ) {
+        require(statusEvent == StatusEventDTO.APEN || statusEvent == StatusEventDTO.AVBRUTT) {
+            "createGjenapneOrAvbruttStatus kan ikke endre status til $statusEvent"
+        }
+
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         if (
             canChangeStatus(
-                nyStatusEvent = sykmeldingStatusEventDTO.statusEvent,
+                nyStatusEvent = statusEvent,
                 sisteStatus = sisteStatus.statusEvent,
                 erAvvist = sisteStatus.erAvvist,
                 erEgenmeldt = sisteStatus.erEgenmeldt,
                 sykmeldingId = sykmeldingId,
             )
         ) {
-            val sykmeldingStatusKafkaEventDTO =
-                sykmeldingStatusEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
+            val sykmeldingStatusKafkaEventDTO = SykmeldingStatusKafkaEventDTO(
+                sykmeldingId,
+                timestamp,
+                statusEvent.tilStatusEventDTO(),
+                null,
+                null,
+            )
             sykmeldingStatusKafkaProducer.send(
                 sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
                 source = source,
@@ -117,7 +152,7 @@ class SykmeldingStatusService(
         }
     }
 
-    suspend fun registrerUserEvent(
+    suspend fun createSendtStatus(
         sykmeldingUserEvent: SykmeldingUserEvent,
         sykmeldingId: String,
         fnr: String,
@@ -141,6 +176,7 @@ class SykmeldingStatusService(
                             sykmeldingId,
                             sykmeldingUserEvent.arbeidsgiverOrgnummer!!.svar,
                         )
+
                     else -> null
                 }
             val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
@@ -255,13 +291,14 @@ class SykmeldingStatusService(
                     val tidligereArbeidsgiverType =
                         tidligereArbeidsgiverType(
                             currentSykmeldingFirstFomDate,
-                            it.sykmeldingsperioder
+                            it.sykmeldingsperioder,
                         )
                     it to tidligereArbeidsgiverType
                 }
                 .filter { it.second != INGEN }
 
-        val antallTidligereArbeidsgivere = sykmeldinger.distinctBy { it.first.sykmeldingStatus.arbeidsgiver?.orgnummer }.size
+        val antallTidligereArbeidsgivere =
+            sykmeldinger.distinctBy { it.first.sykmeldingStatus.arbeidsgiver?.orgnummer }.size
         ANTALL_TIDLIGERE_ARBEIDSGIVERE.labels(antallTidligereArbeidsgivere.toString()).inc()
         if (antallTidligereArbeidsgivere != 1) {
             return null
@@ -324,10 +361,10 @@ class SykmeldingStatusService(
         val sykmeldingStatusKafkaEventDTOUpdated =
             sykmeldingStatusKafkaEventDTO.copy(
                 sporsmals =
-                    updateEgenemeldingsdagerSporsmal(
-                        sykmeldingStatusKafkaEventDTO.sporsmals,
-                        egenmeldingsdagerEvent,
-                    ),
+                updateEgenemeldingsdagerSporsmal(
+                    sykmeldingStatusKafkaEventDTO.sporsmals,
+                    egenmeldingsdagerEvent,
+                ),
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 erSvarOppdatering = true,
             )
@@ -359,7 +396,7 @@ class SykmeldingStatusService(
                                 shortName = ShortNameDTO.EGENMELDINGSDAGER,
                                 svartype = SvartypeDTO.DAGER,
                                 svar =
-                                    objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
+                                objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
                             ),
                         ),
                     )
@@ -380,7 +417,7 @@ class SykmeldingStatusService(
             )
     }
 
-    suspend fun registrerBekreftetAvvist(sykmeldingId: String, source: String, fnr: String) {
+    suspend fun createBekreftetAvvistStatus(sykmeldingId: String, source: String, fnr: String) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         when (sisteStatus.erAvvist) {
             true -> {
@@ -405,9 +442,7 @@ class SykmeldingStatusService(
                         source,
                         fnr,
                     )
-                    sykmeldingStatusDb.insertStatus(
-                        sykmeldingStatusKafkaEventDTO,
-                    )
+                    sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
                 } else {
                     log.warn(
                         "Kan ikke endre status fra ${sisteStatus.statusEvent} til ${StatusEventDTO.BEKREFTET} for sykmelding med id: $sykmeldingId",
@@ -417,6 +452,7 @@ class SykmeldingStatusService(
                     )
                 }
             }
+
             else -> {
                 log.warn(
                     "Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId",
@@ -440,9 +476,11 @@ class SykmeldingStatusService(
                 erAvvist == true -> {
                     statusStatesAvvistSykmelding[sisteStatus]
                 }
+
                 erEgenmeldt == true -> {
                     statusStatesEgenmelding[sisteStatus]
                 }
+
                 else -> {
                     statusStates[sisteStatus]
                 }
@@ -472,5 +510,3 @@ fun SykmeldingUserEvent.toStatusEvent(): StatusEventDTO {
     }
     return StatusEventDTO.BEKREFTET
 }
-
-fun SykmeldingsperiodeDTO.range(): ClosedRange<LocalDate> = fom.rangeTo(tom)

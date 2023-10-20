@@ -12,7 +12,7 @@ import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 
-fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatusService) {
+fun Route.registrerSykmeldingSendApiV3(sendtSykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/send") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
@@ -24,7 +24,7 @@ fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatus
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
                 sykmeldingUserEvent.validate()
-                sykmeldingStatusService.registrerUserEvent(sykmeldingUserEvent, sykmeldingId, fnr)
+                sendtSykmeldingStatusService.createSendtStatus(sykmeldingUserEvent, sykmeldingId, fnr)
 
                 call.respond(HttpStatusCode.Accepted)
             }
@@ -41,7 +41,7 @@ fun Route.registrerSykmeldingSendApiV3(sykmeldingStatusService: SykmeldingStatus
         when (endreEgenmeldingsdagerEvent) {
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
-                sykmeldingStatusService.endreEgenmeldingsdager(
+                sendtSykmeldingStatusService.endreEgenmeldingsdager(
                     sykmeldingId,
                     endreEgenmeldingsdagerEvent,
                     fnr

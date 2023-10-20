@@ -28,7 +28,7 @@ class SykmeldingGjenapneApiSpec :
 
         beforeTest {
             clearAllMocks()
-            coEvery { sykmeldingStatusService.registrerStatus(any(), any(), any(), any()) } just
+            coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any(), any()) } just
                 Runs
         }
 
@@ -73,7 +73,7 @@ class SykmeldingGjenapneApiSpec :
                 ) {
                     val sykmeldingId = "123"
                     coEvery {
-                        sykmeldingStatusService.registrerStatus(any(), any(), any(), any())
+                        sykmeldingStatusService.createGjenapneStatus(any(), any(), any())
                     } throws InvalidSykmeldingStatusException("Invalid status")
                     with(
                         handleRequest(
@@ -98,7 +98,7 @@ class SykmeldingGjenapneApiSpec :
 
                 test("Skal ikke kunne gjenåpne annen brukers sykmelding") {
                     coEvery {
-                        sykmeldingStatusService.registrerStatus(any(), any(), any(), any())
+                        sykmeldingStatusService.createGjenapneStatus(any(), any(), any())
                     } throws
                         SykmeldingStatusNotFoundException(
                             "Not Found",
