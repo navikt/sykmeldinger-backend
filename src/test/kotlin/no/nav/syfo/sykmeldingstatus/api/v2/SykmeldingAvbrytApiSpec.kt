@@ -22,7 +22,7 @@ import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
 import org.amshove.kluent.shouldBeEqualTo
 
-class SykmeldingGjenapneApiSpek :
+class SykmeldingAvbrytApiSpec :
     FunSpec({
         val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
@@ -32,25 +32,23 @@ class SykmeldingGjenapneApiSpek :
                 Runs
         }
 
-        context("Test SykmeldingGjenapneAPI for sluttbruker med tilgangskontroll") {
+        context("Test SykmeldingAvbrytAPI for sluttbruker med tilgangskontroll") {
             with(TestApplicationEngine()) {
                 setUpTestApplication()
                 setUpAuth()
 
                 application.routing {
                     authenticate("tokenx") {
-                        route("/api/v2") {
-                            registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
-                        }
+                        route("/api/v2") { registerSykmeldingAvbrytApiV2(sykmeldingStatusService) }
                     }
                 }
 
-                test("Bruker skal få gjenåpne sin egen sykmelding") {
+                test("Bruker skal få avbryte sin egen sykmelding") {
                     val sykmeldingId = "123"
                     with(
                         handleRequest(
                             HttpMethod.Post,
-                            "/api/v2/sykmeldinger/$sykmeldingId/gjenapne"
+                            "/api/v2/sykmeldinger/$sykmeldingId/avbryt"
                         ) {
                             addHeader("Content-Type", ContentType.Application.Json.toString())
                             addHeader(
@@ -68,9 +66,7 @@ class SykmeldingGjenapneApiSpek :
                     }
                 }
 
-                test(
-                    "Bruker skal ikke få gjenåpne sin egen sykmelding når den ikke kan gjenåpnes"
-                ) {
+                test("Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes") {
                     val sykmeldingId = "123"
                     coEvery {
                         sykmeldingStatusService.registrerStatus(any(), any(), any(), any())
@@ -78,7 +74,7 @@ class SykmeldingGjenapneApiSpek :
                     with(
                         handleRequest(
                             HttpMethod.Post,
-                            "/api/v2/sykmeldinger/$sykmeldingId/gjenapne"
+                            "/api/v2/sykmeldinger/$sykmeldingId/avbryt"
                         ) {
                             addHeader("Content-Type", ContentType.Application.Json.toString())
                             addHeader(
@@ -96,7 +92,7 @@ class SykmeldingGjenapneApiSpek :
                     }
                 }
 
-                test("Skal ikke kunne gjenåpne annen brukers sykmelding") {
+                test("Skal ikke kunne avbryte annen brukers sykmelding") {
                     coEvery {
                         sykmeldingStatusService.registrerStatus(any(), any(), any(), any())
                     } throws
@@ -105,7 +101,7 @@ class SykmeldingGjenapneApiSpek :
                             RuntimeException("Ingen tilgang")
                         )
                     with(
-                        handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/gjenapne") {
+                        handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/avbryt") {
                             addHeader("Content-Type", ContentType.Application.Json.toString())
                             addHeader(
                                 "Authorization",
@@ -124,7 +120,7 @@ class SykmeldingGjenapneApiSpek :
 
                 test("Skal ikke kunne bruke apiet med token med feil audience") {
                     with(
-                        handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/gjenapne") {
+                        handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/avbryt") {
                             addHeader("Content-Type", ContentType.Application.Json.toString())
                             addHeader(
                                 "Authorization",

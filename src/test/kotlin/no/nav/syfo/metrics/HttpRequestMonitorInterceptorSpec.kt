@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.FunSpec
 import java.util.UUID
 import org.amshove.kluent.shouldBeEqualTo
 
-class HttpRequestMonitorInterceptorSpek :
+class HttpRequestMonitorInterceptorSpec :
     FunSpec({
         context("Test av at bytting av UUID i path fungerer som forventet") {
             test("UUID byttes ut") {

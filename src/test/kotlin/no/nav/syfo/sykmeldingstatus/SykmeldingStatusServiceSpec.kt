@@ -38,7 +38,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 
-class SykmeldingStatusServiceSpek :
+class SykmeldingStatusServiceSpec :
     FunSpec({
         val sykmeldingId = "id"
         val fnr = "fnr"
