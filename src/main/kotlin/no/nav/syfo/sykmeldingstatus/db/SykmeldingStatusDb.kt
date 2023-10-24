@@ -19,6 +19,7 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
@@ -141,17 +142,17 @@ private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingS
             sykmeldingId = sykmeldingId,
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             arbeidsgiver =
-                getObject("arbeidsgiver")?.let {
-                    objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
-                },
+            getObject("arbeidsgiver")?.let {
+                objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+            },
             sporsmals =
-                getString("sporsmal")?.let { objectMapper.readValue<List<SporsmalOgSvarDTO>>(it) }
-                    ?: emptyList(),
+            getString("sporsmal")?.let { objectMapper.readValue<List<SporsmalOgSvarDTO>>(it) }
+                ?: emptyList(),
             statusEvent = getString("event"),
             tidligereArbeidsgiver =
-                getObject("tidligere_arbeidsgiver")?.let {
-                    objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
-                }
+            getObject("tidligere_arbeidsgiver")?.let {
+                objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
+            },
         )
     } else {
         throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")

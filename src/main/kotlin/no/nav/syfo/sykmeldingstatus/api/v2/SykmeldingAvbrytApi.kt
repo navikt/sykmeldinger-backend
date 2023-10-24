@@ -6,13 +6,9 @@ import io.ktor.server.auth.authentication
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import no.nav.syfo.application.BrukerPrincipal
 import no.nav.syfo.metrics.AVBRUTT_AV_BRUKER_COUNTER
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 
 fun Route.registerSykmeldingAvbrytApiV2(sykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/avbryt") {
@@ -20,12 +16,7 @@ fun Route.registerSykmeldingAvbrytApiV2(sykmeldingStatusService: SykmeldingStatu
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
 
-        sykmeldingStatusService.registrerStatus(
-            sykmeldingStatusEventDTO =
-                SykmeldingStatusEventDTO(
-                    StatusEventDTO.AVBRUTT,
-                    OffsetDateTime.now(ZoneOffset.UTC)
-                ),
+        sykmeldingStatusService.createAvbruttStatus(
             sykmeldingId = sykmeldingId,
             source = "user",
             fnr = fnr,
