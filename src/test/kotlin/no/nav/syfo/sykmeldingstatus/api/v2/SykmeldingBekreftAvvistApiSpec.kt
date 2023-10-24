@@ -27,8 +27,9 @@ class SykmeldingBekreftAvvistApiSpec :
 
         beforeTest {
             clearAllMocks()
-            coEvery { sykmeldingStatusService.createBekreftetAvvistStatus(any(), any(), any()) } just
-                Runs
+            coEvery {
+                sykmeldingStatusService.createBekreftetAvvistStatus(any(), any(), any())
+            } just Runs
         }
 
         context("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {

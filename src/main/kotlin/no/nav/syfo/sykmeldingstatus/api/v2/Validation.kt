@@ -2,7 +2,7 @@ package no.nav.syfo.sykmeldingstatus.api.v2
 
 class ValidationException(message: String) : Exception(message)
 
-fun SykmeldingUserEvent.validate() {
+fun SykmeldingFormResponse.validate() {
     if (erOpplysningeneRiktige.svar == JaEllerNei.NEI) {
         requireNotNull(
             uriktigeOpplysninger,

@@ -52,7 +52,9 @@ class SykmeldingAvbrytApiSpec :
 
                     application.routing {
                         authenticate("tokenx") {
-                            route("/api/v2") { registerSykmeldingAvbrytApiV2(sykmeldingStatusService) }
+                            route("/api/v2") {
+                                registerSykmeldingAvbrytApiV2(sykmeldingStatusService)
+                            }
                         }
                     }
 
@@ -81,7 +83,9 @@ class SykmeldingAvbrytApiSpec :
                         }
                     }
 
-                    test("Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes") {
+                    test(
+                        "Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes"
+                    ) {
                         val sykmeldingId = "123"
                         coEvery {
                             sykmeldingStatusService.createAvbruttStatus(any(), any(), any())

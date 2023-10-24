@@ -22,8 +22,8 @@ class ValidationKtTest :
                 test(
                     "Skal kaste exception hvis opplysningene ikke stemmer, men uriktige opplysninger er tom"
                 ) {
-                    val sykmeldingUserEvent =
-                        SykmeldingUserEvent(
+                    val sykmeldingFormResponse =
+                        SykmeldingFormResponse(
                             erOpplysningeneRiktige =
                                 SporsmalSvar(
                                     sporsmaltekst = "",
@@ -44,7 +44,7 @@ class ValidationKtTest :
                             egenmeldingsdager = null,
                         )
 
-                    assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                    assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                 }
             }
 
@@ -53,8 +53,8 @@ class ValidationKtTest :
                     test(
                         "Skal kaste exception hvis arbeidssituasjon == ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder mangler"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -75,14 +75,14 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
 
                     test(
                         "Skal kaste exception hvis arbeidssituasjon != ARBEIDSGIVER, men arbeidsgiverOrgnummer og nyNarmesteLeder er satt"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -111,14 +111,14 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
 
                     test(
                         "Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -139,14 +139,14 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
 
                     test(
                         "Skal kaste exception hvis harBruktEgenmeldingsdager == JA, men egenmeldingsdager mangler"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -174,7 +174,7 @@ class ValidationKtTest :
                                     ),
                                 egenmeldingsdager = null,
                             )
-                        invoking { sykmeldingUserEvent.validate() } shouldThrow
+                        invoking { sykmeldingFormResponse.validate() } shouldThrow
                             ValidationException::class withMessage
                             "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA"
                     }
@@ -182,8 +182,8 @@ class ValidationKtTest :
                     test(
                         "Skal kaste exception hvis harBruktEgenmeldingsdager == JA, men egenmeldingsdager er en tom liste"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -215,7 +215,7 @@ class ValidationKtTest :
                                         svar = emptyList(),
                                     ),
                             )
-                        invoking { sykmeldingUserEvent.validate() } shouldThrow
+                        invoking { sykmeldingFormResponse.validate() } shouldThrow
                             ValidationException::class withMessage
                             "Spørsmål om egenmeldimngsdager må minst ha 1 dag, når harBruktEgenmeldingsdager er JA"
                     }
@@ -223,8 +223,8 @@ class ValidationKtTest :
                     test(
                         "Skal IKKE kaste exception hvis harBruktEgenmeldingsdager == JA, men egenmeldingsdager har 1 element"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -256,7 +256,7 @@ class ValidationKtTest :
                                         svar = listOf(LocalDate.now()),
                                     ),
                             )
-                        invoking { sykmeldingUserEvent.validate() } shouldNotThrow
+                        invoking { sykmeldingFormResponse.validate() } shouldNotThrow
                             ValidationException::class
                     }
                 }
@@ -265,8 +265,8 @@ class ValidationKtTest :
                     test(
                         "Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -291,7 +291,7 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
                 }
 
@@ -299,8 +299,8 @@ class ValidationKtTest :
                     test(
                         "Skal kaste exception hvis harBruktEgenmelding == JA, men egenmeldingsperioder og harForsikring mangler"
                     ) {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -325,14 +325,14 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
                 }
 
                 context("arbeidsledig") {
                     test("Skal kaste exception hvis egenmeldingsperioder er satt") {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -357,12 +357,12 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
 
                     test("Skal kaste exception hvis harForsikring er satt") {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -387,14 +387,14 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
                 }
 
                 context("annet") {
                     test("Skal kaste exception hvis egenmeldingsperioder er satt") {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -419,12 +419,12 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
 
                     test("Skal kaste exception hvis harForsikring er satt") {
-                        val sykmeldingUserEvent =
-                            SykmeldingUserEvent(
+                        val sykmeldingFormResponse =
+                            SykmeldingFormResponse(
                                 erOpplysningeneRiktige =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
@@ -449,7 +449,7 @@ class ValidationKtTest :
                                 egenmeldingsdager = null,
                             )
 
-                        assertFailsWith<ValidationException> { sykmeldingUserEvent.validate() }
+                        assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
                     }
                 }
             }
@@ -457,8 +457,8 @@ class ValidationKtTest :
 
         context("SporsmalOgSvar builders") {
             test("Skal lage SporsmalOgSvarDTO for arbeidssituasjon") {
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
+                val sykmeldingFormResponse =
+                    SykmeldingFormResponse(
                         erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
@@ -480,7 +480,7 @@ class ValidationKtTest :
                     )
 
                 val sporsmalOgSvarListe =
-                    sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
+                    sykmeldingFormResponse.toSporsmalSvarListe(sykmeldingId = "id")
 
                 val expected =
                     listOf(
@@ -496,8 +496,8 @@ class ValidationKtTest :
             }
 
             test("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med aktiv arbeidsgiver") {
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
+                val sykmeldingFormResponse =
+                    SykmeldingFormResponse(
                         erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
@@ -538,7 +538,7 @@ class ValidationKtTest :
                     )
 
                 val sporsmalOgSvarListe =
-                    sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver, "id")
+                    sykmeldingFormResponse.toSporsmalSvarListe(arbeidsgiver, "id")
 
                 val expected =
                     listOf(
@@ -560,8 +560,8 @@ class ValidationKtTest :
             }
 
             test("Skal lage SporsmalOgSvarDTO for riktigNarmesteLeder med inaktiv arbeidsgiver") {
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
+                val sykmeldingFormResponse =
+                    SykmeldingFormResponse(
                         erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
@@ -602,7 +602,7 @@ class ValidationKtTest :
                     )
 
                 val sporsmalOgSvarListe =
-                    sykmeldingUserEvent.toSporsmalSvarListe(arbeidsgiver, "id")
+                    sykmeldingFormResponse.toSporsmalSvarListe(arbeidsgiver, "id")
 
                 val expected =
                     listOf(
@@ -624,8 +624,8 @@ class ValidationKtTest :
             }
 
             test("Skal lage SporsmalOgSvarDTO for fravarSporsmal") {
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
+                val sykmeldingFormResponse =
+                    SykmeldingFormResponse(
                         erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
@@ -655,7 +655,7 @@ class ValidationKtTest :
                     )
 
                 val sporsmalOgSvarListe =
-                    sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
+                    sykmeldingFormResponse.toSporsmalSvarListe(sykmeldingId = "id")
 
                 val expected =
                     listOf(
@@ -683,8 +683,8 @@ class ValidationKtTest :
             }
 
             test("Skal lage SporsmalOgSvarDTO for egenmeldingsperioder") {
-                val sykmeldingUserEvent =
-                    SykmeldingUserEvent(
+                val sykmeldingFormResponse =
+                    SykmeldingFormResponse(
                         erOpplysningeneRiktige =
                             SporsmalSvar(
                                 sporsmaltekst = "",
@@ -720,7 +720,7 @@ class ValidationKtTest :
                     )
 
                 val sporsmalOgSvarListe =
-                    sykmeldingUserEvent.toSporsmalSvarListe(sykmeldingId = "id")
+                    sykmeldingFormResponse.toSporsmalSvarListe(sykmeldingId = "id")
 
                 val expected =
                     listOf(

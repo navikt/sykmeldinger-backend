@@ -18,13 +18,17 @@ fun Route.registrerSykmeldingSendApiV3(sendtSykmeldingStatusService: SykmeldingS
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
 
-        val sykmeldingUserEvent = call.safeReceiveOrNull<SykmeldingUserEvent>()
+        val sykmeldingFormResponse = call.safeReceiveOrNull<SykmeldingFormResponse>()
 
-        when (sykmeldingUserEvent) {
+        when (sykmeldingFormResponse) {
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
-                sykmeldingUserEvent.validate()
-                sendtSykmeldingStatusService.createSendtStatus(sykmeldingUserEvent, sykmeldingId, fnr)
+                sykmeldingFormResponse.validate()
+                sendtSykmeldingStatusService.createSendtStatus(
+                    sykmeldingFormResponse,
+                    sykmeldingId,
+                    fnr
+                )
 
                 call.respond(HttpStatusCode.Accepted)
             }

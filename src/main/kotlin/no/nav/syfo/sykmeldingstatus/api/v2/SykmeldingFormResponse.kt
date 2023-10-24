@@ -7,7 +7,7 @@ data class SporsmalSvar<T>(
     val svar: T,
 )
 
-data class SykmeldingUserEvent(
+data class SykmeldingFormResponse(
     val erOpplysningeneRiktige: SporsmalSvar<JaEllerNei>,
     val uriktigeOpplysninger: SporsmalSvar<List<UriktigeOpplysningerDTO>>?,
     val arbeidssituasjon: SporsmalSvar<ArbeidssituasjonDTO>,

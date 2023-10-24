@@ -27,7 +27,7 @@ import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
-import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 
 fun getSykmeldingStatus(
     statusEventDTO: StatusEventDTO,
@@ -183,7 +183,7 @@ internal fun MockKMatcherScope.matchStatusWithEmptySporsmals(statusEvent: String
     }
 
 internal fun opprettSendtSykmeldingUserEvent() =
-    SykmeldingUserEvent(
+    SykmeldingFormResponse(
         erOpplysningeneRiktige =
             SporsmalSvar(
                 sporsmaltekst = "",
@@ -215,7 +215,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
 internal fun opprettBekreftetSykmeldingUserEvent(
     arbeidssituasjon: ArbeidssituasjonDTO = ArbeidssituasjonDTO.FRILANSER
 ) =
-    SykmeldingUserEvent(
+    SykmeldingFormResponse(
         erOpplysningeneRiktige =
             SporsmalSvar(
                 sporsmaltekst = "",

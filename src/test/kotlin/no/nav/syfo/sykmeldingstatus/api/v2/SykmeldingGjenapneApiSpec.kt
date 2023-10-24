@@ -28,8 +28,7 @@ class SykmeldingGjenapneApiSpec :
 
         beforeTest {
             clearAllMocks()
-            coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any(), any()) } just
-                Runs
+            coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any(), any()) } just Runs
         }
 
         context("Test SykmeldingGjenapneAPI for sluttbruker med tilgangskontroll") {

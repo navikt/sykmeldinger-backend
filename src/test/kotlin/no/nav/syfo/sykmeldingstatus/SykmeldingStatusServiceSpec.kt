@@ -8,6 +8,10 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -27,16 +31,12 @@ import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.FRILANSER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
-import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpec :
     FunSpec(
@@ -93,29 +93,28 @@ class SykmeldingStatusServiceSpec :
                                         sykmeldingId,
                                         fnr,
                                     )
-
                                 StatusEventDTO.BEKREFTET ->
                                     sykmeldingStatusService.createSendtStatus(
                                         opprettBekreftetSykmeldingUserEvent(),
                                         sykmeldingId,
                                         fnr,
                                     )
-
                                 StatusEventDTO.APEN ->
                                     sykmeldingStatusService.createGjenapneStatus(
                                         sykmeldingId,
                                         "user",
                                         fnr,
                                     )
-
                                 StatusEventDTO.AVBRUTT ->
                                     sykmeldingStatusService.createAvbruttStatus(
                                         sykmeldingId,
                                         "user",
                                         fnr,
                                     )
-
-                                else -> throw IllegalStateException("Ikke implementert $newStatus i testene")
+                                else ->
+                                    throw IllegalStateException(
+                                        "Ikke implementert $newStatus i testene"
+                                    )
                             }
                         }
                     error.message shouldBeEqualTo expextedErrorMessage
@@ -154,29 +153,26 @@ class SykmeldingStatusServiceSpec :
                                 sykmeldingId,
                                 fnr,
                             )
-
                         StatusEventDTO.BEKREFTET ->
                             sykmeldingStatusService.createSendtStatus(
                                 opprettBekreftetSykmeldingUserEvent(),
                                 sykmeldingId,
                                 fnr,
                             )
-
                         StatusEventDTO.APEN ->
                             sykmeldingStatusService.createGjenapneStatus(
                                 sykmeldingId,
                                 "user",
                                 fnr,
                             )
-
                         StatusEventDTO.AVBRUTT ->
                             sykmeldingStatusService.createAvbruttStatus(
                                 sykmeldingId,
                                 "user",
                                 fnr,
                             )
-
-                        else -> throw IllegalStateException("Ikke implementert $newStatus i testene")
+                        else ->
+                            throw IllegalStateException("Ikke implementert $newStatus i testene")
                     }
 
                     coVerify(exactly = 1) {
@@ -255,8 +251,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
 
@@ -308,8 +303,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
 
@@ -334,8 +328,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.BEKREFTET,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
 
@@ -362,8 +355,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.BEKREFTET,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
 
@@ -392,8 +384,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
                     coEvery {
@@ -414,29 +405,29 @@ class SykmeldingStatusServiceSpec :
                                 naermesteLeder = null,
                             ),
                         )
-                    val sykmeldingUserEvent =
-                        SykmeldingUserEvent(
+                    val sykmeldingFormResponse =
+                        SykmeldingFormResponse(
                             erOpplysningeneRiktige =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.JA,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.JA,
+                                ),
                             uriktigeOpplysninger = null,
                             arbeidssituasjon =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = ARBEIDSTAKER,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = ARBEIDSTAKER,
+                                ),
                             arbeidsgiverOrgnummer =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = "123456789",
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = "123456789",
+                                ),
                             riktigNarmesteLeder =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.NEI,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.NEI,
+                                ),
                             harBruktEgenmelding = null,
                             egenmeldingsperioder = null,
                             harForsikring = null,
@@ -445,7 +436,7 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     sykmeldingStatusService.createSendtStatus(
-                        sykmeldingUserEvent,
+                        sykmeldingFormResponse,
                         "test",
                         "fnr",
                     )
@@ -461,8 +452,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.SENDT,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
                     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
@@ -477,29 +467,29 @@ class SykmeldingStatusServiceSpec :
                                 naermesteLeder = null,
                             ),
                         )
-                    val sykmeldingUserEvent =
-                        SykmeldingUserEvent(
+                    val sykmeldingFormResponse =
+                        SykmeldingFormResponse(
                             erOpplysningeneRiktige =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.JA,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.JA,
+                                ),
                             uriktigeOpplysninger = null,
                             arbeidssituasjon =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = ARBEIDSTAKER,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = ARBEIDSTAKER,
+                                ),
                             arbeidsgiverOrgnummer =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = "feilOrnummer",
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = "feilOrnummer",
+                                ),
                             riktigNarmesteLeder =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.NEI,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.NEI,
+                                ),
                             harBruktEgenmelding = null,
                             egenmeldingsperioder = null,
                             harForsikring = null,
@@ -510,7 +500,7 @@ class SykmeldingStatusServiceSpec :
                     assertFailsWith(InvalidSykmeldingStatusException::class) {
                         runBlocking {
                             sykmeldingStatusService.createSendtStatus(
-                                sykmeldingUserEvent,
+                                sykmeldingFormResponse,
                                 "test",
                                 "fnr",
                             )
@@ -528,8 +518,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
                     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
@@ -544,29 +533,29 @@ class SykmeldingStatusServiceSpec :
                                 naermesteLeder = null,
                             ),
                         )
-                    val sykmeldingUserEvent =
-                        SykmeldingUserEvent(
+                    val sykmeldingFormResponse =
+                        SykmeldingFormResponse(
                             erOpplysningeneRiktige =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.JA,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.JA,
+                                ),
                             uriktigeOpplysninger = null,
                             arbeidssituasjon =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = ARBEIDSTAKER,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = ARBEIDSTAKER,
+                                ),
                             arbeidsgiverOrgnummer =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = "feilOrnummer",
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = "feilOrnummer",
+                                ),
                             riktigNarmesteLeder =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.NEI,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.NEI,
+                                ),
                             harBruktEgenmelding = null,
                             egenmeldingsperioder = null,
                             harForsikring = null,
@@ -577,7 +566,7 @@ class SykmeldingStatusServiceSpec :
                     assertFailsWith(InvalidSykmeldingStatusException::class) {
                         runBlocking {
                             sykmeldingStatusService.createSendtStatus(
-                                sykmeldingUserEvent,
+                                sykmeldingFormResponse,
                                 "test",
                                 "fnr",
                             )
@@ -596,23 +585,22 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
-                    val sykmeldingUserEvent =
-                        SykmeldingUserEvent(
+                    val sykmeldingFormResponse =
+                        SykmeldingFormResponse(
                             erOpplysningeneRiktige =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.JA,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.JA,
+                                ),
                             uriktigeOpplysninger = null,
                             arbeidssituasjon =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = FRILANSER,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = FRILANSER,
+                                ),
                             arbeidsgiverOrgnummer = null,
                             riktigNarmesteLeder = null,
                             harBruktEgenmelding = null,
@@ -623,7 +611,7 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     sykmeldingStatusService.createSendtStatus(
-                        sykmeldingUserEvent,
+                        sykmeldingFormResponse,
                         "test",
                         "fnr",
                     )
@@ -640,12 +628,13 @@ class SykmeldingStatusServiceSpec :
                     coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
                 }
 
-                test("Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt") {
+                test(
+                    "Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt"
+                ) {
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
                     coEvery {
@@ -673,24 +662,24 @@ class SykmeldingStatusServiceSpec :
                             ),
                         )
 
-                    val sykmeldingUserEvent =
-                        SykmeldingUserEvent(
+                    val sykmeldingFormResponse =
+                        SykmeldingFormResponse(
                             erOpplysningeneRiktige =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = JaEllerNei.JA,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = JaEllerNei.JA,
+                                ),
                             uriktigeOpplysninger = null,
                             arbeidssituasjon =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = ARBEIDSTAKER,
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = ARBEIDSTAKER,
+                                ),
                             arbeidsgiverOrgnummer =
-                            SporsmalSvar(
-                                sporsmaltekst = "",
-                                svar = "123456789",
-                            ),
+                                SporsmalSvar(
+                                    sporsmaltekst = "",
+                                    svar = "123456789",
+                                ),
                             riktigNarmesteLeder = null,
                             harBruktEgenmelding = null,
                             egenmeldingsperioder = null,
@@ -702,7 +691,7 @@ class SykmeldingStatusServiceSpec :
                     val expected = slot<SykmeldingStatusKafkaEventDTO>()
 
                     sykmeldingStatusService.createSendtStatus(
-                        sykmeldingUserEvent,
+                        sykmeldingFormResponse,
                         "test",
                         "fnr",
                     )
@@ -734,20 +723,20 @@ class SykmeldingStatusServiceSpec :
                     } returns
                         SykmeldingStatusKafkaEventDTO(
                             sporsmals =
-                            listOf(
-                                SporsmalOgSvarDTO(
-                                    svartype = SvartypeDTO.DAGER,
-                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                                    svar = "",
-                                    tekst = "tom string",
+                                listOf(
+                                    SporsmalOgSvarDTO(
+                                        svartype = SvartypeDTO.DAGER,
+                                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                        svar = "",
+                                        tekst = "tom string",
+                                    ),
+                                    SporsmalOgSvarDTO(
+                                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+                                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                                        svar = "8765432",
+                                        tekst = "",
+                                    ),
                                 ),
-                                SporsmalOgSvarDTO(
-                                    svartype = SvartypeDTO.ARBEIDSSITUASJON,
-                                    shortName = ShortNameDTO.ARBEIDSSITUASJON,
-                                    svar = "8765432",
-                                    tekst = "",
-                                ),
-                            ),
                             sykmeldingId = "sykmelding-id",
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                             statusEvent = StatusEventDTO.SENDT.toString(),
@@ -756,31 +745,31 @@ class SykmeldingStatusServiceSpec :
                     sykmeldingStatusService.endreEgenmeldingsdager(
                         sykmeldingId = "sykmelding-id",
                         egenmeldingsdagerEvent =
-                        EndreEgenmeldingsdagerEvent(
-                            dager =
-                            listOf(
-                                LocalDate.parse("2021-02-01"),
-                                LocalDate.parse("2021-02-02"),
+                            EndreEgenmeldingsdagerEvent(
+                                dager =
+                                    listOf(
+                                        LocalDate.parse("2021-02-01"),
+                                        LocalDate.parse("2021-02-02"),
+                                    ),
+                                tekst = "Egenmeldingsdager spørsmål",
                             ),
-                            tekst = "Egenmeldingsdager spørsmål",
-                        ),
                         fnr = "22222222",
                     )
 
                     coVerify(exactly = 1) {
                         sykmeldingStatusKafkaProducer.send(
                             sykmeldingStatusKafkaEventDTO =
-                            match {
-                                val last = it.sporsmals?.last()
-                                val first = it.sporsmals?.first()
-                                // Verify value has been updated
-                                last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                                    last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
-                                    // Verify that existing remains untouched
-                                    first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
-                                    first.svar == "8765432" &&
-                                    it.erSvarOppdatering == true
-                            },
+                                match {
+                                    val last = it.sporsmals?.last()
+                                    val first = it.sporsmals?.first()
+                                    // Verify value has been updated
+                                    last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
+                                        last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                                        // Verify that existing remains untouched
+                                        first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                                        first.svar == "8765432" &&
+                                        it.erSvarOppdatering == true
+                                },
                             source = "user",
                             fnr = "22222222",
                         )
@@ -797,20 +786,20 @@ class SykmeldingStatusServiceSpec :
                     } returns
                         SykmeldingStatusKafkaEventDTO(
                             sporsmals =
-                            listOf(
-                                SporsmalOgSvarDTO(
-                                    svartype = SvartypeDTO.DAGER,
-                                    shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                                    svar = "",
-                                    tekst = "tom string",
+                                listOf(
+                                    SporsmalOgSvarDTO(
+                                        svartype = SvartypeDTO.DAGER,
+                                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                        svar = "",
+                                        tekst = "tom string",
+                                    ),
+                                    SporsmalOgSvarDTO(
+                                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+                                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                                        svar = "8765432",
+                                        tekst = "",
+                                    ),
                                 ),
-                                SporsmalOgSvarDTO(
-                                    svartype = SvartypeDTO.ARBEIDSSITUASJON,
-                                    shortName = ShortNameDTO.ARBEIDSSITUASJON,
-                                    svar = "8765432",
-                                    tekst = "",
-                                ),
-                            ),
                             sykmeldingId = "sykmelding-id",
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                             statusEvent = StatusEventDTO.SENDT.toString(),
@@ -819,20 +808,21 @@ class SykmeldingStatusServiceSpec :
                     sykmeldingStatusService.endreEgenmeldingsdager(
                         sykmeldingId = "sykmelding-id",
                         egenmeldingsdagerEvent =
-                        EndreEgenmeldingsdagerEvent(
-                            dager = listOf(),
-                            tekst = "Egenmeldingsdager spørsmål",
-                        ),
+                            EndreEgenmeldingsdagerEvent(
+                                dager = listOf(),
+                                tekst = "Egenmeldingsdager spørsmål",
+                            ),
                         fnr = "22222222",
                     )
 
                     coVerify(exactly = 1) {
                         sykmeldingStatusKafkaProducer.send(
                             sykmeldingStatusKafkaEventDTO =
-                            match {
-                                it.sporsmals?.size == 1 &&
-                                    it.sporsmals?.first()?.svartype == SvartypeDTO.ARBEIDSSITUASJON
-                            },
+                                match {
+                                    it.sporsmals?.size == 1 &&
+                                        it.sporsmals?.first()?.svartype ==
+                                            SvartypeDTO.ARBEIDSSITUASJON
+                                },
                             source = "user",
                             fnr = "22222222",
                         )
@@ -849,14 +839,14 @@ class SykmeldingStatusServiceSpec :
                     } returns
                         SykmeldingStatusKafkaEventDTO(
                             sporsmals =
-                            listOf(
-                                SporsmalOgSvarDTO(
-                                    svartype = SvartypeDTO.ARBEIDSSITUASJON,
-                                    shortName = ShortNameDTO.ARBEIDSSITUASJON,
-                                    svar = "8765432",
-                                    tekst = "",
+                                listOf(
+                                    SporsmalOgSvarDTO(
+                                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+                                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                                        svar = "8765432",
+                                        tekst = "",
+                                    ),
                                 ),
-                            ),
                             sykmeldingId = "sykmelding-id",
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                             statusEvent = StatusEventDTO.SENDT.toString(),
@@ -865,31 +855,31 @@ class SykmeldingStatusServiceSpec :
                     sykmeldingStatusService.endreEgenmeldingsdager(
                         sykmeldingId = "sykmelding-id",
                         egenmeldingsdagerEvent =
-                        EndreEgenmeldingsdagerEvent(
-                            dager =
-                            listOf(
-                                LocalDate.parse("2021-02-01"),
-                                LocalDate.parse("2021-02-02"),
+                            EndreEgenmeldingsdagerEvent(
+                                dager =
+                                    listOf(
+                                        LocalDate.parse("2021-02-01"),
+                                        LocalDate.parse("2021-02-02"),
+                                    ),
+                                tekst = "Egenmeldingsdager spørsmål",
                             ),
-                            tekst = "Egenmeldingsdager spørsmål",
-                        ),
                         fnr = "22222222",
                     )
 
                     coVerify(exactly = 1) {
                         sykmeldingStatusKafkaProducer.send(
                             sykmeldingStatusKafkaEventDTO =
-                            match {
-                                val last = it.sporsmals?.last()
-                                val first = it.sporsmals?.first()
-                                // Verify value has been updated
-                                last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                                    last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
-                                    // Verify that existing remains untouched
-                                    first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
-                                    first.svar == "8765432" &&
-                                    it.erSvarOppdatering == true
-                            },
+                                match {
+                                    val last = it.sporsmals?.last()
+                                    val first = it.sporsmals?.first()
+                                    // Verify value has been updated
+                                    last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
+                                        last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                                        // Verify that existing remains untouched
+                                        first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                                        first.svar == "8765432" &&
+                                        it.erSvarOppdatering == true
+                                },
                             source = "user",
                             fnr = "22222222",
                         )
@@ -1088,8 +1078,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1134,8 +1123,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1174,8 +1162,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1232,8 +1219,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1279,8 +1265,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1328,8 +1313,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1375,8 +1359,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1424,8 +1407,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1459,11 +1441,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 20.januar(2023),
                             status = "BEKREFTET",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val arbeidsledigSykmelding2 =
                         opprettSykmelding(
@@ -1484,8 +1466,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1513,11 +1494,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1538,8 +1519,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1567,11 +1547,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1592,8 +1572,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1621,11 +1600,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1646,8 +1625,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1675,11 +1653,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1700,8 +1678,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1726,11 +1703,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1751,8 +1728,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1777,11 +1753,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1802,8 +1778,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
@@ -1828,11 +1803,11 @@ class SykmeldingStatusServiceSpec :
                             tom = 31.januar(2023),
                             status = "SENDT",
                             tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
+                                TidligereArbeidsgiverDTO(
+                                    "orgNavn",
+                                    orgnummer = "orgnummer",
+                                    sykmeldingsId = "1",
+                                ),
                         )
                     val nySykmelding =
                         opprettSykmelding(
@@ -1853,8 +1828,7 @@ class SykmeldingStatusServiceSpec :
                     coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC)
-                                .minusHours(1),
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(

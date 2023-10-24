@@ -182,8 +182,8 @@ class SykmeldingSendApiKtTest :
         }
     })
 
-fun opprettSykmeldingUserEvent(): SykmeldingUserEvent {
-    return SykmeldingUserEvent(
+fun opprettSykmeldingUserEvent(): SykmeldingFormResponse {
+    return SykmeldingFormResponse(
         erOpplysningeneRiktige =
             SporsmalSvar(
                 sporsmaltekst = "",

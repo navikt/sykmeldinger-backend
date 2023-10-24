@@ -10,10 +10,10 @@ import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
-import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingUserEvent
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
 
-fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
+fun SykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
     timestamp: OffsetDateTime,
     sykmeldingId: String,
     arbeidsgiver: Arbeidsgiverinfo?,
@@ -36,7 +36,7 @@ fun SykmeldingUserEvent.tilSykmeldingStatusKafkaEventDTO(
     )
 }
 
-fun SykmeldingUserEvent.toSporsmalSvarListe(
+fun SykmeldingFormResponse.toSporsmalSvarListe(
     arbeidsgiver: Arbeidsgiverinfo? = null,
     sykmeldingId: String
 ): List<SporsmalOgSvarDTO> {
@@ -50,7 +50,7 @@ fun SykmeldingUserEvent.toSporsmalSvarListe(
     )
 }
 
-private fun SykmeldingUserEvent.egenmeldingsdagerBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.egenmeldingsdagerBuilder(): SporsmalOgSvarDTO? {
     if (egenmeldingsdager == null) return null
 
     return SporsmalOgSvarDTO(
@@ -61,7 +61,7 @@ private fun SykmeldingUserEvent.egenmeldingsdagerBuilder(): SporsmalOgSvarDTO? {
     )
 }
 
-private fun SykmeldingUserEvent.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarDTO {
+private fun SykmeldingFormResponse.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarDTO {
     return SporsmalOgSvarDTO(
         tekst = arbeidssituasjon.sporsmaltekst,
         shortName = ShortNameDTO.ARBEIDSSITUASJON,
@@ -70,7 +70,7 @@ private fun SykmeldingUserEvent.arbeidssituasjonSporsmalBuilder(): SporsmalOgSva
     )
 }
 
-private fun SykmeldingUserEvent.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (harBruktEgenmelding != null) {
         return SporsmalOgSvarDTO(
             tekst = harBruktEgenmelding.sporsmaltekst,
@@ -82,7 +82,7 @@ private fun SykmeldingUserEvent.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
     return null
 }
 
-private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (egenmeldingsperioder != null) {
         return SporsmalOgSvarDTO(
             tekst = egenmeldingsperioder.sporsmaltekst,
@@ -94,7 +94,7 @@ private fun SykmeldingUserEvent.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
     return null
 }
 
-private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(
+private fun SykmeldingFormResponse.riktigNarmesteLederSporsmalBuilder(
     arbeidsgiver: Arbeidsgiverinfo?,
     sykmeldingId: String
 ): SporsmalOgSvarDTO? {
@@ -125,7 +125,7 @@ private fun SykmeldingUserEvent.riktigNarmesteLederSporsmalBuilder(
     return null
 }
 
-private fun SykmeldingUserEvent.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? {
     if (harForsikring != null) {
         return SporsmalOgSvarDTO(
             tekst = harForsikring.sporsmaltekst,
