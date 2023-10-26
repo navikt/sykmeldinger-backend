@@ -28,6 +28,10 @@ import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
+import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
+import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
 
@@ -97,7 +101,7 @@ fun getStatus(
         timestamp = timestamp,
         arbeidsgiver = arbeidsgiverStatusDTO,
         sporsmalOgSvarListe = sporsmals,
-        tidligereArbeidsgiver = tidligereArbeidsgiver
+        tidligereArbeidsgiver = tidligereArbeidsgiver,
     )
 }
 
@@ -105,7 +109,7 @@ fun DatabaseInterface.insertSykmeldt(fnr: String) {
     connection.use { connection ->
         connection
             .prepareStatement(
-                "INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)"
+                "INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)",
             )
             .use {
                 it.setString(1, fnr)
@@ -125,7 +129,7 @@ fun DatabaseInterface.insertBehandlingsutfall(
     connection.use { connection ->
         connection
             .prepareStatement(
-                """insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);"""
+                """insert into behandlingsutfall (sykmelding_id, behandlingsutfall, rule_hits) values (?, ?, ?);""",
             )
             .use {
                 it.setString(1, sykmeldingId)
@@ -142,7 +146,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
         connection
             .prepareStatement(
                 """
-            insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal, tidligere_arbeidsgiver) values (?, ?, ?, ?, ?, ?)
+            insert into sykmeldingstatus (sykmelding_id, event, timestamp, arbeidsgiver, sporsmal, alle_sporsmal, tidligere_arbeidsgiver) values (?, ?, ?, ?, ?, ?, ?)
             """
                     .trimIndent(),
             )
@@ -164,7 +168,31 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
                         }
                         .toPGObject(),
                 )
-                it.setObject(6, status.tidligereArbeidsgiver?.toPGObject())
+                it.setObject(
+                    6,
+                    SykmeldingFormResponse(
+                            erOpplysningeneRiktige =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Er opplysningene riktige?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            arbeidssituasjon =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Hva er din arbeidssituasjon?",
+                                    Arbeidssituasjon.ANNET,
+                                ),
+                            uriktigeOpplysninger = null,
+                            arbeidsgiverOrgnummer = null,
+                            riktigNarmesteLeder = null,
+                            harBruktEgenmelding = null,
+                            egenmeldingsperioder = null,
+                            harForsikring = null,
+                            egenmeldingsdager = null,
+                            harBruktEgenmeldingsdager = null,
+                        )
+                        .toPGObject(),
+                )
+                it.setObject(7, status.tidligereArbeidsgiver?.toPGObject())
                 it.executeUpdate()
             }
         connection.commit()

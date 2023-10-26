@@ -64,7 +64,12 @@ class SykmeldingStatusServiceSpec :
                 erEgenmeldt: Boolean = false,
             ) {
                 runBlocking {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         getSykmeldingStatus(
                             oldStatus,
                             erAvvist = erAvvist,
@@ -113,7 +118,7 @@ class SykmeldingStatusServiceSpec :
                                     )
                                 else ->
                                     throw IllegalStateException(
-                                        "Ikke implementert $newStatus i testene"
+                                        "Ikke implementert $newStatus i testene",
                                     )
                             }
                         }
@@ -128,7 +133,12 @@ class SykmeldingStatusServiceSpec :
                 erEgenmeldt: Boolean = false,
             ) {
                 runBlocking {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         getSykmeldingStatus(
                             oldStatus,
                             erAvvist = erAvvist,
@@ -182,13 +192,13 @@ class SykmeldingStatusServiceSpec :
                             any(),
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
             }
 
             beforeTest {
                 clearAllMocks()
-                coEvery { sykmeldingStatusDb.insertStatus(any()) } just Runs
+                coEvery { sykmeldingStatusDb.insertStatus(any(), any()) } just Runs
                 coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
                 coEvery {
                     sykmeldingStatusDb.getLatestStatus(
@@ -248,7 +258,12 @@ class SykmeldingStatusServiceSpec :
 
             context("Test av BEKREFT for sluttbruker") {
                 test("Happy-case") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -267,7 +282,7 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingId,
                         fnr,
                     )
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
                 }
                 test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
@@ -287,7 +302,7 @@ class SykmeldingStatusServiceSpec :
                     }
 
                     coVerify { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify(exactly = 0) {
                         sykmeldingStatusKafkaProducer.send(
                             any(),
@@ -300,7 +315,12 @@ class SykmeldingStatusServiceSpec :
 
             context("Test bekrefting av avvist sykmelding") {
                 test("Får bekrefte avvist sykmelding med status APEN") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -321,11 +341,16 @@ class SykmeldingStatusServiceSpec :
                         )
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.BEKREFTET,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -348,11 +373,16 @@ class SykmeldingStatusServiceSpec :
                         )
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Får ikke bekrefte sykmelding som ikke er avvist") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.BEKREFTET,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -375,13 +405,18 @@ class SykmeldingStatusServiceSpec :
                         )
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
             }
 
             context("Test user event") {
                 test("Test SEND user event") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -446,10 +481,15 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
                 test("test SENDT user event - Siste status er sendt") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.SENDT,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -512,10 +552,15 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
                 test("Test SEND user event - finner ikke riktig arbeidsgiver") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -578,11 +623,16 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Test BEKREFT user event") {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -625,13 +675,18 @@ class SykmeldingStatusServiceSpec :
                         )
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test(
-                    "Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt"
+                    "Setter nyNarmesteLeder-spørsmal til NEI dersom Arbeidsgforholder er inaktivt",
                 ) {
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -701,7 +756,7 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr")
                     }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
 
                     val nlSvar =
                         expected.captured.sporsmals?.filter {
@@ -721,7 +776,7 @@ class SykmeldingStatusServiceSpec :
                             fnr = "22222222",
                         )
                     } returns
-                        SykmeldingStatusKafkaEventDTO(
+                        (SykmeldingStatusKafkaEventDTO(
                             sporsmals =
                                 listOf(
                                     SporsmalOgSvarDTO(
@@ -740,7 +795,7 @@ class SykmeldingStatusServiceSpec :
                             sykmeldingId = "sykmelding-id",
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                             statusEvent = StatusEventDTO.SENDT.toString(),
-                        )
+                        ) to null)
 
                     sykmeldingStatusService.endreEgenmeldingsdager(
                         sykmeldingId = "sykmelding-id",
@@ -774,7 +829,7 @@ class SykmeldingStatusServiceSpec :
                             fnr = "22222222",
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Fjern spørsmål om egenmeldingsdager") {
@@ -784,7 +839,7 @@ class SykmeldingStatusServiceSpec :
                             fnr = "22222222",
                         )
                     } returns
-                        SykmeldingStatusKafkaEventDTO(
+                        (SykmeldingStatusKafkaEventDTO(
                             sporsmals =
                                 listOf(
                                     SporsmalOgSvarDTO(
@@ -803,7 +858,7 @@ class SykmeldingStatusServiceSpec :
                             sykmeldingId = "sykmelding-id",
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                             statusEvent = StatusEventDTO.SENDT.toString(),
-                        )
+                        ) to null)
 
                     sykmeldingStatusService.endreEgenmeldingsdager(
                         sykmeldingId = "sykmelding-id",
@@ -827,7 +882,7 @@ class SykmeldingStatusServiceSpec :
                             fnr = "22222222",
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Legg til egenmeldingsdager") {
@@ -837,7 +892,7 @@ class SykmeldingStatusServiceSpec :
                             fnr = "22222222",
                         )
                     } returns
-                        SykmeldingStatusKafkaEventDTO(
+                        (SykmeldingStatusKafkaEventDTO(
                             sporsmals =
                                 listOf(
                                     SporsmalOgSvarDTO(
@@ -850,7 +905,7 @@ class SykmeldingStatusServiceSpec :
                             sykmeldingId = "sykmelding-id",
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                             statusEvent = StatusEventDTO.SENDT.toString(),
-                        )
+                        ) to null)
 
                     sykmeldingStatusService.endreEgenmeldingsdager(
                         sykmeldingId = "sykmelding-id",
@@ -884,7 +939,7 @@ class SykmeldingStatusServiceSpec :
                             fnr = "22222222",
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
             }
 
@@ -1066,7 +1121,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1075,7 +1133,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1088,7 +1151,7 @@ class SykmeldingStatusServiceSpec :
                     )
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1111,7 +1174,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1120,7 +1186,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1131,7 +1202,7 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingId,
                         fnr,
                     )
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1151,7 +1222,10 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
                     coEvery {
                         sykmeldingService.getSykmelding(
                             any(),
@@ -1159,7 +1233,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1171,7 +1250,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1216,7 +1295,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1228,7 +1312,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1253,7 +1337,9 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1262,7 +1348,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1276,7 +1367,7 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1301,7 +1392,9 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1310,7 +1403,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1322,7 +1420,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1347,7 +1445,10 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1356,7 +1457,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1370,7 +1476,7 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1395,7 +1501,10 @@ class SykmeldingStatusServiceSpec :
                         )
 
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1404,7 +1513,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1416,7 +1530,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify(exactly = 0) { sykmeldingService.getSykmeldinger(any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
@@ -1460,10 +1574,19 @@ class SykmeldingStatusServiceSpec :
                             arbeidsledigSykmelding2,
                         )
 
-                    coEvery { sykmeldingService.getSykmelding(any(), any()) } returns
-                        arbeidsledigSykmelding2
+                    coEvery {
+                        sykmeldingService.getSykmelding(
+                            any(),
+                            any(),
+                        )
+                    } returns arbeidsledigSykmelding2
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1477,7 +1600,7 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1507,7 +1630,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1516,7 +1642,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1530,7 +1661,7 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1560,7 +1691,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1569,7 +1703,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1583,7 +1722,7 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1613,7 +1752,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1622,7 +1764,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1636,7 +1783,7 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1666,7 +1813,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1675,7 +1825,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1687,7 +1842,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1716,7 +1871,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1725,7 +1883,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1737,7 +1900,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1766,7 +1929,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1775,7 +1941,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1787,7 +1958,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },
@@ -1816,7 +1987,10 @@ class SykmeldingStatusServiceSpec :
                             status = "APEN",
                         )
                     coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(tidligereSykmelding, nySykmelding)
+                        listOf(
+                            tidligereSykmelding,
+                            nySykmelding,
+                        )
 
                     coEvery {
                         sykmeldingService.getSykmelding(
@@ -1825,7 +1999,12 @@ class SykmeldingStatusServiceSpec :
                         )
                     } returns nySykmelding
 
-                    coEvery { sykmeldingStatusDb.getLatestStatus(any(), any()) } returns
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
                         SykmeldingStatusEventDTO(
                             statusEvent = StatusEventDTO.APEN,
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
@@ -1837,7 +2016,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                     coVerify {
                         sykmeldingStatusKafkaProducer.send(
                             match { it.tidligereArbeidsgiver == null },

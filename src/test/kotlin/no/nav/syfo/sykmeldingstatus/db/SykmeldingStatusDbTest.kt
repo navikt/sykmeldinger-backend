@@ -137,7 +137,7 @@ class SykmeldingStatusDbTest :
                     tidligereArbeidsgiver = TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
                 )
             )
-            val status = database.getSykmeldingStatus("1", "fnr")
+            val (status) = database.getSykmeldingStatus("1", "fnr")
             status.tidligereArbeidsgiver?.orgnummer shouldBeEqualTo "orgnummer"
         }
     })

@@ -31,6 +31,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
+import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
@@ -150,7 +151,7 @@ class SykmeldingStatusService(
             source = source,
             fnr = fnr,
         )
-        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
+        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO, response = null)
     }
 
     suspend fun createSendtStatus(
@@ -205,7 +206,7 @@ class SykmeldingStatusService(
             source = "user",
             fnr = fnr,
         )
-        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
+        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO, sykmeldingFormResponse)
 
         when (nesteStatus) {
             StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
@@ -353,7 +354,7 @@ class SykmeldingStatusService(
         egenmeldingsdagerEvent: EndreEgenmeldingsdagerEvent,
         fnr: String
     ) {
-        val sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO =
+        val (sykmeldingStatusKafkaEventDTO, formResponse) =
             sykmeldingStatusDb.getSykmeldingStatus(sykmeldingId, fnr)
 
         val sykmeldingStatusKafkaEventDTOUpdated =
@@ -367,13 +368,25 @@ class SykmeldingStatusService(
                 erSvarOppdatering = true,
             )
 
+        val sykmeldingFormResponseUpdated =
+            formResponse?.copy(
+                egenmeldingsdager =
+                    SporsmalSvar(
+                        egenmeldingsdagerEvent.tekst,
+                        egenmeldingsdagerEvent.dager,
+                    ),
+            )
+
         sykmeldingStatusKafkaProducer.send(
             sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTOUpdated,
             source = "user",
             fnr = fnr,
         )
 
-        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
+        sykmeldingStatusDb.insertStatus(
+            sykmeldingStatusKafkaEventDTOUpdated,
+            sykmeldingFormResponseUpdated,
+        )
     }
 
     private fun updateEgenemeldingsdagerSporsmal(
@@ -439,7 +452,7 @@ class SykmeldingStatusService(
                     source,
                     fnr,
                 )
-                sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO)
+                sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO, response = null)
             }
             else -> {
                 log.warn(
