@@ -193,7 +193,7 @@ fun opprettSykmeldingUserEvent(): SykmeldingFormResponse {
         arbeidssituasjon =
             SporsmalSvar(
                 sporsmaltekst = "",
-                svar = ArbeidssituasjonDTO.ANNET,
+                svar = Arbeidssituasjon.ANNET,
             ),
         arbeidsgiverOrgnummer = null,
         riktigNarmesteLeder = null,

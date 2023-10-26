@@ -33,7 +33,7 @@ class ValidationKtTest :
                             arbeidssituasjon =
                                 SporsmalSvar(
                                     sporsmaltekst = "",
-                                    svar = ArbeidssituasjonDTO.ANNET,
+                                    svar = Arbeidssituasjon.ANNET,
                                 ),
                             arbeidsgiverOrgnummer = null,
                             riktigNarmesteLeder = null,
@@ -64,7 +64,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                        svar = Arbeidssituasjon.ARBEIDSTAKER,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -92,7 +92,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ANNET,
+                                        svar = Arbeidssituasjon.ANNET,
                                     ),
                                 arbeidsgiverOrgnummer =
                                     SporsmalSvar(
@@ -128,7 +128,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                        svar = Arbeidssituasjon.ARBEIDSTAKER,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -156,7 +156,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                        svar = Arbeidssituasjon.ARBEIDSTAKER,
                                     ),
                                 arbeidsgiverOrgnummer =
                                     SporsmalSvar(
@@ -193,7 +193,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                        svar = Arbeidssituasjon.ARBEIDSTAKER,
                                     ),
                                 arbeidsgiverOrgnummer =
                                     SporsmalSvar(
@@ -234,7 +234,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                        svar = Arbeidssituasjon.ARBEIDSTAKER,
                                     ),
                                 arbeidsgiverOrgnummer =
                                     SporsmalSvar(
@@ -276,7 +276,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.FRILANSER,
+                                        svar = Arbeidssituasjon.FRILANSER,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -310,7 +310,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
+                                        svar = Arbeidssituasjon.NAERINGSDRIVENDE,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -342,7 +342,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
+                                        svar = Arbeidssituasjon.ARBEIDSLEDIG,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -372,7 +372,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ARBEIDSLEDIG,
+                                        svar = Arbeidssituasjon.ARBEIDSLEDIG,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -404,7 +404,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ANNET,
+                                        svar = Arbeidssituasjon.ANNET,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -434,7 +434,7 @@ class ValidationKtTest :
                                 arbeidssituasjon =
                                     SporsmalSvar(
                                         sporsmaltekst = "",
-                                        svar = ArbeidssituasjonDTO.ANNET,
+                                        svar = Arbeidssituasjon.ANNET,
                                     ),
                                 arbeidsgiverOrgnummer = null,
                                 riktigNarmesteLeder = null,
@@ -468,7 +468,7 @@ class ValidationKtTest :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.FRILANSER,
+                                svar = Arbeidssituasjon.FRILANSER,
                             ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -488,7 +488,7 @@ class ValidationKtTest :
                             "",
                             ShortNameDTO.ARBEIDSSITUASJON,
                             SvartypeDTO.ARBEIDSSITUASJON,
-                            svar = ArbeidssituasjonDTO.FRILANSER.name,
+                            svar = Arbeidssituasjon.FRILANSER.name,
                         ),
                     )
 
@@ -507,7 +507,7 @@ class ValidationKtTest :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                svar = Arbeidssituasjon.ARBEIDSTAKER,
                             ),
                         arbeidsgiverOrgnummer =
                             SporsmalSvar(
@@ -546,7 +546,7 @@ class ValidationKtTest :
                             "",
                             ShortNameDTO.ARBEIDSSITUASJON,
                             SvartypeDTO.ARBEIDSSITUASJON,
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name,
+                            svar = Arbeidssituasjon.ARBEIDSTAKER.name,
                         ),
                         SporsmalOgSvarDTO(
                             "",
@@ -571,7 +571,7 @@ class ValidationKtTest :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                                svar = Arbeidssituasjon.ARBEIDSTAKER,
                             ),
                         arbeidsgiverOrgnummer =
                             SporsmalSvar(
@@ -610,7 +610,7 @@ class ValidationKtTest :
                             "",
                             ShortNameDTO.ARBEIDSSITUASJON,
                             SvartypeDTO.ARBEIDSSITUASJON,
-                            svar = ArbeidssituasjonDTO.ARBEIDSTAKER.name,
+                            svar = Arbeidssituasjon.ARBEIDSTAKER.name,
                         ),
                         SporsmalOgSvarDTO(
                             "Skal finne ny nærmeste leder",
@@ -635,7 +635,7 @@ class ValidationKtTest :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE,
+                                svar = Arbeidssituasjon.NAERINGSDRIVENDE,
                             ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -663,7 +663,7 @@ class ValidationKtTest :
                             "",
                             ShortNameDTO.ARBEIDSSITUASJON,
                             SvartypeDTO.ARBEIDSSITUASJON,
-                            svar = ArbeidssituasjonDTO.NAERINGSDRIVENDE.name,
+                            svar = Arbeidssituasjon.NAERINGSDRIVENDE.name,
                         ),
                         SporsmalOgSvarDTO(
                             "",
@@ -694,7 +694,7 @@ class ValidationKtTest :
                         arbeidssituasjon =
                             SporsmalSvar(
                                 sporsmaltekst = "",
-                                svar = ArbeidssituasjonDTO.FRILANSER,
+                                svar = Arbeidssituasjon.FRILANSER,
                             ),
                         arbeidsgiverOrgnummer = null,
                         riktigNarmesteLeder = null,
@@ -728,7 +728,7 @@ class ValidationKtTest :
                             "",
                             ShortNameDTO.ARBEIDSSITUASJON,
                             SvartypeDTO.ARBEIDSSITUASJON,
-                            svar = ArbeidssituasjonDTO.FRILANSER.name,
+                            svar = Arbeidssituasjon.FRILANSER.name,
                         ),
                         SporsmalOgSvarDTO(
                             "",

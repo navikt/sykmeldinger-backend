@@ -9,8 +9,8 @@ data class SporsmalSvar<T>(
 
 data class SykmeldingFormResponse(
     val erOpplysningeneRiktige: SporsmalSvar<JaEllerNei>,
-    val uriktigeOpplysninger: SporsmalSvar<List<UriktigeOpplysningerDTO>>?,
-    val arbeidssituasjon: SporsmalSvar<ArbeidssituasjonDTO>,
+    val uriktigeOpplysninger: SporsmalSvar<List<UriktigeOpplysningerType>>?,
+    val arbeidssituasjon: SporsmalSvar<Arbeidssituasjon>,
     val arbeidsgiverOrgnummer: SporsmalSvar<String>?,
     val riktigNarmesteLeder: SporsmalSvar<JaEllerNei>?,
     val harBruktEgenmelding: SporsmalSvar<JaEllerNei>?,
@@ -30,7 +30,7 @@ enum class JaEllerNei {
     NEI,
 }
 
-enum class UriktigeOpplysningerDTO {
+enum class UriktigeOpplysningerType {
     PERIODE,
     SYKMELDINGSGRAD_FOR_HOY,
     SYKMELDINGSGRAD_FOR_LAV,
@@ -39,7 +39,7 @@ enum class UriktigeOpplysningerDTO {
     ANDRE_OPPLYSNINGER,
 }
 
-enum class ArbeidssituasjonDTO {
+enum class Arbeidssituasjon {
     ARBEIDSTAKER,
     FRILANSER,
     NAERINGSDRIVENDE,

@@ -23,7 +23,7 @@ import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
@@ -193,7 +193,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
         arbeidssituasjon =
             SporsmalSvar(
                 sporsmaltekst = "",
-                svar = ArbeidssituasjonDTO.ARBEIDSTAKER,
+                svar = Arbeidssituasjon.ARBEIDSTAKER,
             ),
         arbeidsgiverOrgnummer =
             SporsmalSvar(
@@ -213,7 +213,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
     )
 
 internal fun opprettBekreftetSykmeldingUserEvent(
-    arbeidssituasjon: ArbeidssituasjonDTO = ArbeidssituasjonDTO.FRILANSER
+    arbeidssituasjon: Arbeidssituasjon = Arbeidssituasjon.FRILANSER
 ) =
     SykmeldingFormResponse(
         erOpplysningeneRiktige =

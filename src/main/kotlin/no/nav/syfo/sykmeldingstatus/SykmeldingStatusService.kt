@@ -28,8 +28,8 @@ import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgive
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSLEDIG
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
@@ -487,7 +487,7 @@ class SykmeldingStatusService(
 }
 
 fun SykmeldingFormResponse.toStatusEvent(): StatusEventDTO {
-    if (arbeidssituasjon.svar == ArbeidssituasjonDTO.ARBEIDSTAKER) {
+    if (arbeidssituasjon.svar == Arbeidssituasjon.ARBEIDSTAKER) {
         return StatusEventDTO.SENDT
     }
     return StatusEventDTO.BEKREFTET

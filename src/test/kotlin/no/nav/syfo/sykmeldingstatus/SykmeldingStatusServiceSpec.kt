@@ -25,9 +25,9 @@ import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSLEDIG
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.ARBEIDSTAKER
-import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidssituasjonDTO.FRILANSER
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSTAKER
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.FRILANSER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar

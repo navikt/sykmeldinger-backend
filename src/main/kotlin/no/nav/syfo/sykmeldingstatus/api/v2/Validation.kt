@@ -9,7 +9,7 @@ fun SykmeldingFormResponse.validate() {
             "Uriktige opplysninger må være definer når opplysningene ikke stemmer."
         )
     }
-    if (arbeidssituasjon.svar == ArbeidssituasjonDTO.ARBEIDSTAKER) {
+    if (arbeidssituasjon.svar == Arbeidssituasjon.ARBEIDSTAKER) {
         requireNotNull(
             arbeidsgiverOrgnummer,
             "Arbeidsgiver må være valgt når arbeidssituasjon er arbeidstaker"
@@ -25,8 +25,8 @@ fun SykmeldingFormResponse.validate() {
         )
     }
     if (
-        arbeidssituasjon.svar == ArbeidssituasjonDTO.FRILANSER ||
-            arbeidssituasjon.svar == ArbeidssituasjonDTO.NAERINGSDRIVENDE
+        arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
+            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE
     ) {
         if (harBruktEgenmelding != null) {
             requireNotNull(
