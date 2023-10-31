@@ -14,7 +14,7 @@ val nimbusdsVersion = "9.37"
 val kotestVersion = "5.7.2"
 val testcontainersVersion = "1.19.1"
 val swaggerUiVersion = "5.9.0"
-val kotlinVersion = "1.9.10"
+val kotlinVersion = "1.9.20"
 val flywayVersion = "9.22.3"
 val postgresVersion = "42.6.0"
 val hikariVersion = "5.0.1"
@@ -25,7 +25,7 @@ val snappyJavaVersion = "1.1.10.5"
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     id("com.diffplug.spotless") version "6.22.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
