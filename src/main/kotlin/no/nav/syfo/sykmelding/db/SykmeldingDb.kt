@@ -330,6 +330,8 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                         objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
                     },
                 sporsmalOgSvarListe =
+                    // TODO: These could just be mapped directly from alle_sporsmal when all data is
+                    // migrated
                     getString("sporsmal")?.let {
                         objectMapper.readValue<List<SporsmalOgSvarDTO>>(it).map { sporsmalOgSvarDTO
                             ->

@@ -19,6 +19,7 @@ import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
@@ -38,16 +39,18 @@ private fun toPGObject(jsonObject: Any) =
     }
 
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
-
-    suspend fun insertStatus(event: SykmeldingStatusKafkaEventDTO) =
+    suspend fun insertStatus(
+        event: SykmeldingStatusKafkaEventDTO,
+        response: SykmeldingFormResponse?
+    ) =
         withContext(Dispatchers.IO) {
             try {
                 databaseInterface.connection.use { connection ->
                     connection
                         .prepareStatement(
-                            """
-            insert into sykmeldingstatus(sykmelding_id, event, timestamp, arbeidsgiver, sporsmal, tidligere_arbeidsgiver) values(?, ?, ?, ?, ?, ?) on conflict do nothing;
-        """,
+                            """insert into sykmeldingstatus(sykmelding_id, event, timestamp, arbeidsgiver, sporsmal, alle_sporsmal, tidligere_arbeidsgiver)
+                                    values (?, ?, ?, ?, ?, ?, ?)
+                                    on conflict do nothing;""",
                         )
                         .use { ps ->
                             var index = 1
@@ -56,6 +59,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                             ps.setTimestamp(index++, Timestamp.from(event.timestamp.toInstant()))
                             ps.setObject(index++, event.arbeidsgiver?.let { toPGObject(it) })
                             ps.setObject(index++, event.sporsmals?.let { toPGObject(it) })
+                            ps.setObject(index++, response?.let { toPGObject(it) })
                             ps.setObject(index, event.tidligereArbeidsgiver?.let { toPGObject(it) })
                             ps.executeUpdate()
                         }
@@ -95,7 +99,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
     suspend fun getSykmeldingStatus(
         sykmeldingId: String,
         fnr: String
-    ): SykmeldingStatusKafkaEventDTO =
+    ): Pair<SykmeldingStatusKafkaEventDTO, SykmeldingFormResponse?> =
         withContext(Dispatchers.IO) {
             databaseInterface.connection.use { connection ->
                 connection
@@ -106,6 +110,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                     ss.timestamp,
                     ss.arbeidsgiver,
                     ss.sporsmal,
+                    ss.alle_sporsmal,
                     ss.tidligere_arbeidsgiver
                     from sykmeldingstatus ss
                 inner join sykmelding syk on syk.sykmelding_id = ss.sykmelding_id and syk.fnr = ?
@@ -135,7 +140,9 @@ private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEv
     }
 }
 
-private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingStatusKafkaEventDTO {
+private fun ResultSet.toSykmeldingStatusEvent(
+    sykmeldingId: String
+): Pair<SykmeldingStatusKafkaEventDTO, SykmeldingFormResponse?> {
     return if (next()) {
         SykmeldingStatusKafkaEventDTO(
             sykmeldingId = sykmeldingId,
@@ -145,6 +152,8 @@ private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingS
                     objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
                 },
             sporsmals =
+                // TODO: These could just be mapped directly from alle_sporsmal when all data is
+                // migrated
                 getString("sporsmal")?.let { objectMapper.readValue<List<SporsmalOgSvarDTO>>(it) }
                     ?: emptyList(),
             statusEvent = getString("event"),
@@ -152,7 +161,10 @@ private fun ResultSet.toSykmeldingStatusEvent(sykmeldingId: String): SykmeldingS
                 getObject("tidligere_arbeidsgiver")?.let {
                     objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
                 },
-        )
+        ) to
+            getObject("alle_sporsmal")?.let {
+                objectMapper.readValue<SykmeldingFormResponse>(it.toString())
+            }
     } else {
         throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
     }
