@@ -29,6 +29,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ANNET
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
@@ -184,6 +185,7 @@ class SykmeldingStatusService(
         val tidligereArbeidsgiver =
             when (sykmeldingFormResponse.arbeidssituasjon.svar) {
                 ARBEIDSLEDIG -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
+                ANNET -> tidligereArbeidsgiver(fnr, sykmeldingId, nesteStatus)
                 else -> null
             }
 
