@@ -9,8 +9,11 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import no.nav.syfo.application.BrukerPrincipal
-import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+val log: Logger = LoggerFactory.getLogger("no.nav.syfo.sykmeldingstatus.api.v2.registrerSykmeldingSendApiV3")
 
 fun Route.registrerSykmeldingSendApiV3(sendtSykmeldingStatusService: SykmeldingStatusService) {
     post("/sykmeldinger/{sykmeldingid}/send") {
@@ -23,14 +26,20 @@ fun Route.registrerSykmeldingSendApiV3(sendtSykmeldingStatusService: SykmeldingS
         when (sykmeldingFormResponse) {
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
-                sykmeldingFormResponse.validate()
-                sendtSykmeldingStatusService.createSendtStatus(
-                    sykmeldingFormResponse,
-                    sykmeldingId,
-                    fnr
-                )
+                try {
+                    sykmeldingFormResponse.validate()
+                    sendtSykmeldingStatusService.createSendtStatus(
+                        sykmeldingFormResponse,
+                        sykmeldingId,
+                        fnr
+                    )
 
-                call.respond(HttpStatusCode.Accepted)
+                    call.respond(HttpStatusCode.Accepted)
+                } catch (e: Exception) {
+                    log.error("Error while sending sykmelding: ${e.message}", e)
+                    call.respond(HttpStatusCode.BadRequest, "Invalid form data")
+                    return@post
+                }
             }
         }
     }
