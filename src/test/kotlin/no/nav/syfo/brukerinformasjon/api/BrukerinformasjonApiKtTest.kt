@@ -86,7 +86,6 @@ class BrukerinformasjonApiKtTest :
                                             naermesteLeder = null
                                         )
                                     ),
-                                strengtFortroligAdresse = false,
                             )
                     }
                 }

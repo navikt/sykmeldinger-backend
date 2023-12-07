@@ -18,7 +18,6 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
 
         call.respond(
             Brukerinformasjon(
-                strengtFortroligAdresse = false,
                 arbeidsgivere = arbeidsgivere,
             ),
         )
@@ -27,5 +26,4 @@ fun Route.registrerBrukerinformasjonApi(arbeidsgiverService: ArbeidsgiverService
 
 data class Brukerinformasjon(
     val arbeidsgivere: List<Arbeidsgiverinfo>,
-    val strengtFortroligAdresse: Boolean,
 )
