@@ -245,7 +245,10 @@ class SykmeldingStatusService(
         currentSykmeldingFirstFomDate: LocalDate
     ): TidligereArbeidsgiverDTO? {
         val sisteSykmelding = findLastSendtSykmelding(sykmeldtFnr, currentSykmeldingFirstFomDate)
-        return sisteSykmelding?.sykmeldingStatus?.arbeidsgiver?.let {
+        if (sisteSykmelding?.sykmeldingStatus?.arbeidsgiver == null) {
+            return sisteSykmelding?.sykmeldingStatus?.tidligereArbeidsgiver
+        }
+        return sisteSykmelding.sykmeldingStatus.arbeidsgiver.let {
             TidligereArbeidsgiverDTO(
                 orgNavn = it.orgNavn,
                 orgnummer = it.orgnummer,

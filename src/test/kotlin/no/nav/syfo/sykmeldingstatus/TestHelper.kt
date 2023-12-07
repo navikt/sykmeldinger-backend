@@ -8,5 +8,7 @@ internal class TestHelper {
         internal fun Int.januar(year: Int) = LocalDate.of(year, 1, this)
 
         internal fun Int.februar(year: Int) = LocalDate.of(year, 2, this)
+
+        internal fun Int.mars(year: Int) = LocalDate.of(year, 3, this)
     }
 }
