@@ -113,11 +113,17 @@ fun getMedisinskVurdering() =
 internal fun opprettSykmelding(
     fom: LocalDate,
     tom: LocalDate,
-    orgnummer: String = "orgnummer",
+    orgnummer: String? = null,
     status: String = "APEN",
     tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
-) =
-    SykmeldingDTO(
+): SykmeldingDTO {
+    val arbeidsgiver =
+        if (orgnummer != null) {
+            ArbeidsgiverStatusDTO(orgnummer, "juridiskOrgnummer", "orgNavn")
+        } else {
+            null
+        }
+    return SykmeldingDTO(
         id = "1",
         utdypendeOpplysninger = emptyMap(),
         kontaktMedPasient = KontaktMedPasientDTO(null, null),
@@ -138,7 +144,7 @@ internal fun opprettSykmelding(
             SykmeldingStatusDTO(
                 statusEvent = status,
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                arbeidsgiver = ArbeidsgiverStatusDTO(orgnummer, "juridiskOrgnummer", "orgNavn"),
+                arbeidsgiver = arbeidsgiver,
                 sporsmalOgSvarListe = emptyList(),
                 tidligereArbeidsgiver = tidligereArbeidsgiver
             ),
@@ -173,6 +179,7 @@ internal fun opprettSykmelding(
         rulesetVersion = null,
         utenlandskSykmelding = null,
     )
+}
 
 internal fun MockKMatcherScope.statusEquals(statusEvent: String) =
     match<SykmeldingStatusKafkaEventDTO> { statusEvent == it.statusEvent }
