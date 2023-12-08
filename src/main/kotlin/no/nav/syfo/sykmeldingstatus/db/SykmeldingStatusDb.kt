@@ -60,7 +60,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                             ps.setObject(index++, event.arbeidsgiver?.let { toPGObject(it) })
                             ps.setObject(index++, event.sporsmals?.let { toPGObject(it) })
                             ps.setObject(index++, response?.let { toPGObject(it) })
-                            ps.setObject(index, event.tidligereArbeidsgiver?.let { toPGObject(it) })
+                            ps.setObject(index++, event.tidligereArbeidsgiver?.let { toPGObject(it) })
                             ps.executeUpdate()
                         }
                     connection.commit()
