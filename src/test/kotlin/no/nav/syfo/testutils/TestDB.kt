@@ -273,6 +273,5 @@ fun getSykmelding(): SykmeldingDbModel {
         merknader = null,
         rulesetVersion = null,
         utenlandskSykmelding = null,
-        tidligereArbeidsgiver = null
     )
 }
