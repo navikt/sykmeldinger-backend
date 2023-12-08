@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
@@ -43,7 +44,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr, 
+                ss.tidligere_arbeidsgiver
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -77,7 +79,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr,
+                ss.tidligere_arbeidsgiver
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -348,6 +351,10 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                         }
                     }
                         ?: emptyList(),
+                tidligereArbeidsgiver =
+                    getObject("tidligere_arbeidsgiver")?.let {
+                        objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
+                    },
             ),
         medisinskVurdering = sykmelding.medisinskVurdering,
         prognose = sykmelding.prognose,
@@ -368,6 +375,6 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         merknader = sykmelding.merknader,
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding,
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding
     )
 }

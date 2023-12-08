@@ -42,7 +42,8 @@ fun getSykmeldingDTO(
     merknader: List<MerknadDTO>? = null,
     timestamps: OffsetDateTime? = null,
     fom: LocalDate = LocalDate.now(),
-    tom: LocalDate = LocalDate.now()
+    tom: LocalDate = LocalDate.now(),
+    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ) =
     SykmeldingDTO(
         id = "1",
@@ -67,6 +68,7 @@ fun getSykmeldingDTO(
                 timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
                 null,
                 emptyList(),
+                tidligereArbeidsgiver = tidligereArbeidsgiver
             ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
@@ -97,7 +99,7 @@ fun getSykmeldingDTO(
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
-        utenlandskSykmelding = null,
+        utenlandskSykmelding = null
     )
 
 fun getMedisinskVurdering() =
