@@ -22,8 +22,8 @@ data class SykmeldingFormResponse(
 )
 
 data class FiskerSvar(
-    val blad: SporsmalSvar<Blad>?,
-    val lottOgHyre: SporsmalSvar<LottOgHyre>?,
+    val blad: SporsmalSvar<Blad>,
+    val lottOgHyre: SporsmalSvar<LottOgHyre>,
 )
 
 enum class Blad {
