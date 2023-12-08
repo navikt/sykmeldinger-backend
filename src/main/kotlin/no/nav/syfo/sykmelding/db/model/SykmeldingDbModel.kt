@@ -2,6 +2,7 @@ package no.nav.syfo.sykmelding.db.model
 
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmelding.model.ArbeidsgiverDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
 import no.nav.syfo.sykmelding.model.KontaktMedPasientDTO
@@ -37,4 +38,5 @@ data class SykmeldingDbModel(
     val merknader: List<MerknadDTO>?,
     val rulesetVersion: String?,
     val utenlandskSykmelding: UtenlandskSykmelding?,
+    val tidligereArbeidsgiver: TidligereArbeidsgiverDTO?
 )

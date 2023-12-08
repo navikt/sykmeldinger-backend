@@ -5,6 +5,7 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.time.OffsetDateTime
+import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import org.amshove.kluent.shouldBeEqualTo
@@ -28,6 +29,20 @@ class SykmeldingServiceTest :
                 coEvery { sykmeldingDb.getSykmeldinger(any()) } returns listOf(expected)
                 val returndSykmelding = sykmeldingService.getSykmeldinger("12345678901")
                 returndSykmelding shouldBeEqualTo listOf(expected)
+            }
+            test("Get sykmeldinger med tidligerearbeidsgiver felt") {
+                val now = OffsetDateTime.now()
+                val expected =
+                    getSykmeldingDTO(
+                        timestamps = now,
+                        tidligereArbeidsgiver =
+                            TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "sykmeldingsId")
+                    )
+
+                coEvery { sykmeldingDb.getSykmeldinger(any()) } returns listOf(expected)
+                val returndSykmelding = sykmeldingService.getSykmeldinger("12345678901")
+                returndSykmelding shouldBeEqualTo listOf(expected)
+                returndSykmelding.first().tidligereArbeidsgiver?.orgNavn shouldBeEqualTo "orgNavn"
             }
         }
     })

@@ -77,7 +77,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr,
+                ss.tidligere_arbeidsgiver
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -369,5 +370,6 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
         utenlandskSykmelding = sykmelding.utenlandskSykmelding,
+        tidligereArbeidsgiver = sykmelding.tidligereArbeidsgiver
     )
 }
