@@ -42,6 +42,7 @@ class ValidationKtTest :
                             harForsikring = null,
                             harBruktEgenmeldingsdager = null,
                             egenmeldingsdager = null,
+                            fisker = null,
                         )
 
                     assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -73,6 +74,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -109,6 +111,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -137,6 +140,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -173,6 +177,7 @@ class ValidationKtTest :
                                         svar = JaEllerNei.JA,
                                     ),
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
                         invoking { sykmeldingFormResponse.validate() } shouldThrow
                             ValidationException::class withMessage
@@ -214,6 +219,7 @@ class ValidationKtTest :
                                         sporsmaltekst = "",
                                         svar = emptyList(),
                                     ),
+                                fisker = null,
                             )
                         invoking { sykmeldingFormResponse.validate() } shouldThrow
                             ValidationException::class withMessage
@@ -255,6 +261,7 @@ class ValidationKtTest :
                                         sporsmaltekst = "",
                                         svar = listOf(LocalDate.now()),
                                     ),
+                                fisker = null,
                             )
                         invoking { sykmeldingFormResponse.validate() } shouldNotThrow
                             ValidationException::class
@@ -289,6 +296,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -323,6 +331,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -355,6 +364,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -385,6 +395,7 @@ class ValidationKtTest :
                                     ),
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -417,6 +428,7 @@ class ValidationKtTest :
                                 harForsikring = null,
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -447,6 +459,7 @@ class ValidationKtTest :
                                     ),
                                 harBruktEgenmeldingsdager = null,
                                 egenmeldingsdager = null,
+                                fisker = null,
                             )
 
                         assertFailsWith<ValidationException> { sykmeldingFormResponse.validate() }
@@ -477,6 +490,7 @@ class ValidationKtTest :
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
+                        fisker = null,
                     )
 
                 val sporsmalOgSvarListe =
@@ -524,6 +538,7 @@ class ValidationKtTest :
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
+                        fisker = null,
                     )
 
                 val arbeidsgiver =
@@ -588,6 +603,7 @@ class ValidationKtTest :
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
+                        fisker = null,
                     )
 
                 val arbeidsgiver =
@@ -652,6 +668,7 @@ class ValidationKtTest :
                             ),
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
+                        fisker = null,
                     )
 
                 val sporsmalOgSvarListe =
@@ -717,6 +734,7 @@ class ValidationKtTest :
                         harForsikring = null,
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
+                        fisker = null,
                     )
 
                 val sporsmalOgSvarListe =

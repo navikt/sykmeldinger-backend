@@ -219,6 +219,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
         harForsikring = null,
         harBruktEgenmeldingsdager = null,
         egenmeldingsdager = null,
+        fisker = null,
     )
 
 internal fun opprettBekreftetSykmeldingUserEvent(
@@ -261,4 +262,5 @@ internal fun opprettBekreftetSykmeldingUserEvent(
             ),
         harBruktEgenmeldingsdager = null,
         egenmeldingsdager = null,
+        fisker = null,
     )

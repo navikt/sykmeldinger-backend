@@ -18,7 +18,24 @@ data class SykmeldingFormResponse(
     val harForsikring: SporsmalSvar<JaEllerNei>?,
     val egenmeldingsdager: SporsmalSvar<List<LocalDate>>?,
     val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?,
+    val fisker: FiskerSvar?,
 )
+
+data class FiskerSvar(
+    val blad: SporsmalSvar<Blad>?,
+    val lottOgHyre: SporsmalSvar<LottOgHyre>?,
+)
+
+enum class Blad {
+    A,
+    B,
+}
+
+enum class LottOgHyre {
+    LOTT,
+    HYRE,
+    BEGGE,
+}
 
 data class Egenmeldingsperiode(
     val fom: LocalDate,
@@ -43,6 +60,7 @@ enum class Arbeidssituasjon {
     ARBEIDSTAKER,
     FRILANSER,
     NAERINGSDRIVENDE,
+    FISKER,
     ARBEIDSLEDIG,
     ANNET,
 }
