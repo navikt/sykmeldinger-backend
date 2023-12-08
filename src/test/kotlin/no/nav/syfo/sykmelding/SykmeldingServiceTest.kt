@@ -42,7 +42,11 @@ class SykmeldingServiceTest :
                 coEvery { sykmeldingDb.getSykmeldinger(any()) } returns listOf(expected)
                 val returndSykmelding = sykmeldingService.getSykmeldinger("12345678901")
                 returndSykmelding shouldBeEqualTo listOf(expected)
-                returndSykmelding.first().tidligereArbeidsgiver?.orgNavn shouldBeEqualTo "orgNavn"
+                returndSykmelding
+                    .first()
+                    .sykmeldingStatus
+                    .tidligereArbeidsgiver
+                    ?.orgNavn shouldBeEqualTo "orgNavn"
             }
         }
     })

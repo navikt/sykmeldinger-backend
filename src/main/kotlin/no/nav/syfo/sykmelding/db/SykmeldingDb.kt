@@ -349,6 +349,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                         }
                     }
                         ?: emptyList(),
+                tidligereArbeidsgiver = sykmelding.tidligereArbeidsgiver
             ),
         medisinskVurdering = sykmelding.medisinskVurdering,
         prognose = sykmelding.prognose,
@@ -369,7 +370,6 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         merknader = sykmelding.merknader,
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding,
-        tidligereArbeidsgiver = sykmelding.tidligereArbeidsgiver
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding
     )
 }

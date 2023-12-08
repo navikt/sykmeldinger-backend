@@ -99,8 +99,7 @@ fun getSykmeldingDTO(
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
-        utenlandskSykmelding = null,
-        tidligereArbeidsgiver = tidligereArbeidsgiver
+        utenlandskSykmelding = null
     )
 
 fun getMedisinskVurdering() =
@@ -181,7 +180,6 @@ internal fun opprettSykmelding(
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
         utenlandskSykmelding = null,
-        tidligereArbeidsgiver = tidligereArbeidsgiver
     )
 }
 
