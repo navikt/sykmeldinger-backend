@@ -46,6 +46,12 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
     ) =
         withContext(Dispatchers.IO) {
             try {
+                log.info(
+                    "Inserting status for sykmelding {}, formResponse is: {}",
+                    event.sykmeldingId,
+                    response == null,
+                )
+
                 databaseInterface.connection.use { connection ->
                     connection
                         .prepareStatement(

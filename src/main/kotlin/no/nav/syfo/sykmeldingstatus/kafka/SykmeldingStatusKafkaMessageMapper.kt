@@ -8,7 +8,9 @@ import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
+import no.nav.syfo.sykmeldingstatus.api.v2.LottOgHyre
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
@@ -79,11 +81,21 @@ private fun SykmeldingFormResponse.egenmeldingsdagerBuilder(): SporsmalOgSvarKaf
 }
 
 private fun SykmeldingFormResponse.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarKafkaDTO {
+    // In the old sporsmal and svar list, fiskere should be mapped to ARBEIDSTAKER or
+    // NAERINGSDRIVENDE, dependening on whether or not they are working on lott or hyre.
+    val normalisertSituasjon: Arbeidssituasjon =
+        if ((arbeidssituasjon.svar == Arbeidssituasjon.FISKER) && (fisker != null)) {
+            if (fisker.lottOgHyre.svar == LottOgHyre.HYRE) Arbeidssituasjon.ARBEIDSTAKER
+            else Arbeidssituasjon.NAERINGSDRIVENDE
+        } else {
+            arbeidssituasjon.svar
+        }
+
     return SporsmalOgSvarKafkaDTO(
         tekst = arbeidssituasjon.sporsmaltekst,
         shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
         svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
-        svar = arbeidssituasjon.svar.name,
+        svar = normalisertSituasjon.name,
     )
 }
 
