@@ -95,27 +95,23 @@ class SykmeldingStatusService(
 
     suspend fun createAvbruttStatus(
         sykmeldingId: String,
-        source: String,
         fnr: String,
     ) =
         createGjenapneOrAvbruttStatus(
             StatusEventDTO.AVBRUTT,
             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
             sykmeldingId,
-            source,
             fnr,
         )
 
     suspend fun createGjenapneStatus(
         sykmeldingId: String,
-        source: String,
         fnr: String,
     ) =
         createGjenapneOrAvbruttStatus(
             StatusEventDTO.APEN,
             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
             sykmeldingId,
-            source,
             fnr,
         )
 
@@ -123,7 +119,6 @@ class SykmeldingStatusService(
         statusEvent: StatusEventDTO,
         timestamp: OffsetDateTime,
         sykmeldingId: String,
-        source: String,
         fnr: String,
     ) {
         require(statusEvent == StatusEventDTO.APEN || statusEvent == StatusEventDTO.AVBRUTT) {
@@ -147,12 +142,17 @@ class SykmeldingStatusService(
                 null,
                 null,
             )
-        sykmeldingStatusKafkaProducer.send(
-            sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
-            source = source,
-            fnr = fnr,
+
+        sykmeldingStatusDb.insertStatus(
+            sykmeldingStatusKafkaEventDTO,
+            response = null,
+            beforeCommit = {
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
+                    fnr = fnr,
+                )
+            },
         )
-        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO, response = null)
     }
 
     suspend fun createSendtStatus(
@@ -203,18 +203,30 @@ class SykmeldingStatusService(
             )
         }
 
-        sykmeldingStatusKafkaProducer.send(
-            sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
-            source = "user",
-            fnr = fnr,
-        )
-        sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO, sykmeldingFormResponse)
+        updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
 
         when (nesteStatus) {
             StatusEventDTO.SENDT -> SENDT_AV_BRUKER_COUNTER.inc()
             StatusEventDTO.BEKREFTET -> BEKREFTET_AV_BRUKER_COUNTER.inc()
             else -> Unit
         }
+    }
+
+    private suspend fun updateStatus(
+        sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO,
+        fnr: String,
+        sykmeldingFormResponse: SykmeldingFormResponse
+    ) {
+        sykmeldingStatusDb.insertStatus(
+            sykmeldingStatusKafkaEventDTO,
+            sykmeldingFormResponse,
+            beforeCommit = {
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTO,
+                    fnr = fnr,
+                )
+            },
+        )
     }
 
     private suspend fun tidligereArbeidsgiver(
@@ -382,15 +394,15 @@ class SykmeldingStatusService(
                     ),
             )
 
-        sykmeldingStatusKafkaProducer.send(
-            sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTOUpdated,
-            source = "user",
-            fnr = fnr,
-        )
-
         sykmeldingStatusDb.insertStatus(
             sykmeldingStatusKafkaEventDTOUpdated,
             sykmeldingFormResponseUpdated,
+            beforeCommit = {
+                sykmeldingStatusKafkaProducer.send(
+                    sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTOUpdated,
+                    fnr = fnr,
+                )
+            },
         )
     }
 
@@ -433,7 +445,7 @@ class SykmeldingStatusService(
             )
     }
 
-    suspend fun createBekreftetAvvistStatus(sykmeldingId: String, source: String, fnr: String) {
+    suspend fun createBekreftetAvvistStatus(sykmeldingId: String, fnr: String) {
         val sisteStatus = hentSisteStatusOgSjekkTilgang(sykmeldingId, fnr)
         when (sisteStatus.erAvvist) {
             true -> {
@@ -452,12 +464,17 @@ class SykmeldingStatusService(
                     )
                 val sykmeldingStatusKafkaEventDTO =
                     sykmeldingBekreftEventDTO.tilSykmeldingStatusKafkaEventDTO(sykmeldingId)
-                sykmeldingStatusKafkaProducer.send(
+
+                sykmeldingStatusDb.insertStatus(
                     sykmeldingStatusKafkaEventDTO,
-                    source,
-                    fnr,
+                    response = null,
+                    beforeCommit = {
+                        sykmeldingStatusKafkaProducer.send(
+                            sykmeldingStatusKafkaEventDTO,
+                            fnr,
+                        )
+                    },
                 )
-                sykmeldingStatusDb.insertStatus(sykmeldingStatusKafkaEventDTO, response = null)
             }
             else -> {
                 log.warn(

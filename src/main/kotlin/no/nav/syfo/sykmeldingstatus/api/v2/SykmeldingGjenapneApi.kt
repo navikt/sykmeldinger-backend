@@ -18,7 +18,6 @@ fun Route.registerSykmeldingGjenapneApiV2(sykmeldingStatusService: SykmeldingSta
 
         sykmeldingStatusService.createGjenapneStatus(
             sykmeldingId = sykmeldingId,
-            source = "user",
             fnr = fnr,
         )
 

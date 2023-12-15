@@ -15,11 +15,11 @@ class SykmeldingStatusKafkaProducer(
     private val kafkaProducer: KafkaProducer<String, SykmeldingStatusKafkaMessageDTO>,
     private val topicName: String,
 ) {
-    suspend fun send(
-        sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO,
-        source: String,
-        fnr: String
-    ) {
+    companion object {
+        private const val SOURCE = "sykmeldinger-backend"
+    }
+
+    suspend fun send(sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO, fnr: String) {
         withContext(Dispatchers.IO) {
             log.info(
                 "Skriver statusendring {} for sykmelding med id {} til topic på aiven",
@@ -31,7 +31,7 @@ class SykmeldingStatusKafkaProducer(
                     sykmeldingId = sykmeldingStatusKafkaEventDTO.sykmeldingId,
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                     fnr = fnr,
-                    source = source,
+                    source = SOURCE,
                 )
             val sykmeldingStatusKafkaMessageDTO =
                 SykmeldingStatusKafkaMessageDTO(metadataDTO, sykmeldingStatusKafkaEventDTO)

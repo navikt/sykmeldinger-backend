@@ -109,13 +109,11 @@ class SykmeldingStatusServiceSpec :
                                 StatusEventDTO.APEN ->
                                     sykmeldingStatusService.createGjenapneStatus(
                                         sykmeldingId,
-                                        "user",
                                         fnr,
                                     )
                                 StatusEventDTO.AVBRUTT ->
                                     sykmeldingStatusService.createAvbruttStatus(
                                         sykmeldingId,
-                                        "user",
                                         fnr,
                                     )
                                 else ->
@@ -174,34 +172,25 @@ class SykmeldingStatusServiceSpec :
                         StatusEventDTO.APEN ->
                             sykmeldingStatusService.createGjenapneStatus(
                                 sykmeldingId,
-                                "user",
                                 fnr,
                             )
                         StatusEventDTO.AVBRUTT ->
                             sykmeldingStatusService.createAvbruttStatus(
                                 sykmeldingId,
-                                "user",
                                 fnr,
                             )
                         else ->
                             throw IllegalStateException("Ikke implementert $newStatus i testene")
                     }
 
-                    coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(
-                            any(),
-                            any(),
-                            any(),
-                        )
-                    }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any(), any()) }
                 }
             }
 
             beforeTest {
                 clearAllMocks()
-                coEvery { sykmeldingStatusDb.insertStatus(any(), any()) } just Runs
-                coEvery { sykmeldingStatusKafkaProducer.send(any(), any(), any()) } just Runs
+                coEvery { sykmeldingStatusDb.insertStatus(any(), any(), any()) } just Runs
+                coEvery { sykmeldingStatusKafkaProducer.send(any(), any()) } just Runs
                 coEvery {
                     sykmeldingStatusDb.getLatestStatus(
                         any(),
@@ -284,8 +273,7 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingId,
                         fnr,
                     )
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify { sykmeldingStatusKafkaProducer.send(any(), any(), any()) }
+                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any(), any()) }
                 }
                 test("Oppdaterer ikke status hvis bruker ikke har tilgang til sykmelding") {
                     coEvery {
@@ -304,14 +292,7 @@ class SykmeldingStatusServiceSpec :
                     }
 
                     coVerify { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify(exactly = 0) {
-                        sykmeldingStatusKafkaProducer.send(
-                            any(),
-                            any(),
-                            any(),
-                        )
-                    }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any(), any()) }
                 }
             }
 
@@ -331,19 +312,17 @@ class SykmeldingStatusServiceSpec :
 
                     sykmeldingStatusService.createBekreftetAvvistStatus(
                         sykmeldingId,
-                        "user",
                         fnr,
                     )
 
+                    coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
                     coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(
+                        sykmeldingStatusDb.insertStatus(
                             matchStatusWithEmptySporsmals("BEKREFTET"),
-                            "user",
-                            "fnr",
+                            any(),
+                            any(),
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Får ikke bekrefte avvist sykmelding med status BEKREFTET") {
@@ -362,20 +341,12 @@ class SykmeldingStatusServiceSpec :
                     assertFailsWith<InvalidSykmeldingStatusException> {
                         sykmeldingStatusService.createBekreftetAvvistStatus(
                             sykmeldingId,
-                            "user",
                             fnr,
                         )
                     }
 
-                    coVerify(exactly = 0) {
-                        sykmeldingStatusKafkaProducer.send(
-                            matchStatusWithEmptySporsmals("BEKREFTET"),
-                            "user",
-                            "fnr",
-                        )
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any(), any()) }
                 }
 
                 test("Får ikke bekrefte sykmelding som ikke er avvist") {
@@ -394,20 +365,12 @@ class SykmeldingStatusServiceSpec :
                     assertFailsWith<InvalidSykmeldingStatusException> {
                         sykmeldingStatusService.createBekreftetAvvistStatus(
                             sykmeldingId,
-                            "user",
                             fnr,
                         )
                     }
 
-                    coVerify(exactly = 0) {
-                        sykmeldingStatusKafkaProducer.send(
-                            matchStatusWithEmptySporsmals("BEKREFTET"),
-                            "user",
-                            "fnr",
-                        )
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any(), any()) }
                 }
             }
 
@@ -479,11 +442,10 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                    coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(statusEquals("SENDT"), any(), any())
+                    }
                 }
                 test("test SENDT user event - Siste status er sendt") {
                     coEvery {
@@ -550,11 +512,10 @@ class SykmeldingStatusServiceSpec :
                     }
 
                     coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                    coVerify(exactly = 0) {
-                        sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 0) {
+                        sykmeldingStatusDb.insertStatus(statusEquals("SENDT"), any(), any())
+                    }
                 }
                 test("Test SEND user event - finner ikke riktig arbeidsgiver") {
                     coEvery {
@@ -621,11 +582,8 @@ class SykmeldingStatusServiceSpec :
                     }
 
                     coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                    coVerify(exactly = 0) {
-                        sykmeldingStatusKafkaProducer.send(statusEquals("SENDT"), "user", "fnr")
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.insertStatus(any(), any(), any()) }
                 }
 
                 test("Test BEKREFT user event") {
@@ -669,15 +627,10 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                    coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(
-                            statusEquals("BEKREFTET"),
-                            "user",
-                            "fnr",
-                        )
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(statusEquals("BEKREFTET"), any(), any())
+                    }
                 }
 
                 test(
@@ -754,11 +707,10 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
-                    coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(capture(expected), "user", "fnr")
-                    }
                     coVerify(exactly = 1) { sykmeldingStatusDb.getLatestStatus(any(), any()) }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(capture(expected), any(), any())
+                    }
 
                     val nlSvar =
                         expected.captured.sporsmals?.filter {
@@ -814,24 +766,22 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(
-                            sykmeldingStatusKafkaEventDTO =
-                                match {
-                                    val last = it.sporsmals?.last()
-                                    val first = it.sporsmals?.first()
-                                    // Verify value has been updated
-                                    last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                                        last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
-                                        // Verify that existing remains untouched
-                                        first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
-                                        first.svar == "8765432" &&
-                                        it.erSvarOppdatering == true
-                                },
-                            source = "user",
-                            fnr = "22222222",
+                        sykmeldingStatusDb.insertStatus(
+                            match {
+                                val last = it.sporsmals?.last()
+                                val first = it.sporsmals?.first()
+                                // Verify value has been updated
+                                last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
+                                    last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                                    // Verify that existing remains untouched
+                                    first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                                    first.svar == "8765432" &&
+                                    it.erSvarOppdatering == true
+                            },
+                            any(),
+                            any(),
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Fjern spørsmål om egenmeldingsdager") {
@@ -873,18 +823,15 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(
-                            sykmeldingStatusKafkaEventDTO =
-                                match {
-                                    it.sporsmals?.size == 1 &&
-                                        it.sporsmals?.first()?.svartype ==
-                                            SvartypeDTO.ARBEIDSSITUASJON
-                                },
-                            source = "user",
-                            fnr = "22222222",
+                        sykmeldingStatusDb.insertStatus(
+                            match {
+                                it.sporsmals?.size == 1 &&
+                                    it.sporsmals?.first()?.svartype == SvartypeDTO.ARBEIDSSITUASJON
+                            },
+                            any(),
+                            any(),
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
 
                 test("Legg til egenmeldingsdager") {
@@ -924,24 +871,22 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     coVerify(exactly = 1) {
-                        sykmeldingStatusKafkaProducer.send(
-                            sykmeldingStatusKafkaEventDTO =
-                                match {
-                                    val last = it.sporsmals?.last()
-                                    val first = it.sporsmals?.first()
-                                    // Verify value has been updated
-                                    last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                                        last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
-                                        // Verify that existing remains untouched
-                                        first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
-                                        first.svar == "8765432" &&
-                                        it.erSvarOppdatering == true
-                                },
-                            source = "user",
-                            fnr = "22222222",
+                        sykmeldingStatusDb.insertStatus(
+                            match {
+                                val last = it.sporsmals?.last()
+                                val first = it.sporsmals?.first()
+                                // Verify value has been updated
+                                last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
+                                    last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                                    // Verify that existing remains untouched
+                                    first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                                    first.svar == "8765432" &&
+                                    it.erSvarOppdatering == true
+                            },
+                            any(),
+                            any(),
                         )
                     }
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
                 }
             }
 
@@ -1154,9 +1099,8 @@ class SykmeldingStatusServiceSpec :
                     )
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1205,9 +1149,8 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingId,
                         fnr,
                     )
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -1253,9 +1196,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -1315,9 +1257,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -1371,9 +1312,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1424,9 +1364,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -1481,9 +1420,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1535,15 +1473,14 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify(exactly = 0) { sykmeldingService.getSykmeldinger(any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
                         )
                     }
+                    coVerify(exactly = 0) { sykmeldingService.getSykmeldinger(any()) }
                 }
 
                 test("En bekreftet sykmelding kant til kant med en bekreftet sykmelding") {
@@ -1605,9 +1542,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1666,9 +1602,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1727,9 +1662,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1788,9 +1722,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -1847,9 +1780,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -1905,9 +1837,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -1963,9 +1894,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -2021,9 +1951,8 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
 
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -2077,9 +2006,8 @@ class SykmeldingStatusServiceSpec :
                     )
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),
@@ -2129,11 +2057,9 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingId,
                         fnr,
                     )
-                    val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == null },
                             any(),
                             any(),
@@ -2201,9 +2127,8 @@ class SykmeldingStatusServiceSpec :
 
                     val tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
-                    coVerify(exactly = 1) { sykmeldingStatusDb.insertStatus(any(), any()) }
-                    coVerify {
-                        sykmeldingStatusKafkaProducer.send(
+                    coVerify(exactly = 1) {
+                        sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
                             any(),
                             any(),

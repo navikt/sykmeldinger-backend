@@ -17,7 +17,6 @@ fun Route.registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService: Sykmeldi
         val fnr = principal.fnr
         sykmeldingStatusService.createBekreftetAvvistStatus(
             sykmeldingId = sykmeldingId,
-            source = "user",
             fnr = fnr,
         )
 
