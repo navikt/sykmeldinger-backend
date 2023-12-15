@@ -123,6 +123,7 @@ private fun SykmeldingFormResponse.periodeSporsmalBuilder(): SporsmalOgSvarKafka
     return null
 }
 
+
 private fun SykmeldingFormResponse.riktigNarmesteLederSporsmalBuilder(
     arbeidsgiver: Arbeidsgiverinfo?,
     sykmeldingId: String

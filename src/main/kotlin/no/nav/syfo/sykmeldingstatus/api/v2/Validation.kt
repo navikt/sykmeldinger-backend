@@ -72,6 +72,22 @@ fun SykmeldingFormResponse.validate() {
                 "Arbeidsgiver må være valgt når arbeidssituasjon er fisker på hyre",
             )
         }
+
+        if (fisker?.lottOgHyre?.svar === LottOgHyre.LOTT || fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE) {
+            // Fisker on LOTT or BEGGE behaves like a næringsdrivende
+            requireNotNull(
+                harBruktEgenmelding,
+                "Spørsmål om egenmelding må være besvart når arbeidssituasjon er fisker på lott",
+            )
+
+            if (fisker?.blad?.svar == Blad.A) {
+                // Should have answered forsikringsspørsmål
+                requireNotNull(
+                    harForsikring,
+                    "Spørsmål om forsikring må være besvart når arbeidssituasjon er fisker på lott og blad er A",
+                )
+            }
+        }
     }
 
     if (harBruktEgenmeldingsdager?.svar == JaEllerNei.JA) {

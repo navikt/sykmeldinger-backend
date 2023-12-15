@@ -225,6 +225,56 @@ class ValidationKtTest :
                             invoking { sykmeldingFormResponse.validate() } shouldNotThrow
                                 ValidationException::class
                         }
+
+                        test(
+                            "Skal gå bra dersom fisker er på Lott og Blad B og mangler forsikringspørsmål",
+                        ) {
+                            val sykmeldingFormResponse =
+                                SykmeldingFormResponse(
+                                    erOpplysningeneRiktige =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "",
+                                            svar = JaEllerNei.JA,
+                                        ),
+                                    uriktigeOpplysninger = null,
+                                    arbeidssituasjon =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "",
+                                            svar = Arbeidssituasjon.FISKER,
+                                        ),
+                                    arbeidsgiverOrgnummer =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "",
+                                            svar = "123456789",
+                                        ),
+                                    riktigNarmesteLeder = null,
+                                    harBruktEgenmelding =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "",
+                                            svar = JaEllerNei.NEI,
+                                        ),
+                                    egenmeldingsperioder = null,
+                                    harForsikring = null,
+                                    harBruktEgenmeldingsdager = null,
+                                    egenmeldingsdager = null,
+                                    fisker =
+                                        FiskerSvar(
+                                            blad =
+                                                SporsmalSvar(
+                                                    sporsmaltekst = "",
+                                                    svar = Blad.B,
+                                                ),
+                                            lottOgHyre =
+                                                SporsmalSvar(
+                                                    sporsmaltekst = "",
+                                                    svar = LottOgHyre.LOTT,
+                                                ),
+                                        ),
+                                )
+
+                            invoking { sykmeldingFormResponse.validate() } shouldNotThrow
+                                ValidationException::class
+                        }
                     }
 
                     context("arbeidsgiver") {
