@@ -28,7 +28,7 @@ class SykmeldingGjenapneApiSpec :
 
         beforeTest {
             clearAllMocks()
-            coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any(), any()) } just Runs
+            coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any()) } just Runs
         }
 
         context("Test SykmeldingGjenapneAPI for sluttbruker med tilgangskontroll") {
@@ -71,9 +71,8 @@ class SykmeldingGjenapneApiSpec :
                     "Bruker skal ikke få gjenåpne sin egen sykmelding når den ikke kan gjenåpnes"
                 ) {
                     val sykmeldingId = "123"
-                    coEvery {
-                        sykmeldingStatusService.createGjenapneStatus(any(), any(), any())
-                    } throws InvalidSykmeldingStatusException("Invalid status")
+                    coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any()) } throws
+                        InvalidSykmeldingStatusException("Invalid status")
                     with(
                         handleRequest(
                             HttpMethod.Post,
@@ -96,9 +95,7 @@ class SykmeldingGjenapneApiSpec :
                 }
 
                 test("Skal ikke kunne gjenåpne annen brukers sykmelding") {
-                    coEvery {
-                        sykmeldingStatusService.createGjenapneStatus(any(), any(), any())
-                    } throws
+                    coEvery { sykmeldingStatusService.createGjenapneStatus(any(), any()) } throws
                         SykmeldingStatusNotFoundException(
                             "Not Found",
                             RuntimeException("Ingen tilgang")

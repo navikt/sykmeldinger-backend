@@ -33,12 +33,10 @@ class SykmeldingAvbrytApiSpec :
                     sykmeldingStatusService.createAvbruttStatus(
                         any(),
                         any(),
-                        any(),
                     )
                 } just Runs
                 coEvery {
                     sykmeldingStatusService.createGjenapneStatus(
-                        any(),
                         any(),
                         any(),
                     )
@@ -87,9 +85,8 @@ class SykmeldingAvbrytApiSpec :
                         "Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes"
                     ) {
                         val sykmeldingId = "123"
-                        coEvery {
-                            sykmeldingStatusService.createAvbruttStatus(any(), any(), any())
-                        } throws InvalidSykmeldingStatusException("Invalid status")
+                        coEvery { sykmeldingStatusService.createAvbruttStatus(any(), any()) } throws
+                            InvalidSykmeldingStatusException("Invalid status")
                         with(
                             handleRequest(
                                 HttpMethod.Post,
@@ -114,9 +111,7 @@ class SykmeldingAvbrytApiSpec :
                     }
 
                     test("Skal ikke kunne avbryte annen brukers sykmelding") {
-                        coEvery {
-                            sykmeldingStatusService.createAvbruttStatus(any(), any(), any())
-                        } throws
+                        coEvery { sykmeldingStatusService.createAvbruttStatus(any(), any()) } throws
                             SykmeldingStatusNotFoundException(
                                 "Not Found",
                                 RuntimeException("Ingen tilgang"),

@@ -18,7 +18,6 @@ fun Route.registerSykmeldingAvbrytApiV2(sykmeldingStatusService: SykmeldingStatu
 
         sykmeldingStatusService.createAvbruttStatus(
             sykmeldingId = sykmeldingId,
-            source = "user",
             fnr = fnr,
         )
 

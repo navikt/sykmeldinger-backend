@@ -27,9 +27,7 @@ class SykmeldingBekreftAvvistApiSpec :
 
         beforeTest {
             clearAllMocks()
-            coEvery {
-                sykmeldingStatusService.createBekreftetAvvistStatus(any(), any(), any())
-            } just Runs
+            coEvery { sykmeldingStatusService.createBekreftetAvvistStatus(any(), any()) } just Runs
         }
 
         context("Test SykmeldingBekreftAvvistApi for sluttbruker med tilgangskontroll") {
@@ -71,7 +69,7 @@ class SykmeldingBekreftAvvistApiSpec :
                 ) {
                     val sykmeldingId = "123"
                     coEvery {
-                        sykmeldingStatusService.createBekreftetAvvistStatus(any(), any(), any())
+                        sykmeldingStatusService.createBekreftetAvvistStatus(any(), any())
                     } throws InvalidSykmeldingStatusException("Invalid status")
                     with(
                         handleRequest(
@@ -95,7 +93,7 @@ class SykmeldingBekreftAvvistApiSpec :
 
                 test("Skal ikke kunne bekrefte annen brukers sykmelding") {
                     coEvery {
-                        sykmeldingStatusService.createBekreftetAvvistStatus(any(), any(), any())
+                        sykmeldingStatusService.createBekreftetAvvistStatus(any(), any())
                     } throws
                         SykmeldingStatusNotFoundException(
                             "Not Found",

@@ -41,7 +41,8 @@ private fun toPGObject(jsonObject: Any) =
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
     suspend fun insertStatus(
         event: SykmeldingStatusKafkaEventDTO,
-        response: SykmeldingFormResponse?
+        response: SykmeldingFormResponse?,
+        beforeCommit: suspend () -> Unit
     ) =
         withContext(Dispatchers.IO) {
             try {
@@ -49,8 +50,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                     connection
                         .prepareStatement(
                             """insert into sykmeldingstatus(sykmelding_id, event, timestamp, arbeidsgiver, sporsmal, alle_sporsmal, tidligere_arbeidsgiver)
-                                    values (?, ?, ?, ?, ?, ?, ?)
-                                    on conflict do nothing;""",
+                                   values (?, ?, ?, ?, ?, ?, ?);""",
                         )
                         .use { ps ->
                             var index = 1
@@ -63,7 +63,13 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                             ps.setObject(index, event.tidligereArbeidsgiver?.let { toPGObject(it) })
                             ps.executeUpdate()
                         }
-                    connection.commit()
+                    try {
+                        beforeCommit()
+                        connection.commit()
+                    } catch (ex: Exception) {
+                        log.error("Status inserction failed on block receiver, rolling back")
+                        connection.rollback()
+                    }
                 }
             } catch (ex: PSQLException) {
                 log.warn(ex.message)
