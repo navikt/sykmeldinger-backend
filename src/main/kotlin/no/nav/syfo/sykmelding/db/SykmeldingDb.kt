@@ -8,8 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
@@ -17,10 +15,12 @@ import no.nav.syfo.sykmelding.model.PasientDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
+import no.nav.syfo.sykmelding.model.SporsmalOgSvarDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmelding.model.UtenlandskSykmelding
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 

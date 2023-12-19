@@ -6,7 +6,6 @@ val ktorVersion = "2.3.7"
 val logbackVersion = "1.4.14"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "2.0.8"
 val jacksonVersion = "2.16.0"
 val kluentVersion = "1.73"
 val mockkVersion = "1.13.8"
@@ -22,7 +21,7 @@ val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val snappyJavaVersion = "1.1.10.5"
-
+val kafkaVersion = "3.6.1"
 plugins {
     id("application")
     kotlin("jvm") version "1.9.21"
@@ -59,6 +58,9 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
+
+    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+
     constraints {
         implementation("commons-codec:commons-codec:$commonsCodecVersion") {
             because("override transient version 1.13 from io.ktor:ktor-client-apache")
@@ -75,14 +77,11 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     constraints {
         implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
             because("override transient from org.apache.kafka:kafka_2.12")
         }
     }
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")

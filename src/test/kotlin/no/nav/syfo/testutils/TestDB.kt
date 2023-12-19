@@ -8,10 +8,6 @@ import java.time.OffsetDateTime
 import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.AdresseDTO
@@ -24,9 +20,13 @@ import no.nav.syfo.sykmelding.model.MedisinskArsakDTO
 import no.nav.syfo.sykmelding.model.MedisinskVurderingDTO
 import no.nav.syfo.sykmelding.model.PeriodetypeDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
+import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
+import no.nav.syfo.sykmelding.model.SporsmalOgSvarDTO
+import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei

@@ -4,10 +4,10 @@ import io.kotest.core.spec.style.FunSpec
 import java.time.LocalDate
 import kotlin.test.assertFailsWith
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
-import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
 import no.nav.syfo.objectMapper
+import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.toSporsmalSvarListe
 import org.amshove.kluent.invoking
 import org.amshove.kluent.shouldBeEqualTo
@@ -484,10 +484,10 @@ class ValidationKtTest :
 
                 val expected =
                     listOf(
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.ARBEIDSSITUASJON,
-                            SvartypeDTO.ARBEIDSSITUASJON,
+                            ShortNameKafkaDTO.ARBEIDSSITUASJON,
+                            SvartypeKafkaDTO.ARBEIDSSITUASJON,
                             svar = Arbeidssituasjon.FRILANSER.name,
                         ),
                     )
@@ -542,16 +542,16 @@ class ValidationKtTest :
 
                 val expected =
                     listOf(
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.ARBEIDSSITUASJON,
-                            SvartypeDTO.ARBEIDSSITUASJON,
+                            ShortNameKafkaDTO.ARBEIDSSITUASJON,
+                            SvartypeKafkaDTO.ARBEIDSSITUASJON,
                             svar = Arbeidssituasjon.ARBEIDSTAKER.name,
                         ),
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.NY_NARMESTE_LEDER,
-                            SvartypeDTO.JA_NEI,
+                            ShortNameKafkaDTO.NY_NARMESTE_LEDER,
+                            SvartypeKafkaDTO.JA_NEI,
                             svar = JaEllerNei.NEI.name,
                         ),
                     )
@@ -606,16 +606,16 @@ class ValidationKtTest :
 
                 val expected =
                     listOf(
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.ARBEIDSSITUASJON,
-                            SvartypeDTO.ARBEIDSSITUASJON,
+                            ShortNameKafkaDTO.ARBEIDSSITUASJON,
+                            SvartypeKafkaDTO.ARBEIDSSITUASJON,
                             svar = Arbeidssituasjon.ARBEIDSTAKER.name,
                         ),
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "Skal finne ny nærmeste leder",
-                            ShortNameDTO.NY_NARMESTE_LEDER,
-                            SvartypeDTO.JA_NEI,
+                            ShortNameKafkaDTO.NY_NARMESTE_LEDER,
+                            SvartypeKafkaDTO.JA_NEI,
                             svar = JaEllerNei.NEI.name,
                         ),
                     )
@@ -659,22 +659,22 @@ class ValidationKtTest :
 
                 val expected =
                     listOf(
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.ARBEIDSSITUASJON,
-                            SvartypeDTO.ARBEIDSSITUASJON,
+                            ShortNameKafkaDTO.ARBEIDSSITUASJON,
+                            SvartypeKafkaDTO.ARBEIDSSITUASJON,
                             svar = Arbeidssituasjon.NAERINGSDRIVENDE.name,
                         ),
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.FRAVAER,
-                            SvartypeDTO.JA_NEI,
+                            ShortNameKafkaDTO.FRAVAER,
+                            SvartypeKafkaDTO.JA_NEI,
                             svar = JaEllerNei.NEI.name,
                         ),
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.FORSIKRING,
-                            SvartypeDTO.JA_NEI,
+                            ShortNameKafkaDTO.FORSIKRING,
+                            SvartypeKafkaDTO.JA_NEI,
                             svar = JaEllerNei.JA.name,
                         ),
                     )
@@ -724,22 +724,22 @@ class ValidationKtTest :
 
                 val expected =
                     listOf(
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.ARBEIDSSITUASJON,
-                            SvartypeDTO.ARBEIDSSITUASJON,
+                            ShortNameKafkaDTO.ARBEIDSSITUASJON,
+                            SvartypeKafkaDTO.ARBEIDSSITUASJON,
                             svar = Arbeidssituasjon.FRILANSER.name,
                         ),
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.FRAVAER,
-                            SvartypeDTO.JA_NEI,
+                            ShortNameKafkaDTO.FRAVAER,
+                            SvartypeKafkaDTO.JA_NEI,
                             svar = JaEllerNei.JA.name,
                         ),
-                        SporsmalOgSvarDTO(
+                        SporsmalOgSvarKafkaDTO(
                             "",
-                            ShortNameDTO.PERIODE,
-                            SvartypeDTO.PERIODER,
+                            ShortNameKafkaDTO.PERIODE,
+                            SvartypeKafkaDTO.PERIODER,
                             svar =
                                 objectMapper.writeValueAsString(
                                     listOf(

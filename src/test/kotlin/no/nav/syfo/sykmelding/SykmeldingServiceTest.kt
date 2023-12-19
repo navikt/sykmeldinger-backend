@@ -5,8 +5,8 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.time.OffsetDateTime
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import org.amshove.kluent.shouldBeEqualTo
 
