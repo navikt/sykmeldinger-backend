@@ -13,14 +13,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.log
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.ArbeidsgiverStatusDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
+import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 
@@ -155,17 +155,19 @@ private fun ResultSet.toSykmeldingStatusEvent(
             timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
             arbeidsgiver =
                 getObject("arbeidsgiver")?.let {
-                    objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+                    objectMapper.readValue<ArbeidsgiverStatusKafkaDTO>(it.toString())
                 },
             sporsmals =
                 // TODO: These could just be mapped directly from alle_sporsmal when all data is
                 // migrated
-                getString("sporsmal")?.let { objectMapper.readValue<List<SporsmalOgSvarDTO>>(it) }
+                getString("sporsmal")?.let {
+                    objectMapper.readValue<List<SporsmalOgSvarKafkaDTO>>(it)
+                }
                     ?: emptyList(),
             statusEvent = getString("event"),
             tidligereArbeidsgiver =
                 getObject("tidligere_arbeidsgiver")?.let {
-                    objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
+                    objectMapper.readValue<TidligereArbeidsgiverKafkaDTO>(it.toString())
                 },
         ) to
             getObject("alle_sporsmal")?.let {

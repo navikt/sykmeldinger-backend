@@ -4,11 +4,11 @@ import io.kotest.core.spec.style.FunSpec
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
+import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.testutils.TestDB
 import no.nav.syfo.testutils.getBehandlingsutfall
 import no.nav.syfo.testutils.getStatus

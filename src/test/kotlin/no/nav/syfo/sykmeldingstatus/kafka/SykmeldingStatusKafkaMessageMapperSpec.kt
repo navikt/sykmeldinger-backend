@@ -3,15 +3,18 @@ package no.nav.syfo.sykmeldingstatus.kafka
 import io.kotest.core.spec.style.FunSpec
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import no.nav.syfo.model.sykmeldingstatus.STATUS_APEN
-import no.nav.syfo.model.sykmeldingstatus.STATUS_AVBRUTT
-import no.nav.syfo.model.sykmeldingstatus.STATUS_BEKREFTET
 import no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_AVBRUTT
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
+import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingStatusKafkaMessageMapperSpek :
@@ -33,31 +36,31 @@ class SykmeldingStatusKafkaMessageMapperSpek :
                 sykmeldingStatusKafkaEventDTO.arbeidsgiver shouldBeEqualTo null
                 sykmeldingStatusKafkaEventDTO.sporsmals?.size shouldBeEqualTo 4
                 sykmeldingStatusKafkaEventDTO.sporsmals!![0] shouldBeEqualTo
-                    no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+                    SporsmalOgSvarKafkaDTO(
                         "Sykmeldt fra ",
-                        no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.ARBEIDSSITUASJON,
-                        no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.ARBEIDSSITUASJON,
+                        ShortNameKafkaDTO.ARBEIDSSITUASJON,
+                        SvartypeKafkaDTO.ARBEIDSSITUASJON,
                         "Frilanser",
                     )
                 sykmeldingStatusKafkaEventDTO.sporsmals!![1] shouldBeEqualTo
-                    no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+                    SporsmalOgSvarKafkaDTO(
                         "Har forsikring?",
-                        no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FORSIKRING,
-                        no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
+                        ShortNameKafkaDTO.FORSIKRING,
+                        SvartypeKafkaDTO.JA_NEI,
                         "Ja",
                     )
                 sykmeldingStatusKafkaEventDTO.sporsmals!![2] shouldBeEqualTo
-                    no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+                    SporsmalOgSvarKafkaDTO(
                         "Hatt fravær?",
-                        no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.FRAVAER,
-                        no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.JA_NEI,
+                        ShortNameKafkaDTO.FRAVAER,
+                        SvartypeKafkaDTO.JA_NEI,
                         "Ja",
                     )
                 sykmeldingStatusKafkaEventDTO.sporsmals!![3] shouldBeEqualTo
-                    no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO(
+                    SporsmalOgSvarKafkaDTO(
                         "Når hadde du fravær?",
-                        no.nav.syfo.model.sykmeldingstatus.ShortNameDTO.PERIODE,
-                        no.nav.syfo.model.sykmeldingstatus.SvartypeDTO.PERIODER,
+                        ShortNameKafkaDTO.PERIODE,
+                        SvartypeKafkaDTO.PERIODER,
                         "{[{\"fom\": \"2019-8-1\", \"tom\": \"2019-8-15\"}, {\"fom\": \"2019-9-1\", \"tom\": \"2019-9-3\"}]}",
                     )
             }

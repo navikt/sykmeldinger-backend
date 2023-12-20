@@ -12,16 +12,12 @@ import no.nav.syfo.metrics.ANTALL_TIDLIGERE_ARBEIDSGIVERE
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.TIDLIGERE_ARBEIDSGIVER_COUNTER
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.objectMapper
 import no.nav.syfo.securelog
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.INGEN
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.KANT_TIL_KANT
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.OVERLAPPENDE
@@ -36,6 +32,10 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
+import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
@@ -407,22 +407,22 @@ class SykmeldingStatusService(
     }
 
     private fun updateEgenemeldingsdagerSporsmal(
-        sporsmalSvar: List<SporsmalOgSvarDTO>?,
+        sporsmalSvar: List<SporsmalOgSvarKafkaDTO>?,
         egenmeldingsdagerEvent: EndreEgenmeldingsdagerEvent
-    ): List<SporsmalOgSvarDTO> {
+    ): List<SporsmalOgSvarKafkaDTO> {
         requireNotNull(sporsmalSvar) {
             "Forsøkte å oppdatere egenmeldingsdager, men spørsmål og svar er ikke satt."
         }
         return sporsmalSvar
-            .filter { it.shortName != ShortNameDTO.EGENMELDINGSDAGER }
+            .filter { it.shortName != ShortNameKafkaDTO.EGENMELDINGSDAGER }
             .let {
                 if (egenmeldingsdagerEvent.dager.isNotEmpty()) {
                     it.plus(
                         listOf(
-                            SporsmalOgSvarDTO(
+                            SporsmalOgSvarKafkaDTO(
                                 tekst = egenmeldingsdagerEvent.tekst,
-                                shortName = ShortNameDTO.EGENMELDINGSDAGER,
-                                svartype = SvartypeDTO.DAGER,
+                                shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
+                                svartype = SvartypeKafkaDTO.DAGER,
                                 svar =
                                     objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
                             ),

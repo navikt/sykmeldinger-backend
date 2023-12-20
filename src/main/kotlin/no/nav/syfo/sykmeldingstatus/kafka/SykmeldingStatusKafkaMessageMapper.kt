@@ -3,14 +3,24 @@ package no.nav.syfo.sykmeldingstatus.kafka
 import java.time.OffsetDateTime
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.log
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.*
 import no.nav.syfo.objectMapper
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
+import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_AVBRUTT
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_UTGATT
+import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
 
 fun SykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
@@ -25,21 +35,28 @@ fun SykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
         statusEvent = this.toStatusEvent().tilStatusEventDTO(),
         arbeidsgiver =
             arbeidsgiver?.let {
-                ArbeidsgiverStatusDTO(
+                ArbeidsgiverStatusKafkaDTO(
                     orgnummer = it.orgnummer,
                     juridiskOrgnummer = it.juridiskOrgnummer,
                     orgNavn = it.navn,
                 )
             },
         sporsmals = toSporsmalSvarListe(arbeidsgiver, sykmeldingId),
-        tidligereArbeidsgiver = tidligereArbeidsgiver
+        tidligereArbeidsgiver =
+            tidligereArbeidsgiver?.let {
+                TidligereArbeidsgiverKafkaDTO(
+                    orgNavn = it.orgNavn,
+                    orgnummer = it.orgnummer,
+                    sykmeldingsId = it.sykmeldingsId
+                )
+            }
     )
 }
 
 fun SykmeldingFormResponse.toSporsmalSvarListe(
     arbeidsgiver: Arbeidsgiverinfo? = null,
     sykmeldingId: String
-): List<SporsmalOgSvarDTO> {
+): List<SporsmalOgSvarKafkaDTO> {
     return listOfNotNull(
         arbeidssituasjonSporsmalBuilder(),
         fravarSporsmalBuilder(),
@@ -50,44 +67,44 @@ fun SykmeldingFormResponse.toSporsmalSvarListe(
     )
 }
 
-private fun SykmeldingFormResponse.egenmeldingsdagerBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.egenmeldingsdagerBuilder(): SporsmalOgSvarKafkaDTO? {
     if (egenmeldingsdager == null) return null
 
-    return SporsmalOgSvarDTO(
+    return SporsmalOgSvarKafkaDTO(
         tekst = egenmeldingsdager.sporsmaltekst,
-        shortName = ShortNameDTO.EGENMELDINGSDAGER,
-        svartype = SvartypeDTO.DAGER,
+        shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
+        svartype = SvartypeKafkaDTO.DAGER,
         svar = objectMapper.writeValueAsString(egenmeldingsdager.svar),
     )
 }
 
-private fun SykmeldingFormResponse.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarDTO {
-    return SporsmalOgSvarDTO(
+private fun SykmeldingFormResponse.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarKafkaDTO {
+    return SporsmalOgSvarKafkaDTO(
         tekst = arbeidssituasjon.sporsmaltekst,
-        shortName = ShortNameDTO.ARBEIDSSITUASJON,
-        svartype = SvartypeDTO.ARBEIDSSITUASJON,
+        shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
+        svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
         svar = arbeidssituasjon.svar.name,
     )
 }
 
-private fun SykmeldingFormResponse.fravarSporsmalBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.fravarSporsmalBuilder(): SporsmalOgSvarKafkaDTO? {
     if (harBruktEgenmelding != null) {
-        return SporsmalOgSvarDTO(
+        return SporsmalOgSvarKafkaDTO(
             tekst = harBruktEgenmelding.sporsmaltekst,
-            shortName = ShortNameDTO.FRAVAER,
-            svartype = SvartypeDTO.JA_NEI,
+            shortName = ShortNameKafkaDTO.FRAVAER,
+            svartype = SvartypeKafkaDTO.JA_NEI,
             svar = harBruktEgenmelding.svar.name,
         )
     }
     return null
 }
 
-private fun SykmeldingFormResponse.periodeSporsmalBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.periodeSporsmalBuilder(): SporsmalOgSvarKafkaDTO? {
     if (egenmeldingsperioder != null) {
-        return SporsmalOgSvarDTO(
+        return SporsmalOgSvarKafkaDTO(
             tekst = egenmeldingsperioder.sporsmaltekst,
-            shortName = ShortNameDTO.PERIODE,
-            svartype = SvartypeDTO.PERIODER,
+            shortName = ShortNameKafkaDTO.PERIODE,
+            svartype = SvartypeKafkaDTO.PERIODER,
             svar = objectMapper.writeValueAsString(egenmeldingsperioder.svar),
         )
     }
@@ -97,24 +114,24 @@ private fun SykmeldingFormResponse.periodeSporsmalBuilder(): SporsmalOgSvarDTO? 
 private fun SykmeldingFormResponse.riktigNarmesteLederSporsmalBuilder(
     arbeidsgiver: Arbeidsgiverinfo?,
     sykmeldingId: String
-): SporsmalOgSvarDTO? {
+): SporsmalOgSvarKafkaDTO? {
     if (arbeidsgiver?.aktivtArbeidsforhold == false) {
         log.info(
             "Ber ikke om ny nærmeste leder for arbeidsforhold som ikke er aktivt: $sykmeldingId",
         )
-        return SporsmalOgSvarDTO(
+        return SporsmalOgSvarKafkaDTO(
             tekst = "Skal finne ny nærmeste leder",
-            shortName = ShortNameDTO.NY_NARMESTE_LEDER,
-            svartype = SvartypeDTO.JA_NEI,
+            shortName = ShortNameKafkaDTO.NY_NARMESTE_LEDER,
+            svartype = SvartypeKafkaDTO.JA_NEI,
             svar = "NEI",
         )
     }
 
     if (riktigNarmesteLeder != null) {
-        return SporsmalOgSvarDTO(
+        return SporsmalOgSvarKafkaDTO(
             tekst = riktigNarmesteLeder.sporsmaltekst,
-            shortName = ShortNameDTO.NY_NARMESTE_LEDER,
-            svartype = SvartypeDTO.JA_NEI,
+            shortName = ShortNameKafkaDTO.NY_NARMESTE_LEDER,
+            svartype = SvartypeKafkaDTO.JA_NEI,
             svar =
                 when (riktigNarmesteLeder.svar) {
                     JaEllerNei.JA -> JaEllerNei.NEI
@@ -125,12 +142,12 @@ private fun SykmeldingFormResponse.riktigNarmesteLederSporsmalBuilder(
     return null
 }
 
-private fun SykmeldingFormResponse.forsikringSporsmalBuilder(): SporsmalOgSvarDTO? {
+private fun SykmeldingFormResponse.forsikringSporsmalBuilder(): SporsmalOgSvarKafkaDTO? {
     if (harForsikring != null) {
-        return SporsmalOgSvarDTO(
+        return SporsmalOgSvarKafkaDTO(
             tekst = harForsikring.sporsmaltekst,
-            shortName = ShortNameDTO.FORSIKRING,
-            svartype = SvartypeDTO.JA_NEI,
+            shortName = ShortNameKafkaDTO.FORSIKRING,
+            svartype = SvartypeKafkaDTO.JA_NEI,
             svar = harForsikring.svar.name,
         )
     }
@@ -173,7 +190,7 @@ fun StatusEventDTO.tilStatusEventDTO(): String {
 
 fun tilSporsmalOgSvarDTOListe(
     sporsmalListe: List<no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO>?
-): List<SporsmalOgSvarDTO>? {
+): List<SporsmalOgSvarKafkaDTO>? {
     return if (sporsmalListe.isNullOrEmpty()) {
         null
     } else {
@@ -183,31 +200,31 @@ fun tilSporsmalOgSvarDTOListe(
 
 fun tilSporsmalOgSvarDTO(
     sporsmalOgSvar: no.nav.syfo.sykmeldingstatus.api.v1.SporsmalOgSvarDTO
-): SporsmalOgSvarDTO =
-    SporsmalOgSvarDTO(
+): SporsmalOgSvarKafkaDTO =
+    SporsmalOgSvarKafkaDTO(
         tekst = sporsmalOgSvar.tekst,
         shortName = sporsmalOgSvar.shortName.tilShortNameDTO(),
         svartype = sporsmalOgSvar.svartype.tilSvartypeDTO(),
         svar = sporsmalOgSvar.svar,
     )
 
-fun no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.tilShortNameDTO(): ShortNameDTO {
+fun no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.tilShortNameDTO(): ShortNameKafkaDTO {
     return when (this) {
         no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.ARBEIDSSITUASJON ->
-            ShortNameDTO.ARBEIDSSITUASJON
-        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.PERIODE -> ShortNameDTO.PERIODE
-        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FRAVAER -> ShortNameDTO.FRAVAER
-        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FORSIKRING -> ShortNameDTO.FORSIKRING
+            ShortNameKafkaDTO.ARBEIDSSITUASJON
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.PERIODE -> ShortNameKafkaDTO.PERIODE
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FRAVAER -> ShortNameKafkaDTO.FRAVAER
+        no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.FORSIKRING -> ShortNameKafkaDTO.FORSIKRING
         no.nav.syfo.sykmeldingstatus.api.v1.ShortNameDTO.NY_NARMESTE_LEDER ->
-            ShortNameDTO.NY_NARMESTE_LEDER
+            ShortNameKafkaDTO.NY_NARMESTE_LEDER
     }
 }
 
-fun no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.tilSvartypeDTO(): SvartypeDTO {
+fun no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.tilSvartypeDTO(): SvartypeKafkaDTO {
     return when (this) {
         no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.ARBEIDSSITUASJON ->
-            SvartypeDTO.ARBEIDSSITUASJON
-        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.PERIODER -> SvartypeDTO.PERIODER
-        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.JA_NEI -> SvartypeDTO.JA_NEI
+            SvartypeKafkaDTO.ARBEIDSSITUASJON
+        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.PERIODER -> SvartypeKafkaDTO.PERIODER
+        no.nav.syfo.sykmeldingstatus.api.v1.SvartypeDTO.JA_NEI -> SvartypeKafkaDTO.JA_NEI
     }
 }

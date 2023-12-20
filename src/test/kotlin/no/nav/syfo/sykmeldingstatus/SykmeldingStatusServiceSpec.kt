@@ -15,12 +15,8 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
-import no.nav.syfo.model.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.model.sykmeldingstatus.ShortNameDTO
-import no.nav.syfo.model.sykmeldingstatus.SporsmalOgSvarDTO
-import no.nav.syfo.model.sykmeldingstatus.SvartypeDTO
-import no.nav.syfo.model.sykmeldingstatus.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.mars
@@ -37,6 +33,11 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
+import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
 
@@ -714,7 +715,7 @@ class SykmeldingStatusServiceSpec :
 
                     val nlSvar =
                         expected.captured.sporsmals?.filter {
-                            it.shortName == ShortNameDTO.NY_NARMESTE_LEDER
+                            it.shortName == ShortNameKafkaDTO.NY_NARMESTE_LEDER
                         }
 
                     nlSvar?.size shouldBeEqualTo 1
@@ -733,15 +734,15 @@ class SykmeldingStatusServiceSpec :
                         (SykmeldingStatusKafkaEventDTO(
                             sporsmals =
                                 listOf(
-                                    SporsmalOgSvarDTO(
-                                        svartype = SvartypeDTO.DAGER,
-                                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    SporsmalOgSvarKafkaDTO(
+                                        svartype = SvartypeKafkaDTO.DAGER,
+                                        shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
                                         svar = "",
                                         tekst = "tom string",
                                     ),
-                                    SporsmalOgSvarDTO(
-                                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
-                                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                                    SporsmalOgSvarKafkaDTO(
+                                        svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
+                                        shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
                                         svar = "8765432",
                                         tekst = "",
                                     ),
@@ -772,9 +773,9 @@ class SykmeldingStatusServiceSpec :
                                 val first = it.sporsmals?.first()
                                 // Verify value has been updated
                                 last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                                    last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                                    last.shortName == ShortNameKafkaDTO.EGENMELDINGSDAGER &&
                                     // Verify that existing remains untouched
-                                    first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                                    first?.shortName == ShortNameKafkaDTO.ARBEIDSSITUASJON &&
                                     first.svar == "8765432" &&
                                     it.erSvarOppdatering == true
                             },
@@ -794,15 +795,15 @@ class SykmeldingStatusServiceSpec :
                         (SykmeldingStatusKafkaEventDTO(
                             sporsmals =
                                 listOf(
-                                    SporsmalOgSvarDTO(
-                                        svartype = SvartypeDTO.DAGER,
-                                        shortName = ShortNameDTO.EGENMELDINGSDAGER,
+                                    SporsmalOgSvarKafkaDTO(
+                                        svartype = SvartypeKafkaDTO.DAGER,
+                                        shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
                                         svar = "",
                                         tekst = "tom string",
                                     ),
-                                    SporsmalOgSvarDTO(
-                                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
-                                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                                    SporsmalOgSvarKafkaDTO(
+                                        svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
+                                        shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
                                         svar = "8765432",
                                         tekst = "",
                                     ),
@@ -826,7 +827,8 @@ class SykmeldingStatusServiceSpec :
                         sykmeldingStatusDb.insertStatus(
                             match {
                                 it.sporsmals?.size == 1 &&
-                                    it.sporsmals?.first()?.svartype == SvartypeDTO.ARBEIDSSITUASJON
+                                    it.sporsmals?.first()?.svartype ==
+                                        SvartypeKafkaDTO.ARBEIDSSITUASJON
                             },
                             any(),
                             any(),
@@ -844,9 +846,9 @@ class SykmeldingStatusServiceSpec :
                         (SykmeldingStatusKafkaEventDTO(
                             sporsmals =
                                 listOf(
-                                    SporsmalOgSvarDTO(
-                                        svartype = SvartypeDTO.ARBEIDSSITUASJON,
-                                        shortName = ShortNameDTO.ARBEIDSSITUASJON,
+                                    SporsmalOgSvarKafkaDTO(
+                                        svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
+                                        shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
                                         svar = "8765432",
                                         tekst = "",
                                     ),
@@ -877,9 +879,9 @@ class SykmeldingStatusServiceSpec :
                                 val first = it.sporsmals?.first()
                                 // Verify value has been updated
                                 last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                                    last.shortName == ShortNameDTO.EGENMELDINGSDAGER &&
+                                    last.shortName == ShortNameKafkaDTO.EGENMELDINGSDAGER &&
                                     // Verify that existing remains untouched
-                                    first?.shortName == ShortNameDTO.ARBEIDSSITUASJON &&
+                                    first?.shortName == ShortNameKafkaDTO.ARBEIDSSITUASJON &&
                                     first.svar == "8765432" &&
                                     it.erSvarOppdatering == true
                             },
@@ -1098,7 +1100,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1311,7 +1313,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1419,7 +1421,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1541,7 +1543,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1601,7 +1603,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1661,7 +1663,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -1721,7 +1723,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -2005,7 +2007,7 @@ class SykmeldingStatusServiceSpec :
                         fnr,
                     )
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
@@ -2126,7 +2128,7 @@ class SykmeldingStatusServiceSpec :
                     )
 
                     val tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO("orgNavn", "orgnummer", "1")
+                        TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
                     coVerify(exactly = 1) {
                         sykmeldingStatusDb.insertStatus(
                             match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
