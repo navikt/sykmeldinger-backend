@@ -73,7 +73,10 @@ fun SykmeldingFormResponse.validate() {
             )
         }
 
-        if (fisker?.lottOgHyre?.svar === LottOgHyre.LOTT || fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE) {
+        if (
+            fisker?.lottOgHyre?.svar === LottOgHyre.LOTT ||
+                fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE
+        ) {
             // Fisker on LOTT or BEGGE behaves like a næringsdrivende
             requireNotNull(
                 harBruktEgenmelding,

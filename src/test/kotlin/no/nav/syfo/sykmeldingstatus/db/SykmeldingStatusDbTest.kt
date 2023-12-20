@@ -171,11 +171,12 @@ class SykmeldingStatusDbTest :
                     getStatus(
                         StatusEventDTO.BEKREFTET.name,
                         OffsetDateTime.now().minusHours(2),
-                        tidligereArbeidsgiver = TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            "orgnummer",
-                            "1",
-                        ),
+                        tidligereArbeidsgiver =
+                            TidligereArbeidsgiverDTO(
+                                "orgNavn",
+                                "orgnummer",
+                                "1",
+                            ),
                     ),
                 )
                 val (status) = database.getSykmeldingStatus("1", "fnr")
@@ -197,39 +198,44 @@ class SykmeldingStatusDbTest :
                     )
                     TestDB.database.insertSymelding("1", "fnr", getSykmelding())
 
-                    val event = SykmeldingStatusKafkaEventDTO(
-                        sykmeldingId = "1",
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        statusEvent = StatusEventDTO.BEKREFTET.name,
-                        arbeidsgiver = null,
-                        sporsmals = null,
-                    )
-                    val formData = SykmeldingFormResponse(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "Er opplysningene riktige?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "Arbeidssituasjon",
-                            svar = Arbeidssituasjon.ARBEIDSLEDIG,
-                        ),
-                        uriktigeOpplysninger = null,
-                        arbeidsgiverOrgnummer = null,
-                        riktigNarmesteLeder = null,
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = null,
-                        egenmeldingsdager = null,
-                        harBruktEgenmeldingsdager = null,
-                        fisker = null,
-                    )
+                    val event =
+                        SykmeldingStatusKafkaEventDTO(
+                            sykmeldingId = "1",
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                            statusEvent = StatusEventDTO.BEKREFTET.name,
+                            arbeidsgiver = null,
+                            sporsmals = null,
+                        )
+                    val formData =
+                        SykmeldingFormResponse(
+                            erOpplysningeneRiktige =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Er opplysningene riktige?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            arbeidssituasjon =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Arbeidssituasjon",
+                                    svar = Arbeidssituasjon.ARBEIDSLEDIG,
+                                ),
+                            uriktigeOpplysninger = null,
+                            arbeidsgiverOrgnummer = null,
+                            riktigNarmesteLeder = null,
+                            harBruktEgenmelding = null,
+                            egenmeldingsperioder = null,
+                            harForsikring = null,
+                            egenmeldingsdager = null,
+                            harBruktEgenmeldingsdager = null,
+                            fisker = null,
+                        )
 
                     database.insertStatus(event, formData) {}
 
                     val (status, formResponse) = database.getSykmeldingStatus("1", "fnr")
 
                     status.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET.name
-                    formResponse?.arbeidssituasjon?.svar shouldBeEqualTo Arbeidssituasjon.ARBEIDSLEDIG
+                    formResponse?.arbeidssituasjon?.svar shouldBeEqualTo
+                        Arbeidssituasjon.ARBEIDSLEDIG
                     formResponse?.erOpplysningeneRiktige?.svar shouldBeEqualTo JaEllerNei.JA
                 }
 
@@ -247,65 +253,78 @@ class SykmeldingStatusDbTest :
                     )
                     TestDB.database.insertSymelding("1", "fnr", getSykmelding())
 
-                    val event = SykmeldingStatusKafkaEventDTO(
-                        sykmeldingId = "1",
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        statusEvent = StatusEventDTO.BEKREFTET.name,
-                        arbeidsgiver = null,
-                        sporsmals = null,
-                    )
-                    val formData = SykmeldingFormResponse(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "Er opplysningene riktige?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "Arbeidssituasjon",
-                            svar = Arbeidssituasjon.ARBEIDSTAKER,
-                        ),
-                        arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "Arbeidsgiver",
-                            svar = "123456789",
-                        ),
-                        riktigNarmesteLeder = SporsmalSvar(
-                            sporsmaltekst = "Riktig nærmeste leder",
-                            svar = JaEllerNei.JA,
-                        ),
-                        harBruktEgenmeldingsdager = SporsmalSvar(
-                            sporsmaltekst = "Har du brukt egenmeldingsdager?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        egenmeldingsdager = SporsmalSvar(
-                            sporsmaltekst = "Når var du sykmeldt?",
-                            svar = listOf(
-                                OffsetDateTime.now().minusDays(6).toLocalDate(),
-                                OffsetDateTime.now().minusDays(5).toLocalDate(),
-                            ),
-                        ),
-                        uriktigeOpplysninger = null,
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = null,
-                        fisker = null,
-                    )
+                    val event =
+                        SykmeldingStatusKafkaEventDTO(
+                            sykmeldingId = "1",
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                            statusEvent = StatusEventDTO.BEKREFTET.name,
+                            arbeidsgiver = null,
+                            sporsmals = null,
+                        )
+                    val formData =
+                        SykmeldingFormResponse(
+                            erOpplysningeneRiktige =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Er opplysningene riktige?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            arbeidssituasjon =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Arbeidssituasjon",
+                                    svar = Arbeidssituasjon.ARBEIDSTAKER,
+                                ),
+                            arbeidsgiverOrgnummer =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Arbeidsgiver",
+                                    svar = "123456789",
+                                ),
+                            riktigNarmesteLeder =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Riktig nærmeste leder",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            harBruktEgenmeldingsdager =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Har du brukt egenmeldingsdager?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            egenmeldingsdager =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Når var du sykmeldt?",
+                                    svar =
+                                        listOf(
+                                            OffsetDateTime.now().minusDays(6).toLocalDate(),
+                                            OffsetDateTime.now().minusDays(5).toLocalDate(),
+                                        ),
+                                ),
+                            uriktigeOpplysninger = null,
+                            harBruktEgenmelding = null,
+                            egenmeldingsperioder = null,
+                            harForsikring = null,
+                            fisker = null,
+                        )
 
                     database.insertStatus(event, formData) {}
 
                     val (status, formResponse) = database.getSykmeldingStatus("1", "fnr")
 
                     status.statusEvent shouldBeEqualTo StatusEventDTO.BEKREFTET.name
-                    formResponse?.arbeidssituasjon?.svar shouldBeEqualTo Arbeidssituasjon.ARBEIDSTAKER
+                    formResponse?.arbeidssituasjon?.svar shouldBeEqualTo
+                        Arbeidssituasjon.ARBEIDSTAKER
                     formResponse?.erOpplysningeneRiktige?.svar shouldBeEqualTo JaEllerNei.JA
                     formResponse?.arbeidsgiverOrgnummer?.svar shouldBeEqualTo "123456789"
                     formResponse?.riktigNarmesteLeder?.svar shouldBeEqualTo JaEllerNei.JA
                     formResponse?.harBruktEgenmeldingsdager?.svar shouldBeEqualTo JaEllerNei.JA
-                    formResponse?.egenmeldingsdager?.svar shouldBeEqualTo listOf(
-                        OffsetDateTime.now().minusDays(6).toLocalDate(),
-                        OffsetDateTime.now().minusDays(5).toLocalDate(),
-                    )
+                    formResponse?.egenmeldingsdager?.svar shouldBeEqualTo
+                        listOf(
+                            OffsetDateTime.now().minusDays(6).toLocalDate(),
+                            OffsetDateTime.now().minusDays(5).toLocalDate(),
+                        )
                 }
 
-                test("status for fisker on hyre (i.e. arbeidstaker) should be inserted with form values") {
+                test(
+                    "status for fisker on hyre (i.e. arbeidstaker) should be inserted with form values"
+                ) {
                     TestDB.database.insertStatus(
                         "1",
                         getStatus(
@@ -319,56 +338,68 @@ class SykmeldingStatusDbTest :
                     )
                     TestDB.database.insertSymelding("1", "fnr", getSykmelding())
 
-                    val event = SykmeldingStatusKafkaEventDTO(
-                        sykmeldingId = "1",
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        statusEvent = StatusEventDTO.BEKREFTET.name,
-                        arbeidsgiver = null,
-                        sporsmals = null,
-                    )
-                    val formData = SykmeldingFormResponse(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "Er opplysningene riktige?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "Arbeidssituasjon",
-                            svar = Arbeidssituasjon.FISKER,
-                        ),
-                        fisker = FiskerSvar(
-                            blad = SporsmalSvar(
-                                sporsmaltekst = "Blad",
-                                svar = Blad.A,
-                            ),
-                            lottOgHyre = SporsmalSvar(
-                                sporsmaltekst = "Lott og hyre",
-                                svar = LottOgHyre.HYRE,
-                            ),
-                        ),
-                        arbeidsgiverOrgnummer = SporsmalSvar(
-                            sporsmaltekst = "Arbeidsgiver",
-                            svar = "123456789",
-                        ),
-                        riktigNarmesteLeder = SporsmalSvar(
-                            sporsmaltekst = "Riktig nærmeste leder",
-                            svar = JaEllerNei.JA,
-                        ),
-                        harBruktEgenmeldingsdager = SporsmalSvar(
-                            sporsmaltekst = "Har du brukt egenmeldingsdager?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        egenmeldingsdager = SporsmalSvar(
-                            sporsmaltekst = "Når var du sykmeldt?",
-                            svar = listOf(
-                                OffsetDateTime.now().minusDays(6).toLocalDate(),
-                                OffsetDateTime.now().minusDays(5).toLocalDate(),
-                            ),
-                        ),
-                        uriktigeOpplysninger = null,
-                        harBruktEgenmelding = null,
-                        egenmeldingsperioder = null,
-                        harForsikring = null,
-                    )
+                    val event =
+                        SykmeldingStatusKafkaEventDTO(
+                            sykmeldingId = "1",
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                            statusEvent = StatusEventDTO.BEKREFTET.name,
+                            arbeidsgiver = null,
+                            sporsmals = null,
+                        )
+                    val formData =
+                        SykmeldingFormResponse(
+                            erOpplysningeneRiktige =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Er opplysningene riktige?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            arbeidssituasjon =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Arbeidssituasjon",
+                                    svar = Arbeidssituasjon.FISKER,
+                                ),
+                            fisker =
+                                FiskerSvar(
+                                    blad =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "Blad",
+                                            svar = Blad.A,
+                                        ),
+                                    lottOgHyre =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "Lott og hyre",
+                                            svar = LottOgHyre.HYRE,
+                                        ),
+                                ),
+                            arbeidsgiverOrgnummer =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Arbeidsgiver",
+                                    svar = "123456789",
+                                ),
+                            riktigNarmesteLeder =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Riktig nærmeste leder",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            harBruktEgenmeldingsdager =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Har du brukt egenmeldingsdager?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            egenmeldingsdager =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Når var du sykmeldt?",
+                                    svar =
+                                        listOf(
+                                            OffsetDateTime.now().minusDays(6).toLocalDate(),
+                                            OffsetDateTime.now().minusDays(5).toLocalDate(),
+                                        ),
+                                ),
+                            uriktigeOpplysninger = null,
+                            harBruktEgenmelding = null,
+                            egenmeldingsperioder = null,
+                            harForsikring = null,
+                        )
 
                     database.insertStatus(event, formData) {}
 
@@ -382,13 +413,16 @@ class SykmeldingStatusDbTest :
                     formResponse?.arbeidsgiverOrgnummer?.svar shouldBeEqualTo "123456789"
                     formResponse?.riktigNarmesteLeder?.svar shouldBeEqualTo JaEllerNei.JA
                     formResponse?.harBruktEgenmeldingsdager?.svar shouldBeEqualTo JaEllerNei.JA
-                    formResponse?.egenmeldingsdager?.svar shouldBeEqualTo listOf(
-                        OffsetDateTime.now().minusDays(6).toLocalDate(),
-                        OffsetDateTime.now().minusDays(5).toLocalDate(),
-                    )
+                    formResponse?.egenmeldingsdager?.svar shouldBeEqualTo
+                        listOf(
+                            OffsetDateTime.now().minusDays(6).toLocalDate(),
+                            OffsetDateTime.now().minusDays(5).toLocalDate(),
+                        )
                 }
 
-                test("status for fisker on lott (i.e. næringsdrivende) should be inserted with form values") {
+                test(
+                    "status for fisker on lott (i.e. næringsdrivende) should be inserted with form values"
+                ) {
                     TestDB.database.insertStatus(
                         "1",
                         getStatus(
@@ -402,55 +436,66 @@ class SykmeldingStatusDbTest :
                     )
                     TestDB.database.insertSymelding("1", "fnr", getSykmelding())
 
-                    val event = SykmeldingStatusKafkaEventDTO(
-                        sykmeldingId = "1",
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                        statusEvent = StatusEventDTO.BEKREFTET.name,
-                        arbeidsgiver = null,
-                        sporsmals = null,
-                    )
-                    val formData = SykmeldingFormResponse(
-                        erOpplysningeneRiktige = SporsmalSvar(
-                            sporsmaltekst = "Er opplysningene riktige?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        arbeidssituasjon = SporsmalSvar(
-                            sporsmaltekst = "Arbeidssituasjon",
-                            svar = Arbeidssituasjon.FISKER,
-                        ),
-                        fisker = FiskerSvar(
-                            blad = SporsmalSvar(
-                                sporsmaltekst = "Blad",
-                                svar = Blad.B,
-                            ),
-                            lottOgHyre = SporsmalSvar(
-                                sporsmaltekst = "Lott og hyre",
-                                svar = LottOgHyre.LOTT,
-                            ),
-                        ),
-                        harBruktEgenmelding = SporsmalSvar(
-                            sporsmaltekst = "Har du brukt egenmelding?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        egenmeldingsperioder = SporsmalSvar(
-                            sporsmaltekst = "Når var du sykmeldt?",
-                            svar = listOf(
-                                Egenmeldingsperiode(
-                                    OffsetDateTime.now().minusDays(6).toLocalDate(),
-                                    OffsetDateTime.now().minusDays(5).toLocalDate(),
+                    val event =
+                        SykmeldingStatusKafkaEventDTO(
+                            sykmeldingId = "1",
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC),
+                            statusEvent = StatusEventDTO.BEKREFTET.name,
+                            arbeidsgiver = null,
+                            sporsmals = null,
+                        )
+                    val formData =
+                        SykmeldingFormResponse(
+                            erOpplysningeneRiktige =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Er opplysningene riktige?",
+                                    svar = JaEllerNei.JA,
                                 ),
-                            ),
-                        ),
-                        harForsikring = SporsmalSvar(
-                            sporsmaltekst = "Har du forsikring?",
-                            svar = JaEllerNei.JA,
-                        ),
-                        arbeidsgiverOrgnummer = null,
-                        riktigNarmesteLeder = null,
-                        harBruktEgenmeldingsdager = null,
-                        egenmeldingsdager = null,
-                        uriktigeOpplysninger = null,
-                    )
+                            arbeidssituasjon =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Arbeidssituasjon",
+                                    svar = Arbeidssituasjon.FISKER,
+                                ),
+                            fisker =
+                                FiskerSvar(
+                                    blad =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "Blad",
+                                            svar = Blad.B,
+                                        ),
+                                    lottOgHyre =
+                                        SporsmalSvar(
+                                            sporsmaltekst = "Lott og hyre",
+                                            svar = LottOgHyre.LOTT,
+                                        ),
+                                ),
+                            harBruktEgenmelding =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Har du brukt egenmelding?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            egenmeldingsperioder =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Når var du sykmeldt?",
+                                    svar =
+                                        listOf(
+                                            Egenmeldingsperiode(
+                                                OffsetDateTime.now().minusDays(6).toLocalDate(),
+                                                OffsetDateTime.now().minusDays(5).toLocalDate(),
+                                            ),
+                                        ),
+                                ),
+                            harForsikring =
+                                SporsmalSvar(
+                                    sporsmaltekst = "Har du forsikring?",
+                                    svar = JaEllerNei.JA,
+                                ),
+                            arbeidsgiverOrgnummer = null,
+                            riktigNarmesteLeder = null,
+                            harBruktEgenmeldingsdager = null,
+                            egenmeldingsdager = null,
+                            uriktigeOpplysninger = null,
+                        )
 
                     database.insertStatus(event, formData) {}
 
@@ -462,12 +507,13 @@ class SykmeldingStatusDbTest :
                     formResponse?.fisker?.blad?.svar shouldBeEqualTo Blad.B
                     formResponse?.fisker?.lottOgHyre?.svar shouldBeEqualTo LottOgHyre.LOTT
                     formResponse?.harBruktEgenmelding?.svar shouldBeEqualTo JaEllerNei.JA
-                    formResponse?.egenmeldingsperioder?.svar shouldBeEqualTo listOf(
-                        Egenmeldingsperiode(
-                            OffsetDateTime.now().minusDays(6).toLocalDate(),
-                            OffsetDateTime.now().minusDays(5).toLocalDate(),
-                        ),
-                    )
+                    formResponse?.egenmeldingsperioder?.svar shouldBeEqualTo
+                        listOf(
+                            Egenmeldingsperiode(
+                                OffsetDateTime.now().minusDays(6).toLocalDate(),
+                                OffsetDateTime.now().minusDays(5).toLocalDate(),
+                            ),
+                        )
                     formResponse?.harForsikring?.svar shouldBeEqualTo JaEllerNei.JA
                 }
             }
