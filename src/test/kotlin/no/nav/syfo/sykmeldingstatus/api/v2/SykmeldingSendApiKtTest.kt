@@ -202,5 +202,6 @@ fun opprettSykmeldingUserEvent(): SykmeldingFormResponse {
         harForsikring = null,
         harBruktEgenmeldingsdager = null,
         egenmeldingsdager = null,
+        fisker = null,
     )
 }

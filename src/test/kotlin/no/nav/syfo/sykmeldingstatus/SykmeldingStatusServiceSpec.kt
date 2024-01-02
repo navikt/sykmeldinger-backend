@@ -434,6 +434,7 @@ class SykmeldingStatusServiceSpec :
                             harForsikring = null,
                             harBruktEgenmeldingsdager = null,
                             egenmeldingsdager = null,
+                            fisker = null,
                         )
 
                     sykmeldingStatusService.createSendtStatus(
@@ -500,6 +501,7 @@ class SykmeldingStatusServiceSpec :
                             harForsikring = null,
                             harBruktEgenmeldingsdager = null,
                             egenmeldingsdager = null,
+                            fisker = null,
                         )
 
                     assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -570,6 +572,7 @@ class SykmeldingStatusServiceSpec :
                             harForsikring = null,
                             harBruktEgenmeldingsdager = null,
                             egenmeldingsdager = null,
+                            fisker = null,
                         )
 
                     assertFailsWith(InvalidSykmeldingStatusException::class) {
@@ -619,6 +622,7 @@ class SykmeldingStatusServiceSpec :
                             harForsikring = null,
                             harBruktEgenmeldingsdager = null,
                             egenmeldingsdager = null,
+                            fisker = null,
                         )
 
                     sykmeldingStatusService.createSendtStatus(
@@ -697,6 +701,7 @@ class SykmeldingStatusServiceSpec :
                             harForsikring = null,
                             harBruktEgenmeldingsdager = null,
                             egenmeldingsdager = null,
+                            fisker = null,
                         )
 
                     val expected = slot<SykmeldingStatusKafkaEventDTO>()

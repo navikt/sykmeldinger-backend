@@ -8,9 +8,13 @@ import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
+import no.nav.syfo.sykmeldingstatus.api.v2.LottOgHyre
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.FiskereSvarKafkaDTO
+import no.nav.syfo.sykmeldingstatus.kafka.model.KomplettInnsendtSkjemaSvar
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_AVBRUTT
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
@@ -42,16 +46,38 @@ fun SykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
                 )
             },
         sporsmals = toSporsmalSvarListe(arbeidsgiver, sykmeldingId),
+        brukerSvar = toKomplettInnsendtSkjema(),
         tidligereArbeidsgiver =
             tidligereArbeidsgiver?.let {
                 TidligereArbeidsgiverKafkaDTO(
                     orgNavn = it.orgNavn,
                     orgnummer = it.orgnummer,
-                    sykmeldingsId = it.sykmeldingsId
+                    sykmeldingsId = it.sykmeldingsId,
                 )
-            }
+            },
     )
 }
+
+private fun SykmeldingFormResponse.toKomplettInnsendtSkjema() =
+    KomplettInnsendtSkjemaSvar(
+        erOpplysningeneRiktige = erOpplysningeneRiktige,
+        uriktigeOpplysninger = uriktigeOpplysninger,
+        arbeidssituasjon = arbeidssituasjon,
+        arbeidsgiverOrgnummer = arbeidsgiverOrgnummer,
+        riktigNarmesteLeder = riktigNarmesteLeder,
+        harBruktEgenmelding = harBruktEgenmelding,
+        egenmeldingsperioder = egenmeldingsperioder,
+        harForsikring = harForsikring,
+        egenmeldingsdager = egenmeldingsdager,
+        harBruktEgenmeldingsdager = harBruktEgenmeldingsdager,
+        fisker =
+            fisker?.let {
+                FiskereSvarKafkaDTO(
+                    blad = it.blad,
+                    lottOgHyre = it.lottOgHyre,
+                )
+            },
+    )
 
 fun SykmeldingFormResponse.toSporsmalSvarListe(
     arbeidsgiver: Arbeidsgiverinfo? = null,
@@ -79,11 +105,23 @@ private fun SykmeldingFormResponse.egenmeldingsdagerBuilder(): SporsmalOgSvarKaf
 }
 
 private fun SykmeldingFormResponse.arbeidssituasjonSporsmalBuilder(): SporsmalOgSvarKafkaDTO {
+    // In the old sporsmal and svar list, fiskere should be mapped to ARBEIDSTAKER or
+    // NAERINGSDRIVENDE, dependening on whether or not they are working on lott or hyre.
+    val normalisertSituasjon: Arbeidssituasjon =
+        when (arbeidssituasjon.svar) {
+            Arbeidssituasjon.FISKER -> {
+                val isHyre = fisker?.lottOgHyre?.svar == LottOgHyre.HYRE
+
+                if (isHyre) Arbeidssituasjon.ARBEIDSTAKER else Arbeidssituasjon.NAERINGSDRIVENDE
+            }
+            else -> arbeidssituasjon.svar
+        }
+
     return SporsmalOgSvarKafkaDTO(
         tekst = arbeidssituasjon.sporsmaltekst,
         shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
         svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
-        svar = arbeidssituasjon.svar.name,
+        svar = normalisertSituasjon.name,
     )
 }
 

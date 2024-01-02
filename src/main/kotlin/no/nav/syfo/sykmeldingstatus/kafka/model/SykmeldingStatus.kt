@@ -1,5 +1,14 @@
 package no.nav.syfo.sykmeldingstatus.kafka.model
 
+import java.time.LocalDate
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
+import no.nav.syfo.sykmeldingstatus.api.v2.Blad
+import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
+import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
+import no.nav.syfo.sykmeldingstatus.api.v2.LottOgHyre
+import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
+import no.nav.syfo.sykmeldingstatus.api.v2.UriktigeOpplysningerType
+
 const val STATUS_APEN = "APEN"
 const val STATUS_AVBRUTT = "AVBRUTT"
 const val STATUS_UTGATT = "UTGATT"
@@ -26,18 +35,37 @@ enum class ShortNameKafkaDTO {
     FRAVAER,
     PERIODE,
     FORSIKRING,
-    EGENMELDINGSDAGER
+    EGENMELDINGSDAGER,
 }
 
 enum class SvartypeKafkaDTO {
     ARBEIDSSITUASJON,
     PERIODER,
     JA_NEI,
-    DAGER
+    DAGER,
 }
 
 data class TidligereArbeidsgiverKafkaDTO(
     val orgNavn: String,
     val orgnummer: String,
     val sykmeldingsId: String,
+)
+
+data class KomplettInnsendtSkjemaSvar(
+    val erOpplysningeneRiktige: SporsmalSvar<JaEllerNei>,
+    val uriktigeOpplysninger: SporsmalSvar<List<UriktigeOpplysningerType>>?,
+    val arbeidssituasjon: SporsmalSvar<Arbeidssituasjon>,
+    val arbeidsgiverOrgnummer: SporsmalSvar<String>?,
+    val riktigNarmesteLeder: SporsmalSvar<JaEllerNei>?,
+    val harBruktEgenmelding: SporsmalSvar<JaEllerNei>?,
+    val egenmeldingsperioder: SporsmalSvar<List<Egenmeldingsperiode>>?,
+    val harForsikring: SporsmalSvar<JaEllerNei>?,
+    val egenmeldingsdager: SporsmalSvar<List<LocalDate>>?,
+    val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?,
+    val fisker: FiskereSvarKafkaDTO?,
+)
+
+data class FiskereSvarKafkaDTO(
+    val blad: SporsmalSvar<Blad>,
+    val lottOgHyre: SporsmalSvar<LottOgHyre>,
 )

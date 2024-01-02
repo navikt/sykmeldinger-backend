@@ -189,6 +189,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
                             harForsikring = null,
                             egenmeldingsdager = null,
                             harBruktEgenmeldingsdager = null,
+                            fisker = null,
                         )
                         .toPGObject(),
                 )

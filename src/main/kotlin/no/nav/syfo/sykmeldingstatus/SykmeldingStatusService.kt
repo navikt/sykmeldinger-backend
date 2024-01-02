@@ -27,7 +27,9 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ANNET
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
+import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.FISKER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
+import no.nav.syfo.sykmeldingstatus.api.v2.LottOgHyre
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
@@ -522,7 +524,10 @@ class SykmeldingStatusService(
 }
 
 fun SykmeldingFormResponse.toStatusEvent(): StatusEventDTO {
-    if (arbeidssituasjon.svar == Arbeidssituasjon.ARBEIDSTAKER) {
+    if (
+        arbeidssituasjon.svar == Arbeidssituasjon.ARBEIDSTAKER ||
+            (arbeidssituasjon.svar == FISKER && fisker?.lottOgHyre?.svar == LottOgHyre.HYRE)
+    ) {
         return StatusEventDTO.SENDT
     }
     return StatusEventDTO.BEKREFTET

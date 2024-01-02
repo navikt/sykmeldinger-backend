@@ -5,7 +5,6 @@ import no.nav.syfo.sykmeldingstatus.kafka.util.JacksonKafkaSerializer
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
-import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 
 class KafkaUtils {
