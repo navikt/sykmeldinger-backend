@@ -83,7 +83,7 @@ fun SykmeldingFormResponse.validate() {
                 "Spørsmål om egenmelding må være besvart når arbeidssituasjon er fisker på lott",
             )
 
-            if (fisker?.blad?.svar == Blad.A) {
+            if (fisker.blad.svar == Blad.A) {
                 // Should have answered forsikringsspørsmål
                 requireNotNull(
                     harForsikring,

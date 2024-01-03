@@ -9,6 +9,7 @@ import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
+import no.nav.syfo.sykmeldingstatus.api.v2.Blad
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.LottOgHyre
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
@@ -189,6 +190,16 @@ private fun SykmeldingFormResponse.forsikringSporsmalBuilder(): SporsmalOgSvarKa
             svar = harForsikring.svar.name,
         )
     }
+
+    if (fisker?.blad?.svar == Blad.B && fisker.lottOgHyre.svar != LottOgHyre.HYRE) {
+        return SporsmalOgSvarKafkaDTO(
+            tekst = "Har du forsikring som gjelder for de første 16 dagene av sykefraværet?",
+            shortName = ShortNameKafkaDTO.FORSIKRING,
+            svartype = SvartypeKafkaDTO.JA_NEI,
+            svar = "JA",
+        )
+    }
+
     return null
 }
 
