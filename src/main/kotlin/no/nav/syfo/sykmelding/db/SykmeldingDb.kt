@@ -2,7 +2,6 @@ package no.nav.syfo.sykmelding.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.ResultSet
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,7 +20,6 @@ import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
-import no.nav.syfo.sykmelding.model.UtenlandskSykmelding
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 
 class SykmeldingDb(private val database: DatabaseInterface) {
@@ -95,108 +93,6 @@ class SykmeldingDb(private val database: DatabaseInterface) {
             }
         }
 
-    suspend fun getOlderSykmeldinger(fnr: String) =
-        withContext(Dispatchers.IO) {
-            database.connection.use { connection ->
-                connection
-                    .prepareStatement(
-                        """
-                select b.sykmelding_id,
-                   sykmelding,
-                   ss.event,
-                   ss.arbeidsgiver,
-                   ss.timestamp,
-                   b.behandlingsutfall,
-                   b.rule_hits
-                from sykmelding sykmelding
-                     inner join sykmeldingstatus ss
-                                on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp =
-                                                                                   (select max(timestamp)
-                                                                                    from sykmeldingstatus
-                                                                                    where sykmelding_id = sykmelding.sykmelding_id)
-                     inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
-                     inner join sykmeldt s on sykmelding.fnr = s.fnr
-            where sykmelding.fnr = ?
-              AND NOT (ss.event = 'APEN')
-              AND NOT sykmelding @> '{"merknader": [{"type": "UNDER_BEHANDLING"}]}'
-
-            """
-                            .trimIndent(),
-                    )
-                    .use {
-                        it.setString(1, fnr)
-                        it.executeQuery().toList { toMinimalSykmelding() }
-                    }
-            }
-        }
-
-    suspend fun getProcessingSykmeldinger(fnr: String) =
-        withContext(Dispatchers.IO) {
-            database.connection.use { connection ->
-                connection
-                    .prepareStatement(
-                        """
-                select b.sykmelding_id,
-                   sykmelding,
-                   ss.event,
-                   ss.arbeidsgiver,
-                   ss.timestamp,
-                   b.behandlingsutfall,
-                   b.rule_hits
-            from sykmelding sykmelding
-                     inner join sykmeldingstatus ss
-                                on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp =
-                                                                                   (select max(timestamp)
-                                                                                    from sykmeldingstatus
-                                                                                    where sykmelding_id = sykmelding.sykmelding_id)
-                     inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
-                     inner join sykmeldt s on sykmelding.fnr = s.fnr
-            where sykmelding.fnr = ?
-              AND (ss.event = 'SENDT')
-              AND sykmelding @> '{"merknader": [{"type": "UNDER_BEHANDLING"}]}'
-            """
-                            .trimIndent(),
-                    )
-                    .use {
-                        it.setString(1, fnr)
-                        it.executeQuery().toList { toMinimalSykmelding() }
-                    }
-            }
-        }
-
-    suspend fun getUnsentSykmeldinger(fnr: String) =
-        withContext(Dispatchers.IO) {
-            database.connection.use { connection ->
-                connection
-                    .prepareStatement(
-                        """
-            select b.sykmelding_id,
-                   sykmelding,
-                   ss.event,
-                   ss.arbeidsgiver,
-                   ss.timestamp,
-                   b.behandlingsutfall,
-                   b.rule_hits
-            from sykmelding sykmelding
-                     inner join sykmeldingstatus ss
-                                on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp =
-                                                                                   (select max(timestamp)
-                                                                                    from sykmeldingstatus
-                                                                                    where sykmelding_id = sykmelding.sykmelding_id)
-                     inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
-                     inner join sykmeldt s on sykmelding.fnr = s.fnr
-            where sykmelding.fnr = ?
-              AND ss.event = 'APEN';
-            """
-                            .trimIndent(),
-                    )
-                    .use {
-                        it.setString(1, fnr)
-                        it.executeQuery().toList { toMinimalSykmelding() }
-                    }
-            }
-        }
-
     suspend fun sykmeldingExists(sykmeldingId: String): Boolean =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
@@ -248,60 +144,6 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 }
             }
         }
-}
-
-data class ArbeidsgiverMinimal(
-    val orgNavn: String,
-    val orgnummer: String,
-    val juridiskOrgnummer: String,
-)
-
-data class RuleHitsMinimal(
-    val ruleName: String,
-    val ruleStatus: String,
-    val messageForUser: String,
-    val messageForSender: String,
-)
-
-data class GradertMinimal(
-    val grad: Int,
-)
-
-data class MinimalPeriod(
-    val fom: String,
-    val tom: String,
-    val type: String,
-    val gradert: GradertMinimal?,
-    val behandlingsdager: Int?,
-)
-
-data class SykmeldingMinimal(
-    val papirsykmelding: Boolean,
-    val egenmeldt: Boolean?,
-    val utenlandskSykmelding: UtenlandskSykmelding?,
-    val sykmeldingsperioder: List<MinimalPeriod>,
-)
-
-data class MinimalSykmelding(
-    val sykmelding_id: String,
-    val event: String,
-    val arbeidsgiver: ArbeidsgiverMinimal?,
-    val rule_hits: List<RuleHitsMinimal>,
-    val timestamp: OffsetDateTime,
-    val behandlingsutfall: String,
-    val sykmelding: SykmeldingMinimal,
-)
-
-private fun ResultSet.toMinimalSykmelding(): MinimalSykmelding {
-    return MinimalSykmelding(
-        sykmelding_id = getString("sykmelding_id"),
-        event = getString("event"),
-        arbeidsgiver = getObject("arbeidsgiver")?.let { objectMapper.readValue(it.toString()) },
-        rule_hits = objectMapper.readValue(getString("rule_hits")),
-        timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-        behandlingsutfall = getString("behandlingsutfall"),
-        sykmelding = objectMapper.readValue(getString("sykmelding")),
-    )
 }
 
 private fun ResultSet.toSykmelding(): SykmeldingDTO {
