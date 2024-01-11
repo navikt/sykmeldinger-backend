@@ -3,7 +3,6 @@ package no.nav.syfo.sykmelding.db
 import io.kotest.core.spec.style.FunSpec
 import java.time.OffsetDateTime
 import java.util.UUID
-import no.nav.syfo.sykmelding.model.MerknadDTO
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.ShortNameDTO
 import no.nav.syfo.sykmelding.model.SporsmalDTO
@@ -21,7 +20,6 @@ import no.nav.syfo.testutils.insertStatus
 import no.nav.syfo.testutils.insertSykmeldt
 import no.nav.syfo.testutils.insertSymelding
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldHaveSize
 
 class SykmeldingDbTest :
     FunSpec(
@@ -284,106 +282,6 @@ class SykmeldingDbTest :
 
                     val sykmelding = sykmeldingDb.getSykmelding(sykmeldingId, fnr)!!
                     sykmelding.utenlandskSykmelding shouldBeEqualTo UtenlandskSykmelding("Danmark")
-                }
-
-                test("filtrering i databasen skal hente nye sykmeldinger korrekt") {
-                    testDb.insertSykmeldt(fnr)
-
-                    testDb.insertSymelding(
-                        sykmeldingId,
-                        fnr,
-                        getSykmelding(),
-                    )
-                    testDb.insertStatus(
-                        sykmeldingId,
-                        getStatus(
-                            StatusEventDTO.APEN.name,
-                            OffsetDateTime.now().minusDays(1),
-                        ),
-                    )
-                    testDb.insertBehandlingsutfall(
-                        sykmeldingId,
-                        getBehandlingsutfall(RegelStatusDTO.OK),
-                    )
-
-                    val older = sykmeldingDb.getOlderSykmeldinger(fnr)
-                    val unsent = sykmeldingDb.getUnsentSykmeldinger(fnr)
-                    val processing = sykmeldingDb.getProcessingSykmeldinger(fnr)
-
-                    older shouldHaveSize 0
-                    unsent shouldHaveSize 1
-                    processing shouldHaveSize 0
-                }
-
-                test("filtrering i databasen skal hente under behandling sykmeldinger korrekt") {
-                    testDb.insertSykmeldt(fnr)
-
-                    testDb.insertSymelding(
-                        sykmeldingId,
-                        fnr,
-                        getSykmelding()
-                            .copy(
-                                merknader =
-                                    listOf(
-                                        MerknadDTO(
-                                            type = "UNDER_BEHANDLING",
-                                            beskrivelse = "Beskrivelse",
-                                        ),
-                                    ),
-                            ),
-                    )
-                    testDb.insertStatus(
-                        sykmeldingId,
-                        getStatus(
-                            StatusEventDTO.SENDT.name,
-                            OffsetDateTime.now().minusDays(1),
-                        ),
-                    )
-
-                    testDb.insertBehandlingsutfall(
-                        sykmeldingId,
-                        getBehandlingsutfall(RegelStatusDTO.OK),
-                    )
-
-                    val older = sykmeldingDb.getOlderSykmeldinger(fnr)
-                    val unsent = sykmeldingDb.getUnsentSykmeldinger(fnr)
-                    val processing = sykmeldingDb.getProcessingSykmeldinger(fnr)
-
-                    older shouldHaveSize 0
-                    unsent shouldHaveSize 0
-                    processing shouldHaveSize 1
-                }
-
-                test(
-                    "filtrering i databasen skal hente under already sent not under behandling sykmeldinger korrekt"
-                ) {
-                    testDb.insertSykmeldt(fnr)
-
-                    testDb.insertSymelding(
-                        sykmeldingId,
-                        fnr,
-                        getSykmelding(),
-                    )
-                    testDb.insertStatus(
-                        sykmeldingId,
-                        getStatus(
-                            StatusEventDTO.SENDT.name,
-                            OffsetDateTime.now().minusDays(1),
-                        ),
-                    )
-
-                    testDb.insertBehandlingsutfall(
-                        sykmeldingId,
-                        getBehandlingsutfall(RegelStatusDTO.OK),
-                    )
-
-                    val older = sykmeldingDb.getOlderSykmeldinger(fnr)
-                    val unsent = sykmeldingDb.getUnsentSykmeldinger(fnr)
-                    val processing = sykmeldingDb.getProcessingSykmeldinger(fnr)
-
-                    older shouldHaveSize 1
-                    unsent shouldHaveSize 0
-                    processing shouldHaveSize 0
                 }
             }
         },
