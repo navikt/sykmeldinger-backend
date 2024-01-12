@@ -115,6 +115,7 @@ private fun SykmeldingFormResponse.arbeidssituasjonSporsmalBuilder(): SporsmalOg
 
                 if (isHyre) Arbeidssituasjon.ARBEIDSTAKER else Arbeidssituasjon.NAERINGSDRIVENDE
             }
+            Arbeidssituasjon.JORDBRUKER -> Arbeidssituasjon.NAERINGSDRIVENDE
             else -> arbeidssituasjon.svar
         }
 
