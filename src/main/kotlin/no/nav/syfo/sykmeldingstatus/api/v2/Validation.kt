@@ -27,8 +27,8 @@ fun SykmeldingFormResponse.validate() {
 
     if (
         arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
-        arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
-        arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER
+            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
+            arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER
     ) {
         if (harBruktEgenmelding != null) {
             requireNotNull(
@@ -76,7 +76,7 @@ fun SykmeldingFormResponse.validate() {
 
         if (
             fisker?.lottOgHyre?.svar === LottOgHyre.LOTT ||
-            fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE
+                fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE
         ) {
             // Fisker on LOTT or BEGGE behaves like a næringsdrivende
             requireNotNull(

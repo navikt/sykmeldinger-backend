@@ -94,6 +94,7 @@ fun getStatus(
     timestamp: OffsetDateTime,
     arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null,
     sporsmals: List<SporsmalDTO> = emptyList(),
+    brukerSvar: SykmeldingFormResponse? = null,
     tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
@@ -101,6 +102,7 @@ fun getStatus(
         timestamp = timestamp,
         arbeidsgiver = arbeidsgiverStatusDTO,
         sporsmalOgSvarListe = sporsmals,
+        brukerSvar = brukerSvar,
         tidligereArbeidsgiver = tidligereArbeidsgiver,
     )
 }
