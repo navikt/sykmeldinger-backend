@@ -19,7 +19,6 @@ import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
-import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 
 class SykmeldingDb(private val database: DatabaseInterface) {
@@ -71,7 +70,6 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 ss.event,
                 ss.arbeidsgiver,
                 ss.sporsmal,
-                ss.alle_sporsmal,
                 ss.timestamp,
                 b.behandlingsutfall,
                 b.rule_hits,
