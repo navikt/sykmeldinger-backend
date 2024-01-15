@@ -64,11 +64,12 @@ fun getSykmeldingDTO(
             ),
         sykmeldingStatus =
             SykmeldingStatusDTO(
-                "APEN",
-                timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
-                null,
-                emptyList(),
-                tidligereArbeidsgiver = tidligereArbeidsgiver
+                statusEvent = "APEN",
+                timestamp = timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
+                arbeidsgiver = null,
+                sporsmalOgSvarListe = emptyList(),
+                brukerSvar = null,
+                tidligereArbeidsgiver = tidligereArbeidsgiver,
             ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
@@ -148,6 +149,7 @@ internal fun opprettSykmelding(
                 timestamp = OffsetDateTime.now(ZoneOffset.UTC),
                 arbeidsgiver = arbeidsgiver,
                 sporsmalOgSvarListe = emptyList(),
+                brukerSvar = null,
                 tidligereArbeidsgiver = tidligereArbeidsgiver
             ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
