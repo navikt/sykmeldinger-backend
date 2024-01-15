@@ -70,6 +70,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 ss.event,
                 ss.arbeidsgiver,
                 ss.sporsmal,
+                ss.alle_sporsmal,
                 ss.timestamp,
                 b.behandlingsutfall,
                 b.rule_hits,
