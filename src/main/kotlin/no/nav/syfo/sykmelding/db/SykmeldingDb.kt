@@ -192,6 +192,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                             )
                         }
                     }
+                        ?: emptyList()
                         ?: emptyList(),
                 brukerSvar =
                     getString("alle_sporsmal")?.let {

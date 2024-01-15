@@ -95,7 +95,6 @@ fun getStatus(
     arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null,
     sporsmals: List<SporsmalDTO> = emptyList(),
     brukerSvar: SykmeldingFormResponse? = null,
-    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         statusEvent = status,
