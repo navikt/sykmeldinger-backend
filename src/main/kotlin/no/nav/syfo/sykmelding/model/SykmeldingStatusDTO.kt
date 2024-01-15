@@ -8,5 +8,4 @@ data class SykmeldingStatusDTO(
     val timestamp: OffsetDateTime,
     val arbeidsgiver: ArbeidsgiverStatusDTO?,
     val sporsmalOgSvarListe: List<SporsmalDTO>,
-    val tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 )

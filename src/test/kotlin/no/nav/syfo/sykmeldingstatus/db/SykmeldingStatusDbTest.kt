@@ -171,13 +171,13 @@ class SykmeldingStatusDbTest :
                     getStatus(
                         StatusEventDTO.BEKREFTET.name,
                         OffsetDateTime.now().minusHours(2),
-                        tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                "orgnummer",
-                                "1",
-                            ),
                     ),
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            "orgNavn",
+                            "orgnummer",
+                            "1",
+                        ),
                 )
                 val (status) = database.getSykmeldingStatus("1", "fnr")
                 status.tidligereArbeidsgiver?.orgnummer shouldBeEqualTo "orgnummer"

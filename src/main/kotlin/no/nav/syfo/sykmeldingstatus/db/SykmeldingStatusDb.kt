@@ -6,17 +6,22 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.database.toList
 import no.nav.syfo.log
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
+import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
@@ -137,49 +142,89 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                     }
             }
         }
-}
 
-private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEventDTO {
-    return if (next()) {
-        SykmeldingStatusEventDTO(
-            statusEvent = StatusEventDTO.valueOf(getString("event")),
-            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            erEgenmeldt = getBoolean("egenmeldt"),
-            erAvvist = getString("behandlingsutfall").let { it == "INVALID" },
-        )
-    } else {
-        throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
-    }
-}
-
-private fun ResultSet.toSykmeldingStatusEvent(
-    sykmeldingId: String
-): Pair<SykmeldingStatusKafkaEventDTO, SykmeldingFormResponse?> {
-    return if (next()) {
-        SykmeldingStatusKafkaEventDTO(
-            sykmeldingId = sykmeldingId,
-            timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
-            arbeidsgiver =
-                getObject("arbeidsgiver")?.let {
-                    objectMapper.readValue<ArbeidsgiverStatusKafkaDTO>(it.toString())
-                },
-            sporsmals =
-                // TODO: These could just be mapped directly from alle_sporsmal when all data is
-                // migrated
-                getString("sporsmal")?.let {
-                    objectMapper.readValue<List<SporsmalOgSvarKafkaDTO>>(it)
-                }
-                    ?: emptyList(),
-            statusEvent = getString("event"),
-            tidligereArbeidsgiver =
-                getObject("tidligere_arbeidsgiver")?.let {
-                    objectMapper.readValue<TidligereArbeidsgiverKafkaDTO>(it.toString())
-                },
-        ) to
-            getObject("alle_sporsmal")?.let {
-                objectMapper.readValue<SykmeldingFormResponse>(it.toString())
+    suspend fun getSykmeldingWithStatus(fnr: String): List<SykmeldingWithArbeidsgiverStatus> =
+        withContext(Dispatchers.IO) {
+            databaseInterface.connection.use { connection: Connection ->
+                connection
+                    .prepareStatement(
+                        """
+                select
+                sykmelding.sykmelding_id,
+                sykmelding.sykmelding -> 'sykmeldingsperioder' as sykmeldingsperioder,
+                ss.event,
+                ss.arbeidsgiver,
+                ss.tidligere_arbeidsgiver
+                from sykmelding
+                inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
+                where sykmelding.fnr = ?;
+              """
+                            .trimIndent()
+                    )
+                    .use { ps ->
+                        ps.setString(1, fnr)
+                        ps.executeQuery().toList { toSykmeldingWithArbeidsgiverStatus() }
+                    }
             }
-    } else {
-        throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
+        }
+
+    private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEventDTO {
+        return if (next()) {
+            SykmeldingStatusEventDTO(
+                statusEvent = StatusEventDTO.valueOf(getString("event")),
+                timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+                erEgenmeldt = getBoolean("egenmeldt"),
+                erAvvist = getString("behandlingsutfall").let { it == "INVALID" },
+            )
+        } else {
+            throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
+        }
+    }
+
+    private fun ResultSet.toSykmeldingStatusEvent(
+        sykmeldingId: String
+    ): Pair<SykmeldingStatusKafkaEventDTO, SykmeldingFormResponse?> {
+        return if (next()) {
+            SykmeldingStatusKafkaEventDTO(
+                sykmeldingId = sykmeldingId,
+                timestamp = getTimestamp("timestamp").toInstant().atOffset(ZoneOffset.UTC),
+                arbeidsgiver =
+                    getObject("arbeidsgiver")?.let {
+                        objectMapper.readValue<ArbeidsgiverStatusKafkaDTO>(it.toString())
+                    },
+                sporsmals =
+                    // TODO: These could just be mapped directly from alle_sporsmal when all data is
+                    // migrated
+                    getString("sporsmal")?.let {
+                        objectMapper.readValue<List<SporsmalOgSvarKafkaDTO>>(it)
+                    }
+                        ?: emptyList(),
+                statusEvent = getString("event"),
+                tidligereArbeidsgiver =
+                    getObject("tidligere_arbeidsgiver")?.let {
+                        objectMapper.readValue<TidligereArbeidsgiverKafkaDTO>(it.toString())
+                    },
+            ) to
+                getObject("alle_sporsmal")?.let {
+                    objectMapper.readValue<SykmeldingFormResponse>(it.toString())
+                }
+        } else {
+            throw SykmeldingStatusNotFoundException("Fant ikke status for sykmelding $sykmeldingId")
+        }
     }
 }
+
+private fun ResultSet.toSykmeldingWithArbeidsgiverStatus() =
+    SykmeldingWithArbeidsgiverStatus(
+        sykmeldingId = getString("sykmelding_id"),
+        sykmeldingsperioder = objectMapper.readValue(getString("sykmeldingsperioder")),
+        arbeidsgiver =
+            getObject("arbeidsgiver")?.let {
+                no.nav.syfo.objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+            },
+        tidligereArbeidsgiver =
+            getObject("tidligere_arbeidsgiver")?.let {
+                no.nav.syfo.objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
+            },
+        statusEvent = getString("event")
+    )

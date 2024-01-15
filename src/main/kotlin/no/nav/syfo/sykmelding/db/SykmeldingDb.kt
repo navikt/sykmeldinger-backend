@@ -19,7 +19,6 @@ import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
-import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 
 class SykmeldingDb(private val database: DatabaseInterface) {
@@ -42,8 +41,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr, 
-                ss.tidligere_arbeidsgiver
+                s.fnr
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -77,8 +75,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr,
-                ss.tidligere_arbeidsgiver
+                s.fnr
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -192,11 +189,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                             )
                         }
                     }
-                        ?: emptyList(),
-                tidligereArbeidsgiver =
-                    getObject("tidligere_arbeidsgiver")?.let {
-                        objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
-                    },
+                        ?: emptyList()
             ),
         medisinskVurdering = sykmelding.medisinskVurdering,
         prognose = sykmelding.prognose,

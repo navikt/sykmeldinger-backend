@@ -27,6 +27,8 @@ import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
+import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 
 fun getSykmeldingStatus(
@@ -43,7 +45,6 @@ fun getSykmeldingDTO(
     timestamps: OffsetDateTime? = null,
     fom: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
-    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ) =
     SykmeldingDTO(
         id = "1",
@@ -68,7 +69,6 @@ fun getSykmeldingDTO(
                 timestamps ?: OffsetDateTime.now(ZoneOffset.UTC),
                 null,
                 emptyList(),
-                tidligereArbeidsgiver = tidligereArbeidsgiver
             ),
         behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
         medisinskVurdering = getMedisinskVurdering(),
@@ -116,19 +116,18 @@ internal fun opprettSykmelding(
     fom: LocalDate,
     tom: LocalDate,
     orgnummer: String? = null,
-    status: String = "APEN",
-    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
-): SykmeldingDTO {
+    status: String = STATUS_APEN,
+    sykmeldingId: String = "1",
+    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null,
+): SykmeldingWithArbeidsgiverStatus {
     val arbeidsgiver =
         if (orgnummer != null) {
             ArbeidsgiverStatusDTO(orgnummer, "juridiskOrgnummer", "orgNavn")
         } else {
             null
         }
-    return SykmeldingDTO(
-        id = "1",
-        utdypendeOpplysninger = emptyMap(),
-        kontaktMedPasient = KontaktMedPasientDTO(null, null),
+    return SykmeldingWithArbeidsgiverStatus(
+        sykmeldingId = sykmeldingId,
         sykmeldingsperioder =
             listOf(
                 SykmeldingsperiodeDTO(
@@ -142,44 +141,9 @@ internal fun opprettSykmelding(
                     false,
                 ),
             ),
-        sykmeldingStatus =
-            SykmeldingStatusDTO(
-                statusEvent = status,
-                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                arbeidsgiver = arbeidsgiver,
-                sporsmalOgSvarListe = emptyList(),
-                tidligereArbeidsgiver = tidligereArbeidsgiver
-            ),
-        behandlingsutfall = BehandlingsutfallDTO(RegelStatusDTO.OK, emptyList()),
-        medisinskVurdering = getMedisinskVurdering(),
-        behandler =
-            BehandlerDTO(
-                "fornavn",
-                null,
-                "etternavn",
-                AdresseDTO(null, null, null, null, null),
-                null,
-            ),
-        behandletTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-        mottattTidspunkt = OffsetDateTime.now(ZoneOffset.UTC),
-        skjermesForPasient = false,
-        meldingTilNAV = null,
-        prognose = null,
-        arbeidsgiver = null,
-        tiltakNAV = null,
-        syketilfelleStartDato = null,
-        tiltakArbeidsplassen = null,
-        navnFastlege = null,
-        meldingTilArbeidsgiver = null,
-        legekontorOrgnummer = null,
-        andreTiltak = null,
-        egenmeldt = false,
-        harRedusertArbeidsgiverperiode = false,
-        papirsykmelding = false,
-        merknader = null,
-        pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
-        rulesetVersion = null,
-        utenlandskSykmelding = null,
+        statusEvent = status,
+        arbeidsgiver = arbeidsgiver,
+        tidligereArbeidsgiver = tidligereArbeidsgiver,
     )
 }
 

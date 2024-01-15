@@ -15,7 +15,6 @@ import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
-import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
@@ -51,13 +50,11 @@ class SykmeldingStatusServiceSpec :
 
             val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
             val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
-            val sykmeldingService = mockkClass(SykmeldingService::class)
             val sykmeldingStatusService =
                 SykmeldingStatusService(
                     sykmeldingStatusKafkaProducer,
                     arbeidsgiverService,
                     sykmeldingStatusDb,
-                    sykmeldingService,
                 )
 
             fun checkStatusFails(
@@ -198,8 +195,7 @@ class SykmeldingStatusServiceSpec :
                         any(),
                     )
                 } throws SykmeldingStatusNotFoundException("not found")
-                coEvery { sykmeldingService.getSykmelding(any(), any()) } returns null
-                coEvery { sykmeldingService.getSykmeldinger(any()) } returns emptyList()
+                coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns emptyList()
             }
 
             context("Hent nyeste status") {
@@ -262,12 +258,13 @@ class SykmeldingStatusServiceSpec :
                             erAvvist = true,
                         )
 
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
+                        listOf(
+                            opprettSykmelding(
+                                fom = LocalDate.now(),
+                                tom = LocalDate.now().plusDays(1),
+                            )
                         )
-                    } returns getSykmeldingDTO()
 
                     sykmeldingStatusService.createSendtStatus(
                         opprettBekreftetSykmeldingUserEvent(),
@@ -389,11 +386,16 @@ class SykmeldingStatusServiceSpec :
                             erAvvist = false,
                         )
                     coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
+                        sykmeldingStatusDb.getSykmeldingWithStatus(
                             any(),
                         )
-                    } returns getSykmeldingDTO()
+                    } returns
+                        listOf(
+                            opprettSykmelding(
+                                fom = LocalDate.now(),
+                                tom = LocalDate.now().plusDays(1),
+                            )
+                        )
                     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
                         listOf(
                             Arbeidsgiverinfo(
@@ -652,18 +654,7 @@ class SykmeldingStatusServiceSpec :
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                             erAvvist = false,
                         )
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns getSykmeldingDTO()
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns getSykmeldingDTO()
+
                     coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
                         listOf(
                             Arbeidsgiverinfo(
@@ -1074,19 +1065,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1126,19 +1111,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1172,20 +1151,14 @@ class SykmeldingStatusServiceSpec :
                             fom = 17.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
 
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
-
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
                             any(),
@@ -1232,20 +1205,15 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
 
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmeldingArbeidsgiver1,
                             tidligereSykmeldingArbeidsgiver2,
+                            nySykmelding
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1259,7 +1227,7 @@ class SykmeldingStatusServiceSpec :
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
-                        opprettBekreftetSykmeldingUserEvent(),
+                        opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                         sykmeldingId,
                         fnr,
                     )
@@ -1286,19 +1254,11 @@ class SykmeldingStatusServiceSpec :
                             fom = 9.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
 
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(
-                            tidligereSykmelding,
-                        )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
+                        listOf(tidligereSykmelding, nySykmelding)
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1337,22 +1297,14 @@ class SykmeldingStatusServiceSpec :
                         )
                     val nySykmelding =
                         opprettSykmelding(
-                            fom = 1.januar(2023),
-                            tom = 5.januar(2023),
+                            fom = 9.januar(2023),
+                            tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
 
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
-                        listOf(
-                            tidligereSykmelding,
-                        )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
+                        listOf(tidligereSykmelding, nySykmelding)
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1366,7 +1318,7 @@ class SykmeldingStatusServiceSpec :
                             erAvvist = true,
                         )
                     sykmeldingStatusService.createSendtStatus(
-                        opprettBekreftetSykmeldingUserEvent(),
+                        opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                         sykmeldingId,
                         fnr,
                     )
@@ -1393,20 +1345,14 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
 
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1448,20 +1394,14 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
 
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1487,7 +1427,7 @@ class SykmeldingStatusServiceSpec :
                             any(),
                         )
                     }
-                    coVerify(exactly = 0) { sykmeldingService.getSykmeldinger(any()) }
+                    coVerify(exactly = 0) { sykmeldingStatusDb.getSykmeldingWithStatus(any()) }
                 }
 
                 test("En bekreftet sykmelding kant til kant med en bekreftet sykmelding") {
@@ -1515,20 +1455,14 @@ class SykmeldingStatusServiceSpec :
                             fom = 21.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             arbeidstakerSykmelding,
                             arbeidsledigSykmelding1,
                             arbeidsledigSykmelding2,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns arbeidsledigSykmelding2
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1576,19 +1510,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 1.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1636,19 +1564,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 15.januar(2023),
                             tom = 15.februar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1696,19 +1618,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 5.januar(2023),
                             tom = 20.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1756,19 +1672,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 5.januar(2023),
                             tom = 20.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1813,19 +1723,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 27.januar(2023),
                             tom = 30.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1870,19 +1774,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 2.februar(2023),
                             tom = 5.februar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1927,19 +1825,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 5.januar(2023),
                             tom = 3.februar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -1981,19 +1873,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId,
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -2034,19 +1920,13 @@ class SykmeldingStatusServiceSpec :
                             fom = 16.januar(2023),
                             tom = 31.januar(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             tidligereSykmelding,
                             nySykmelding,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns nySykmelding
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
@@ -2100,20 +1980,14 @@ class SykmeldingStatusServiceSpec :
                             fom = 1.mars(2023),
                             tom = 31.mars(2023),
                             status = "APEN",
+                            sykmeldingId = sykmeldingId
                         )
-                    coEvery { sykmeldingService.getSykmeldinger(any()) } returns
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
                         listOf(
                             arbeidstakerSykmelding,
                             arbeidsledigSykmelding1,
                             arbeidsledigSykmelding2,
                         )
-
-                    coEvery {
-                        sykmeldingService.getSykmelding(
-                            any(),
-                            any(),
-                        )
-                    } returns arbeidsledigSykmelding2
 
                     coEvery {
                         sykmeldingStatusDb.getLatestStatus(
