@@ -45,6 +45,7 @@ fun getSykmeldingDTO(
     timestamps: OffsetDateTime? = null,
     fom: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
+    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ) =
     SykmeldingDTO(
         id = "1",
