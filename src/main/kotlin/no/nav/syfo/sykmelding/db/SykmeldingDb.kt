@@ -20,6 +20,7 @@ import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 
 class SykmeldingDb(private val database: DatabaseInterface) {
 
