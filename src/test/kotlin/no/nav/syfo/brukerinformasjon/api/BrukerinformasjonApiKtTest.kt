@@ -33,8 +33,6 @@ class BrukerinformasjonApiKtTest :
                         orgnummer = "orgnummer",
                         juridiskOrgnummer = "juridiskOrgnummer",
                         navn = "",
-                        stillingsprosent = "50.0",
-                        stilling = "",
                         aktivtArbeidsforhold = true,
                         naermesteLeder = null
                     )
@@ -80,8 +78,6 @@ class BrukerinformasjonApiKtTest :
                                             orgnummer = "orgnummer",
                                             juridiskOrgnummer = "juridiskOrgnummer",
                                             navn = "",
-                                            stillingsprosent = "50.0",
-                                            stilling = "",
                                             aktivtArbeidsforhold = true,
                                             naermesteLeder = null
                                         )

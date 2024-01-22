@@ -790,8 +790,6 @@ class ValidationKtTest :
                         Arbeidsgiverinfo(
                             orgnummer = "132456789",
                             juridiskOrgnummer = "",
-                            stillingsprosent = "",
-                            stilling = "",
                             navn = "",
                             aktivtArbeidsforhold = true,
                             naermesteLeder = null,
@@ -857,8 +855,6 @@ class ValidationKtTest :
                         Arbeidsgiverinfo(
                             orgnummer = "132456789",
                             juridiskOrgnummer = "",
-                            stillingsprosent = "",
-                            stilling = "",
                             navn = "",
                             aktivtArbeidsforhold = false,
                             naermesteLeder = null,
