@@ -11,5 +11,4 @@ data class SykmeldingStatusDTO(
     val sporsmalOgSvarListe: List<SporsmalDTO>,
     // TODO: This is nullable because older sykmeldinger are not migrated to the new format
     val brukerSvar: SykmeldingFormResponse?,
-    val tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 )

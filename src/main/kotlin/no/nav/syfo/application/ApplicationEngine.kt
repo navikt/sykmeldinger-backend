@@ -99,7 +99,6 @@ fun createApplicationEngine(
                 sykmeldingStatusKafkaProducer,
                 arbeidsgiverService,
                 sykmeldingStatusDb,
-                sykmeldingService
             )
 
         routing {

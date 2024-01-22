@@ -95,7 +95,6 @@ fun getStatus(
     arbeidsgiverStatusDTO: ArbeidsgiverStatusDTO? = null,
     sporsmals: List<SporsmalDTO> = emptyList(),
     brukerSvar: SykmeldingFormResponse? = null,
-    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
 ): SykmeldingStatusDTO {
     return SykmeldingStatusDTO(
         statusEvent = status,
@@ -103,7 +102,6 @@ fun getStatus(
         arbeidsgiver = arbeidsgiverStatusDTO,
         sporsmalOgSvarListe = sporsmals,
         brukerSvar = brukerSvar,
-        tidligereArbeidsgiver = tidligereArbeidsgiver,
     )
 }
 
@@ -143,7 +141,11 @@ fun DatabaseInterface.insertBehandlingsutfall(
     }
 }
 
-fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatusDTO) {
+fun DatabaseInterface.insertStatus(
+    sykmeldingId: String,
+    status: SykmeldingStatusDTO,
+    tidligereArbeidsgiver: TidligereArbeidsgiverDTO? = null
+) {
     connection.use { connection ->
         connection
             .prepareStatement(
@@ -195,7 +197,7 @@ fun DatabaseInterface.insertStatus(sykmeldingId: String, status: SykmeldingStatu
                         )
                         .toPGObject(),
                 )
-                it.setObject(7, status.tidligereArbeidsgiver?.toPGObject())
+                it.setObject(7, tidligereArbeidsgiver?.toPGObject())
                 it.executeUpdate()
             }
         connection.commit()
