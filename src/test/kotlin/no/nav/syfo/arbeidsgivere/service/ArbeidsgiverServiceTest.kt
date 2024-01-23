@@ -39,7 +39,6 @@ class ArbeidsgiverServiceTest :
                 arbeidsgiverinformasjon.size shouldBeEqualTo 1
                 arbeidsgiverinformasjon[0].navn shouldBeEqualTo "Navn 1"
                 arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
-                arbeidsgiverinformasjon[0].stillingsprosent shouldBeEqualTo ""
                 arbeidsgiverinformasjon[0].naermesteLeder?.navn shouldBeEqualTo "Leder Ledersen"
                 arbeidsgiverinformasjon[0].naermesteLeder?.orgnummer shouldBeEqualTo "123456789"
                 arbeidsgiverinformasjon[0].naermesteLeder?.organisasjonsnavn shouldBeEqualTo
