@@ -1,6 +1,6 @@
 package no.nav.syfo.sykmelding.model
 
 data class BehandlingsutfallDTO(
-    val status: RegelStatusDTO,
+    var status: RegelStatusDTO,
     val ruleHits: List<RegelinfoDTO>,
 )
