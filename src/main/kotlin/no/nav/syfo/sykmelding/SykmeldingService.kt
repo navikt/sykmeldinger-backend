@@ -25,7 +25,7 @@ class SykmeldingService(
         return sykmeldinger.map { sykmelding ->
             when (sykmelding.behandlingsutfall.status) {
                 RegelStatusDTO.MANUAL_PROCESSING -> sykmelding.copy(
-                    behandlingsutfall = sykmelding.behandlingsutfall.copy(status = RegelStatusDTO.OK)
+                    behandlingsutfall = sykmelding.behandlingsutfall.copy(status = RegelStatusDTO.OK, ruleHits = emptyList())
                 )
                 else -> sykmelding
             }
