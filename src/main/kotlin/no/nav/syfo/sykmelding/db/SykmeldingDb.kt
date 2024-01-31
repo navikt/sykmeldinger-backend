@@ -192,7 +192,8 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                             )
                         }
                     }
-                        ?: emptyList() ?: emptyList(),
+                        ?: emptyList()
+                        ?: emptyList(),
                 brukerSvar =
                     getString("alle_sporsmal")?.let {
                         objectMapper.readValue<SykmeldingFormResponse>(it)
