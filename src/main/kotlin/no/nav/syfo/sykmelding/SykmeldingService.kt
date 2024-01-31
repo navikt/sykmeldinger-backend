@@ -32,7 +32,6 @@ class SykmeldingService(
         }
     }
 
-
     fun logInfo(sykmeldingId: String, fnr: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val sykmeldingExists: Boolean = sykmeldingDb.sykmeldingExists(sykmeldingId)
