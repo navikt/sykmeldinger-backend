@@ -7,6 +7,8 @@ import kotlinx.coroutines.withContext
 import no.nav.syfo.log
 import no.nav.syfo.metrics.MISSING_DATA_COUNTER
 import no.nav.syfo.sykmelding.db.SykmeldingDb
+import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
+import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 
 class SykmeldingService(
@@ -19,7 +21,15 @@ class SykmeldingService(
         }
 
     suspend fun getSykmeldinger(fnr: String): List<SykmeldingDTO> {
-        return sykmeldingDb.getSykmeldinger(fnr)
+        val sykmeldinger = sykmeldingDb.getSykmeldinger(fnr)
+        return sykmeldinger.map { sykmelding ->
+            when (sykmelding.behandlingsutfall.status) {
+                RegelStatusDTO.MANUAL_PROCESSING -> sykmelding.copy(
+                    behandlingsutfall = sykmelding.behandlingsutfall.copy(status = RegelStatusDTO.OK, ruleHits = emptyList())
+                )
+                else -> sykmelding
+            }
+        }
     }
 
     fun logInfo(sykmeldingId: String, fnr: String) {
