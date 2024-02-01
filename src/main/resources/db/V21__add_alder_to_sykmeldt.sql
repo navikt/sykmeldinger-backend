@@ -1,2 +1,2 @@
-ALTER table sykmeldingstatus
-    add column alle_sporsmal jsonb null;
+ALTER table sykmeldt
+    add column alder VARCHAR NOT NULL;
