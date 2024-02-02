@@ -1,2 +1,2 @@
 ALTER table sykmeldt
-    add column alder VARCHAR NOT NULL;
+    add column foedselsdato DATE;
