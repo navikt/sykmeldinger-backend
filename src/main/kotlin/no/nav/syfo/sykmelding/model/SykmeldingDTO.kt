@@ -31,5 +31,6 @@ data class SykmeldingDTO(
     val harRedusertArbeidsgiverperiode: Boolean?,
     val merknader: List<MerknadDTO>?,
     val rulesetVersion: String?,
-    val utenlandskSykmelding: UtenlandskSykmelding?
+    val utenlandskSykmelding: UtenlandskSykmelding?,
+    val overSyttiAar: Boolean
 )

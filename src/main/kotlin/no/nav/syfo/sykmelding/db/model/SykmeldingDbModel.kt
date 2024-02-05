@@ -37,4 +37,5 @@ data class SykmeldingDbModel(
     val merknader: List<MerknadDTO>?,
     val rulesetVersion: String?,
     val utenlandskSykmelding: UtenlandskSykmelding?,
+    val foedselsdato: LocalDate?,
 )

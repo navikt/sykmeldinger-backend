@@ -2,6 +2,7 @@ package no.nav.syfo.sykmelding.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -43,7 +44,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr,
+                s.foedselsdato
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -78,7 +80,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr,
+                s.foedselsdato
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -217,6 +220,12 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         merknader = sykmelding.merknader,
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding,
+        overSyttiAar = isOverSyttiAar(sykmelding.foedselsdato),
     )
+}
+
+fun isOverSyttiAar(foedselsdato: LocalDate?): Boolean {
+    if (foedselsdato == null) return false
+    return foedselsdato.isBefore(LocalDate.now().minusYears(70))
 }

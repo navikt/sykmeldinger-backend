@@ -100,7 +100,8 @@ fun getSykmeldingDTO(
         merknader = merknader,
         pasient = PasientDTO("12345678901", "fornavn", null, "etternavn"),
         rulesetVersion = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
+        overSyttiAar = false,
     )
 
 fun getMedisinskVurdering() =
