@@ -27,6 +27,7 @@ import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
@@ -34,6 +35,7 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
+import java.sql.Date
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
 
@@ -105,17 +107,18 @@ fun getStatus(
     )
 }
 
-fun DatabaseInterface.insertSykmeldt(fnr: String) {
+fun DatabaseInterface.insertSykmeldt(fnr: String, foedselsdato: LocalDate = 1.januar(1985)) {
     connection.use { connection ->
         connection
             .prepareStatement(
-                "INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn) VALUES (?, ?, ?, ?)",
+                "INSERT INTO sykmeldt (fnr, fornavn, mellomnavn, etternavn, foedselsdato) VALUES (?, ?, ?, ?, ?)",
             )
             .use {
                 it.setString(1, fnr)
                 it.setString(2, "fornavn")
                 it.setString(3, "mellomnavn")
                 it.setString(4, "etternavn")
+                it.setDate(5, Date.valueOf(foedselsdato))
                 it.executeUpdate()
             }
         connection.commit()
@@ -278,6 +281,5 @@ fun getSykmelding(): SykmeldingDbModel {
         merknader = null,
         rulesetVersion = null,
         utenlandskSykmelding = null,
-        foedselsdato = null,
     )
 }

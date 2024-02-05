@@ -9,6 +9,7 @@ import no.nav.syfo.sykmelding.model.SporsmalDTO
 import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.UtenlandskSykmelding
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.testutils.TestDB
@@ -20,6 +21,7 @@ import no.nav.syfo.testutils.insertStatus
 import no.nav.syfo.testutils.insertSykmeldt
 import no.nav.syfo.testutils.insertSymelding
 import org.amshove.kluent.shouldBeEqualTo
+import java.time.LocalDate
 
 class SykmeldingDbTest :
     FunSpec(
@@ -282,6 +284,54 @@ class SykmeldingDbTest :
 
                     val sykmelding = sykmeldingDb.getSykmelding(sykmeldingId, fnr)!!
                     sykmelding.utenlandskSykmelding shouldBeEqualTo UtenlandskSykmelding("Danmark")
+                }
+
+                test("Sykmeldt over 70") {
+                    testDb.insertSymelding(
+                        sykmeldingId,
+                        fnr,
+                        getSykmelding(),
+                    )
+                    testDb.insertStatus(
+                        sykmeldingId,
+                        getStatus(
+                            StatusEventDTO.APEN.name,
+                            OffsetDateTime.now().minusDays(1),
+                        ),
+                    )
+                    testDb.insertBehandlingsutfall(
+                        sykmeldingId,
+                        getBehandlingsutfall(RegelStatusDTO.OK),
+                    )
+                    testDb.insertSykmeldt(fnr, 1.januar(1954))
+
+                    val sykmelding = sykmeldingDb.getSykmelding(sykmeldingId, fnr)!!
+                    sykmelding.pasient.overSyttiAar shouldBeEqualTo true
+                }
+
+                test("Sykmeldt under 70") {
+                    testDb.insertSymelding(
+                        sykmeldingId,
+                        fnr,
+                        getSykmelding(),
+                    )
+                    testDb.insertStatus(
+                        sykmeldingId,
+                        getStatus(
+                            StatusEventDTO.APEN.name,
+                            OffsetDateTime.now().minusDays(1),
+                        ),
+                    )
+                    testDb.insertBehandlingsutfall(
+                        sykmeldingId,
+                        getBehandlingsutfall(RegelStatusDTO.OK),
+                    )
+                    testDb.insertSykmeldt(fnr, 1.januar(2000))
+
+                    val sykmelding = sykmeldingDb.getSykmelding(sykmeldingId, fnr)!!
+                    sykmelding.pasient.overSyttiAar shouldBeEqualTo false
+
+
                 }
             }
         },
