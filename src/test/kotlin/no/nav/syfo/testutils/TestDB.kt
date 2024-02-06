@@ -2,6 +2,7 @@ package no.nav.syfo.testutils
 
 import io.mockk.every
 import io.mockk.mockk
+import java.sql.Date
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -35,7 +36,6 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
-import java.sql.Date
 
 class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:14")
 

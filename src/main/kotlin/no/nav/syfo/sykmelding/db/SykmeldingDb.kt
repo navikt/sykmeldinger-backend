@@ -150,9 +150,7 @@ class SykmeldingDb(private val database: DatabaseInterface) {
 }
 
 private fun ResultSet.toSykmelding(): SykmeldingDTO {
-    val over70 = if (getDate("foedselsdato") != null) {
-        isOverSyttiAar(getDate("foedselsdato").toLocalDate())
-    } else null
+    val over70 = getDate("foedselsdato")?.let { isOverSyttiAar(it.toLocalDate()) }
     val sykmelding: SykmeldingDbModel = objectMapper.readValue(getString("sykmelding"))
     return SykmeldingDTO(
         pasient =
@@ -228,7 +226,6 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
     )
 }
 
-fun isOverSyttiAar(foedselsdato: LocalDate?): Boolean {
-    if (foedselsdato == null) return false
+fun isOverSyttiAar(foedselsdato: LocalDate): Boolean {
     return !foedselsdato.isAfter(LocalDate.now().minusYears(70))
 }

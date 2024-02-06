@@ -33,7 +33,11 @@ fun Route.registerSykmeldingApiV2(sykmeldingService: SykmeldingService) {
         } else {
             log.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
             val sykmelding = sykmeldingService.getSykmelding(fnr, sykmeldingId)
-            log.info("Er over 70 år : {} Og sykmeldingsId: {}", sykmelding?.pasient?.overSyttiAar, sykmeldingId)
+            log.info(
+                "Er over 70 år : {} Og sykmeldingsId: {}",
+                sykmelding?.pasient?.overSyttiAar,
+                sykmeldingId
+            )
             when (sykmelding) {
                 null ->
                     call.respond(HttpStatusCode.NotFound).also {

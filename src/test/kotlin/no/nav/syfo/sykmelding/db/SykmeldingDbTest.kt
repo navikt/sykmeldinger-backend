@@ -21,7 +21,6 @@ import no.nav.syfo.testutils.insertStatus
 import no.nav.syfo.testutils.insertSykmeldt
 import no.nav.syfo.testutils.insertSymelding
 import org.amshove.kluent.shouldBeEqualTo
-import java.time.LocalDate
 
 class SykmeldingDbTest :
     FunSpec(
@@ -330,8 +329,6 @@ class SykmeldingDbTest :
 
                     val sykmelding = sykmeldingDb.getSykmelding(sykmeldingId, fnr)!!
                     sykmelding.pasient.overSyttiAar shouldBeEqualTo false
-
-
                 }
             }
         },
