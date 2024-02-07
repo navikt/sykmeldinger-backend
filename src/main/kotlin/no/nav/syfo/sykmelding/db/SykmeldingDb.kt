@@ -153,7 +153,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
     val sykmelding: SykmeldingDbModel = objectMapper.readValue(getString("sykmelding"))
     val over70 =
         getDate("foedselsdato")?.let {
-            isOverSyttiAar(it.toLocalDate(), sykmelding.sykmeldingsperioder.first().fom)
+            isOverSyttiAar(it.toLocalDate(), sykmelding.sykmeldingsperioder.minBy { sp -> sp.fom }.fom)
         }
     return SykmeldingDTO(
         pasient =
