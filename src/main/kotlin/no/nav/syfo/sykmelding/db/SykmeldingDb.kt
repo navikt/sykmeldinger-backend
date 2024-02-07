@@ -2,6 +2,7 @@ package no.nav.syfo.sykmelding.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -43,7 +44,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr,
+                s.foedselsdato
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -78,7 +80,8 @@ class SykmeldingDb(private val database: DatabaseInterface) {
                 s.fornavn,
                 s.etternavn,
                 s.mellomnavn,
-                s.fnr
+                s.fnr,
+                s.foedselsdato
                 from sykmelding sykmelding
                 inner join sykmeldingstatus ss on ss.sykmelding_id = sykmelding.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = sykmelding.sykmelding_id)
                 inner join behandlingsutfall b on sykmelding.sykmelding_id = b.sykmelding_id
@@ -148,6 +151,10 @@ class SykmeldingDb(private val database: DatabaseInterface) {
 
 private fun ResultSet.toSykmelding(): SykmeldingDTO {
     val sykmelding: SykmeldingDbModel = objectMapper.readValue(getString("sykmelding"))
+    val over70 =
+        getDate("foedselsdato")?.let {
+            isOverSyttiAar(it.toLocalDate(), sykmelding.sykmeldingsperioder.first().fom)
+        }
     return SykmeldingDTO(
         pasient =
             PasientDTO(
@@ -155,6 +162,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                 fornavn = getString("fornavn"),
                 mellomnavn = getString("mellomnavn"),
                 etternavn = getString("etternavn"),
+                overSyttiAar = over70
             ),
         id = getString("sykmelding_id"),
         mottattTidspunkt = sykmelding.mottattTidspunkt,
@@ -192,8 +200,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
                             )
                         }
                     }
-                        ?: emptyList()
-                        ?: emptyList(),
+                        ?: emptyList() ?: emptyList(),
                 brukerSvar =
                     getString("alle_sporsmal")?.let {
                         objectMapper.readValue<SykmeldingFormResponse>(it)
@@ -218,6 +225,10 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         merknader = sykmelding.merknader,
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
-        utenlandskSykmelding = sykmelding.utenlandskSykmelding
+        utenlandskSykmelding = sykmelding.utenlandskSykmelding,
     )
+}
+
+fun isOverSyttiAar(foedselsdato: LocalDate, fom: LocalDate): Boolean {
+    return !foedselsdato.isAfter(fom.minusYears(70))
 }

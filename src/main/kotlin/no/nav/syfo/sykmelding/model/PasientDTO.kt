@@ -5,4 +5,5 @@ data class PasientDTO(
     val fornavn: String? = null,
     val mellomnavn: String? = null,
     val etternavn: String? = null,
+    val overSyttiAar: Boolean? = null,
 )
