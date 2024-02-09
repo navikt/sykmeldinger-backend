@@ -16,25 +16,29 @@ class SykmeldingService(
 
     suspend fun getSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? =
         withContext(Dispatchers.IO) {
-            sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)
+            sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)?.let { removeManualProcessing(it) }
         }
 
     suspend fun getSykmeldinger(fnr: String): List<SykmeldingDTO> {
         val sykmeldinger = sykmeldingDb.getSykmeldinger(fnr)
         return sykmeldinger.map { sykmelding ->
-            when (sykmelding.behandlingsutfall.status) {
-                RegelStatusDTO.MANUAL_PROCESSING ->
-                    sykmelding.copy(
-                        behandlingsutfall =
-                            sykmelding.behandlingsutfall.copy(
-                                status = RegelStatusDTO.OK,
-                                ruleHits = emptyList()
-                            )
-                    )
-                else -> sykmelding
-            }
+            removeManualProcessing(sykmelding)
         }
     }
+
+    private fun removeManualProcessing(sykmelding: SykmeldingDTO) =
+        when (sykmelding.behandlingsutfall.status) {
+            RegelStatusDTO.MANUAL_PROCESSING ->
+                sykmelding.copy(
+                    behandlingsutfall =
+                    sykmelding.behandlingsutfall.copy(
+                        status = RegelStatusDTO.OK,
+                        ruleHits = emptyList(),
+                    ),
+                )
+
+            else -> sykmelding
+        }
 
     fun logInfo(sykmeldingId: String, fnr: String) {
         CoroutineScope(Dispatchers.IO).launch {
