@@ -2,8 +2,6 @@ package no.nav.syfo.sykmeldingstatus.kafka
 
 import java.time.OffsetDateTime
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
-import no.nav.syfo.log
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
@@ -27,6 +25,10 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
+import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.objectMapper
+
+private val logger = logger("SykmeldingStatusKafkaMessageMapper")
 
 fun SykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
     timestamp: OffsetDateTime,
@@ -156,7 +158,7 @@ private fun SykmeldingFormResponse.riktigNarmesteLederSporsmalBuilder(
     sykmeldingId: String
 ): SporsmalOgSvarKafkaDTO? {
     if (arbeidsgiver?.aktivtArbeidsforhold == false) {
-        log.info(
+        logger.info(
             "Ber ikke om ny nærmeste leder for arbeidsforhold som ikke er aktivt: $sykmeldingId",
         )
         return SporsmalOgSvarKafkaDTO(

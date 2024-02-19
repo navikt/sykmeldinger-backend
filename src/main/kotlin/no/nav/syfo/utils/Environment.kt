@@ -1,4 +1,4 @@
-package no.nav.syfo
+package no.nav.syfo.utils
 
 data class Environment(
     val applicationPort: Int = getEnvVar("APPLICATION_PORT", "8080").toInt(),

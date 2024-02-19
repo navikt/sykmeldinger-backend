@@ -15,13 +15,13 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.Sykmelding
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.utils.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingApiKtTest :
@@ -41,9 +41,7 @@ class SykmeldingApiKtTest :
                 setUpTestApplication()
                 setUpAuth()
                 application.routing {
-                    authenticate("tokenx") {
-                        route("/api/v2") { registerSykmeldingApiV2(sykmeldingService) }
-                    }
+                    authenticate("tokenx") { route("/api/v2") { registerSykmeldingApiV2() } }
                 }
                 test("Hent sykmeldinger") {
                     with(
@@ -124,9 +122,7 @@ class SykmeldingApiKtTest :
                 setUpTestApplication()
                 setUpAuth()
                 application.routing {
-                    authenticate("tokenx") {
-                        route("/api/v2") { registerSykmeldingApiV2(sykmeldingService) }
-                    }
+                    authenticate("tokenx") { route("/api/v2") { registerSykmeldingApiV2() } }
                 }
                 test("Sykmelding by id OK") {
                     with(

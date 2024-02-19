@@ -13,12 +13,12 @@ import io.ktor.server.testing.setBody
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.utils.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingSendApiKtTest :
@@ -36,13 +36,7 @@ class SykmeldingSendApiKtTest :
                 setUpAuth()
 
                 application.routing {
-                    authenticate("tokenx") {
-                        route("/api/v3") {
-                            registrerSykmeldingSendApiV3(
-                                sykmeldingStatusService,
-                            )
-                        }
-                    }
+                    authenticate("tokenx") { route("/api/v3") { registrerSykmeldingSendApiV3() } }
                 }
 
                 test("Bruker skal få sende sin egen sykmelding") {

@@ -13,12 +13,15 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.testing.TestApplicationEngine
 import java.nio.file.Paths
-import no.nav.syfo.Environment
-import no.nav.syfo.application.setupAuth
-import no.nav.syfo.log
+import no.nav.syfo.plugins.AuthConfiguration
+import no.nav.syfo.plugins.configureAuth
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
+import no.nav.syfo.utils.Environment
+import no.nav.syfo.utils.logger
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
 
 fun getTestEnvironment(): Environment =
     Environment(
@@ -33,16 +36,19 @@ fun getTestEnvironment(): Environment =
     )
 
 fun TestApplicationEngine.setUpTestApplication() {
+    val logger = logger()
+
     start(true)
     application.install(StatusPages) {
         exception<Throwable> { call, cause ->
             call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            log.error("Caught exception", cause)
+            logger.error("Caught exception", cause)
         }
         setUpSykmeldingStatusExeptionHandler()
         setUpSykmeldingExceptionHandler()
         setUpSykmeldingSendApiV2ExeptionHandler()
     }
+
     application.install(ContentNegotiation) {
         jackson {
             registerKotlinModule()
@@ -59,6 +65,36 @@ fun TestApplicationEngine.setUpAuth(): Environment {
     val jwkProvider = JwkProviderBuilder(uri).build()
     val testEnvironment = getTestEnvironment()
 
-    application.setupAuth(jwkProvider, "issuer", testEnvironment.clientIdTokenX)
+    // TODO: Figure out how to use koin modules in tests
+    startKoin {
+        modules(
+            module {
+                single {
+                    AuthConfiguration(
+                        jwkProviderTokenX = jwkProvider,
+                        tokenXIssuer = "issuer",
+                        clientIdTokenX = testEnvironment.clientIdTokenX,
+                    )
+                }
+            },
+        )
+    }
+
+    application.configureAuth()
     return testEnvironment
+}
+
+val mockedAuthModule = module {
+    val path = "src/test/resources/jwkset.json"
+    val uri = Paths.get(path).toUri().toURL()
+    val jwkProvider = JwkProviderBuilder(uri).build()
+    val testEnvironment = getTestEnvironment()
+
+    single {
+        AuthConfiguration(
+            jwkProviderTokenX = jwkProvider,
+            tokenXIssuer = "issuer",
+            clientIdTokenX = testEnvironment.clientIdTokenX,
+        )
+    }
 }

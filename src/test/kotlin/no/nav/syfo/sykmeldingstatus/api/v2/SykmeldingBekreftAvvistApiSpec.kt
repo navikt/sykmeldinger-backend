@@ -36,9 +36,7 @@ class SykmeldingBekreftAvvistApiSpec :
                 setUpAuth()
                 application.routing {
                     authenticate("tokenx") {
-                        route("/api/v2") {
-                            registerSykmeldingBekreftAvvistApiV2(sykmeldingStatusService)
-                        }
+                        route("/api/v2") { registerSykmeldingBekreftAvvistApiV2() }
                     }
                 }
 

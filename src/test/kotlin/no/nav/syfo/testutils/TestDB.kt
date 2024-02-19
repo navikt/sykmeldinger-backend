@@ -6,10 +6,8 @@ import java.sql.Date
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
-import no.nav.syfo.Environment
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.AdresseDTO
 import no.nav.syfo.sykmelding.model.AktivitetIkkeMuligDTO
@@ -34,6 +32,8 @@ import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
+import no.nav.syfo.utils.Environment
+import no.nav.syfo.utils.objectMapper
 import org.postgresql.util.PGobject
 import org.testcontainers.containers.PostgreSQLContainer
 

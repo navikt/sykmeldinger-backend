@@ -8,13 +8,10 @@ import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
-import no.nav.syfo.log
 import no.nav.syfo.metrics.ANTALL_TIDLIGERE_ARBEIDSGIVERE
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.TIDLIGERE_ARBEIDSGIVER_COUNTER
-import no.nav.syfo.objectMapper
-import no.nav.syfo.securelog
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService.TidligereArbeidsgiverType.INGEN
@@ -42,12 +39,17 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
+import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.objectMapper
+import no.nav.syfo.utils.securelog
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val arbeidsgiverService: ArbeidsgiverService,
     private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
+    private val logger = logger()
+
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> =
             mapOf(
@@ -292,7 +294,7 @@ class SykmeldingStatusService(
             val otherSykmeldinger = alleSykmeldinger.filterNot { it.sykmeldingId == sykmeldingId }
             val currentSykmeldingFirstFomDate = finnForsteFom(currentSykmelding.sykmeldingsperioder)
 
-            log.info("antall sykmeldinger ${alleSykmeldinger.size}")
+            logger.info("antall sykmeldinger ${alleSykmeldinger.size}")
 
             val sykmeldinger =
                 otherSykmeldinger
@@ -321,7 +323,7 @@ class SykmeldingStatusService(
             TIDLIGERE_ARBEIDSGIVER_COUNTER.labels(sisteStatus.second.name).inc()
             return sisteStatus.first
         } catch (ex: Exception) {
-            log.error(ex)
+            logger.error(ex)
             throw ex
         }
     }
@@ -474,7 +476,7 @@ class SykmeldingStatusService(
                 )
             }
             else -> {
-                log.warn(
+                logger.warn(
                     "Forsøk på å bekrefte avvist sykmelding som ikke er avvist. SykmeldingId: $sykmeldingId",
                 )
                 throw InvalidSykmeldingStatusException(
@@ -502,7 +504,7 @@ class SykmeldingStatusService(
             return
         }
 
-        log.warn(
+        logger.warn(
             "Kan ikke endre status fra $sisteStatus til $nyStatusEvent for sykmeldingID $sykmeldingId",
         )
         throw InvalidSykmeldingStatusException(

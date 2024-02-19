@@ -7,8 +7,8 @@ import java.net.ConnectException
 import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
-import no.nav.syfo.Environment
-import no.nav.syfo.log
+import no.nav.syfo.utils.Environment
+import no.nav.syfo.utils.logger
 import org.flywaydb.core.Flyway
 
 class Database(
@@ -16,6 +16,8 @@ class Database(
     private val retries: Long = 30,
     private val sleepTime: Long = 1_000
 ) : DatabaseInterface {
+    private val logger = logger()
+
     private lateinit var dataSource: HikariDataSource
     override val connection: Connection
         get() = dataSource.connection
@@ -25,7 +27,7 @@ class Database(
         var connected = false
         var tempDatasource: HikariDataSource? = null
         while (!connected && current++ < retries) {
-            log.info("trying to connet to db current try $current")
+            logger.info("trying to connet to db current try $current")
             try {
                 tempDatasource =
                     HikariDataSource(
@@ -45,7 +47,7 @@ class Database(
                 connected = true
             } catch (ex: HikariPool.PoolInitializationException) {
                 if (ex.cause?.cause is ConnectException || ex.cause?.cause is SocketException) {
-                    log.info("Could not connect to db")
+                    logger.info("Could not connect to db")
                     Thread.sleep(sleepTime)
                 } else {
                     throw ex
@@ -53,7 +55,7 @@ class Database(
             }
         }
         if (tempDatasource == null) {
-            log.error("Could not connect to DB")
+            logger.error("Could not connect to DB")
             throw RuntimeException("Could not connect to DB")
         }
         dataSource = tempDatasource

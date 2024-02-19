@@ -2,6 +2,7 @@ package no.nav.syfo.brukerinformasjon.api
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.koin.KoinExtension
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -15,16 +16,24 @@ import io.mockk.coVerify
 import io.mockk.mockkClass
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
-import no.nav.syfo.objectMapper
 import no.nav.syfo.testutils.generateJWT
+import no.nav.syfo.testutils.mockedAuthModule
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.utils.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-class BrukerinformasjonApiKtTest :
-    FunSpec({
-        val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
+class BrukerinformasjonApiKtTest : FunSpec(), KoinTest {
 
+    val arbeidsgiverService = mockkClass(ArbeidsgiverService::class)
+    val mockedArbeidsgiverModule = module { single { ArbeidsgiverService(TODO(), TODO()) } }
+
+    override fun extensions() =
+        listOf(KoinExtension(listOf(mockedAuthModule, mockedArbeidsgiverModule)))
+
+    init {
         beforeTest {
             clearMocks(arbeidsgiverService)
             coEvery { arbeidsgiverService.getArbeidsgivere(any(), any()) } returns
@@ -34,8 +43,8 @@ class BrukerinformasjonApiKtTest :
                         juridiskOrgnummer = "juridiskOrgnummer",
                         navn = "",
                         aktivtArbeidsforhold = true,
-                        naermesteLeder = null
-                    )
+                        naermesteLeder = null,
+                    ),
                 )
         }
 
@@ -45,9 +54,7 @@ class BrukerinformasjonApiKtTest :
                 setUpAuth()
 
                 application.routing {
-                    authenticate("tokenx") {
-                        route("/api/v2") { registrerBrukerinformasjonApi(arbeidsgiverService) }
-                    }
+                    authenticate("tokenx") { route("/api/v2") { registrerBrukerinformasjonApi() } }
                 }
 
                 test("Får hentet riktig informasjon for innlogget bruker") {
@@ -56,20 +63,20 @@ class BrukerinformasjonApiKtTest :
                             addHeader(
                                 "AUTHORIZATION",
                                 "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "clientId",
-                                    subject = "12345678910",
-                                    issuer = "issuer",
-                                )
-                            }",
+                                    generateJWT(
+                                        "client",
+                                        "clientId",
+                                        subject = "12345678910",
+                                        issuer = "issuer",
+                                    )
+                                }",
                             )
                         },
                     ) {
                         response.status() shouldBeEqualTo HttpStatusCode.OK
                         coVerify(exactly = 1) { arbeidsgiverService.getArbeidsgivere(any(), any()) }
                         objectMapper.readValue<Brukerinformasjon>(
-                            response.content!!
+                            response.content!!,
                         ) shouldBeEqualTo
                             Brukerinformasjon(
                                 arbeidsgivere =
@@ -79,8 +86,8 @@ class BrukerinformasjonApiKtTest :
                                             juridiskOrgnummer = "juridiskOrgnummer",
                                             navn = "",
                                             aktivtArbeidsforhold = true,
-                                            naermesteLeder = null
-                                        )
+                                            naermesteLeder = null,
+                                        ),
                                     ),
                             )
                     }
@@ -92,13 +99,13 @@ class BrukerinformasjonApiKtTest :
                             addHeader(
                                 "Authorization",
                                 "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "annenservice",
-                                    subject = "12345678910",
-                                    issuer = "issuer",
-                                )
-                            }",
+                                    generateJWT(
+                                        "client",
+                                        "annenservice",
+                                        subject = "12345678910",
+                                        issuer = "issuer",
+                                    )
+                                }",
                             )
                         },
                     ) {
@@ -107,4 +114,5 @@ class BrukerinformasjonApiKtTest :
                 }
             }
         }
-    })
+    }
+}

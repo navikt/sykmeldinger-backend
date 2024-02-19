@@ -38,9 +38,7 @@ class SykmeldingGjenapneApiSpec :
 
                 application.routing {
                     authenticate("tokenx") {
-                        route("/api/v2") {
-                            registerSykmeldingGjenapneApiV2(sykmeldingStatusService)
-                        }
+                        route("/api/v2") { registerSykmeldingGjenapneApiV2() }
                     }
                 }
 

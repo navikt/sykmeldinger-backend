@@ -6,21 +6,23 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.plugins.statuspages.StatusPagesConfig
 import io.ktor.server.response.respond
-import no.nav.syfo.log
+import no.nav.syfo.utils.logger
 
 fun StatusPagesConfig.setUpSykmeldingExceptionHandler() {
+    val logger = logger()
+
     exception<ServerResponseException> { call, cause ->
         call.respond(cause.response.status, cause.response.bodyAsText())
         when (cause.response.status) {
-            HttpStatusCode.InternalServerError -> log.error(cause.message)
-            else -> log.warn(cause.message)
+            HttpStatusCode.InternalServerError -> logger.error(cause.message)
+            else -> logger.warn(cause.message)
         }
     }
     exception<ClientRequestException> { call, cause ->
         call.respond(cause.response.status, cause.response.bodyAsText())
         when (cause.response.status) {
-            HttpStatusCode.Unauthorized -> log.warn("User has not access to sykmelding")
-            else -> log.warn(cause.message)
+            HttpStatusCode.Unauthorized -> logger.warn("User has not access to sykmelding")
+            else -> logger.warn(cause.message)
         }
     }
 }
