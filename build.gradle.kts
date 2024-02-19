@@ -13,9 +13,10 @@ val nimbusdsVersion = "9.37.3"
 val kotestVersion = "5.8.0"
 val testcontainersVersion = "1.19.5"
 val swaggerUiVersion = "5.10.3"
-val kotlinVersion = "1.9.22"
+val kotlinVersion = "1.9.21"
 val flywayVersion = "10.7.2"
 val postgresVersion = "42.7.1"
+val koinVersion = "3.5.3"
 val hikariVersion = "5.1.0"
 val commonsCodecVersion = "1.16.1"
 val ktfmtVersion = "0.44"
@@ -31,7 +32,7 @@ plugins {
 }
 
 application {
-    mainClass.set("no.nav.syfo.BootstrapKt")
+    mainClass.set("no.nav.syfo.ApplicationKt")
 }
 
 repositories {
@@ -94,10 +95,11 @@ dependencies {
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("io.insert-koin:koin-ktor:$koinVersion")
+    implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 
@@ -106,9 +108,13 @@ dependencies {
     }
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.3.0")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
+
+    testImplementation("io.insert-koin:koin-test:$koinVersion")
+    testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
 }
 
 swaggerSources {
@@ -125,9 +131,9 @@ tasks {
     }
 
     shadowJar {
-mergeServiceFiles {
-     setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
- }
+        mergeServiceFiles {
+            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+        }
         archiveBaseName.set("app")
         archiveClassifier.set("")
         isZip64 = true

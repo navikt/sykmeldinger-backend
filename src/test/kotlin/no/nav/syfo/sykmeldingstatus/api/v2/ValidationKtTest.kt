@@ -4,11 +4,11 @@ import io.kotest.core.spec.style.FunSpec
 import java.time.LocalDate
 import kotlin.test.assertFailsWith
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.toSporsmalSvarListe
+import no.nav.syfo.utils.objectMapper
 import org.amshove.kluent.invoking
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotThrow

@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.log
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -26,6 +25,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
+import no.nav.syfo.utils.logger
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 
@@ -44,6 +44,8 @@ private fun toPGObject(jsonObject: Any) =
     }
 
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
+    private val logger = logger()
+
     suspend fun insertStatus(
         event: SykmeldingStatusKafkaEventDTO,
         response: SykmeldingFormResponse?,
@@ -51,7 +53,7 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
     ) =
         withContext(Dispatchers.IO) {
             try {
-                log.info(
+                logger.info(
                     "Inserting status for sykmelding {}, formResponse is: {}",
                     event.sykmeldingId,
                     response == null,
@@ -78,12 +80,12 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
                         beforeCommit()
                         connection.commit()
                     } catch (ex: Exception) {
-                        log.error("Status inserction failed on block receiver, rolling back")
+                        logger.error("Status inserction failed on block receiver, rolling back")
                         connection.rollback()
                     }
                 }
             } catch (ex: PSQLException) {
-                log.warn(ex.message)
+                logger.warn(ex.message)
             }
         }
 
@@ -220,11 +222,11 @@ private fun ResultSet.toSykmeldingWithArbeidsgiverStatus() =
         sykmeldingsperioder = objectMapper.readValue(getString("sykmeldingsperioder")),
         arbeidsgiver =
             getObject("arbeidsgiver")?.let {
-                no.nav.syfo.objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+                objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
             },
         tidligereArbeidsgiver =
             getObject("tidligere_arbeidsgiver")?.let {
-                no.nav.syfo.objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
+                objectMapper.readValue<TidligereArbeidsgiverDTO>(it.toString())
             },
         statusEvent = getString("event")
     )

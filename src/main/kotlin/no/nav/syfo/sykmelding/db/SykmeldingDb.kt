@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.db.model.SykmeldingDbModel
 import no.nav.syfo.sykmelding.model.BehandlingsutfallDTO
 import no.nav.syfo.sykmelding.model.PasientDTO
@@ -22,9 +21,9 @@ import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
+import no.nav.syfo.utils.objectMapper
 
 class SykmeldingDb(private val database: DatabaseInterface) {
-
     suspend fun getSykmelding(sykmeldingId: String, fnr: String): SykmeldingDTO? =
         withContext(Dispatchers.IO) {
             database.connection.use { connection ->
@@ -153,7 +152,10 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
     val sykmelding: SykmeldingDbModel = objectMapper.readValue(getString("sykmelding"))
     val over70 =
         getDate("foedselsdato")?.let {
-            isOverSyttiAar(it.toLocalDate(), sykmelding.sykmeldingsperioder.minBy { sp -> sp.fom }.fom)
+            isOverSyttiAar(
+                it.toLocalDate(),
+                sykmelding.sykmeldingsperioder.minBy { sp -> sp.fom }.fom
+            )
         }
     return SykmeldingDTO(
         pasient =

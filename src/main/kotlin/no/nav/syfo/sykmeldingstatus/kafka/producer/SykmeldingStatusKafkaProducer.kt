@@ -4,10 +4,10 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import no.nav.syfo.log
 import no.nav.syfo.sykmeldingstatus.kafka.model.KafkaMetadataDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaMessageDTO
+import no.nav.syfo.utils.logger
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
@@ -16,12 +16,13 @@ class SykmeldingStatusKafkaProducer(
     private val topicName: String,
 ) {
     companion object {
+        private val logger = logger()
         private const val SOURCE = "sykmeldinger-backend"
     }
 
     suspend fun send(sykmeldingStatusKafkaEventDTO: SykmeldingStatusKafkaEventDTO, fnr: String) {
         withContext(Dispatchers.IO) {
-            log.info(
+            logger.info(
                 "Skriver statusendring {} for sykmelding med id {} til topic på aiven",
                 sykmeldingStatusKafkaEventDTO.statusEvent,
                 sykmeldingStatusKafkaEventDTO.sykmeldingId,
@@ -46,7 +47,7 @@ class SykmeldingStatusKafkaProducer(
                     )
                     .get()
             } catch (ex: Exception) {
-                log.error(
+                logger.error(
                     "Failed to send sykmeldingStatus to kafkatopic {}",
                     metadataDTO.sykmeldingId
                 )

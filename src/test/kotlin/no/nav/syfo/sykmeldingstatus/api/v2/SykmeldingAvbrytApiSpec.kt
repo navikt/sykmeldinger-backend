@@ -50,9 +50,7 @@ class SykmeldingAvbrytApiSpec :
 
                     application.routing {
                         authenticate("tokenx") {
-                            route("/api/v2") {
-                                registerSykmeldingAvbrytApiV2(sykmeldingStatusService)
-                            }
+                            route("/api/v2") { registerSykmeldingAvbrytApiV2() }
                         }
                     }
 

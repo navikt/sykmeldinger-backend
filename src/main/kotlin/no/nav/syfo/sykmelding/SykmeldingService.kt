@@ -4,26 +4,27 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import no.nav.syfo.log
 import no.nav.syfo.metrics.MISSING_DATA_COUNTER
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
+import no.nav.syfo.utils.logger
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
 ) {
+    private val logger = logger()
 
     suspend fun getSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? =
         withContext(Dispatchers.IO) {
-            sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)?.let { removeManualProcessing(it) }
+            sykmeldingDb.getSykmelding(sykmeldingId = sykmeldingid, fnr = fnr)?.let {
+                removeManualProcessing(it)
+            }
         }
 
     suspend fun getSykmeldinger(fnr: String): List<SykmeldingDTO> {
         val sykmeldinger = sykmeldingDb.getSykmeldinger(fnr)
-        return sykmeldinger.map { sykmelding ->
-            removeManualProcessing(sykmelding)
-        }
+        return sykmeldinger.map { sykmelding -> removeManualProcessing(sykmelding) }
     }
 
     private fun removeManualProcessing(sykmelding: SykmeldingDTO) =
@@ -31,12 +32,11 @@ class SykmeldingService(
             RegelStatusDTO.MANUAL_PROCESSING ->
                 sykmelding.copy(
                     behandlingsutfall =
-                    sykmelding.behandlingsutfall.copy(
-                        status = RegelStatusDTO.OK,
-                        ruleHits = emptyList(),
-                    ),
+                        sykmelding.behandlingsutfall.copy(
+                            status = RegelStatusDTO.OK,
+                            ruleHits = emptyList(),
+                        ),
                 )
-
             else -> sykmelding
         }
 
@@ -61,7 +61,7 @@ class SykmeldingService(
             }
 
             val allDataExists: Boolean = sykmeldingDb.getSykmelding(sykmeldingId, fnr) != null
-            log.info(
+            logger.info(
                 "404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId"
             )
         }

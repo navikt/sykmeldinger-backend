@@ -13,7 +13,6 @@ import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
 import io.mockk.coEvery
 import io.mockk.mockk
-import no.nav.syfo.objectMapper
 import no.nav.syfo.sykmelding.api.registerSykmeldingApiV2
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
@@ -21,6 +20,7 @@ import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
 import no.nav.syfo.testutils.generateJWT
 import no.nav.syfo.testutils.setUpAuth
 import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.utils.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
 
 class SykmeldingApiIntegrationTest :
@@ -31,14 +31,14 @@ class SykmeldingApiIntegrationTest :
                 sykmeldingDb,
             )
 
+        // TODO KOIN!!!!!!!!!!!
+
         context("Sykmeldinger api integration test") {
             with(TestApplicationEngine()) {
                 setUpTestApplication()
                 setUpAuth()
                 application.routing {
-                    authenticate("tokenx") {
-                        route("/api/v2") { registerSykmeldingApiV2(sykmeldingService) }
-                    }
+                    authenticate("tokenx") { route("/api/v2") { registerSykmeldingApiV2() } }
                 }
                 test("Should get list of sykmeldinger OK") {
                     val sykmelding = getSykmeldingDTO()

@@ -1,24 +1,25 @@
-package no.nav.syfo.application
+package no.nav.syfo.plugins
 
 import com.auth0.jwk.JwkProvider
-import io.ktor.http.auth.HttpAuthHeader
-import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.Principal
-import io.ktor.server.auth.jwt.JWTCredential
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.request.header
+import com.auth0.jwk.JwkProviderBuilder
+import io.ktor.http.auth.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.request.*
+import java.net.URL
+import java.util.concurrent.TimeUnit
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.log
+import no.nav.syfo.application.getWellKnownTokenX
+import no.nav.syfo.utils.Environment
+import no.nav.syfo.utils.logger
+import org.koin.ktor.ext.inject
 
-fun Application.setupAuth(
-    jwkProviderTokenX: JwkProvider,
-    tokenXIssuer: String,
-    clientIdTokenX: String,
-) {
+val logger = logger("Application.configureAuth")
+
+fun Application.configureAuth() {
+    val config by inject<AuthConfiguration>()
+
     install(Authentication) {
         jwt(name = "tokenx") {
             authHeader {
@@ -27,10 +28,13 @@ fun Application.setupAuth(
                     else -> return@authHeader HttpAuthHeader.Single("Bearer", token)
                 }
             }
-            verifier(jwkProviderTokenX, tokenXIssuer)
+            verifier(config.jwkProviderTokenX, config.tokenXIssuer)
             validate { credentials ->
                 when {
-                    hasClientIdAudience(credentials, clientIdTokenX) && erNiva4(credentials) -> {
+                    hasClientIdAudience(
+                        credentials,
+                        config.clientIdTokenX,
+                    ) && erNiva4(credentials) -> {
                         val principal = JWTPrincipal(credentials.payload)
                         BrukerPrincipal(
                             fnr = finnFnrFraToken(principal),
@@ -45,6 +49,28 @@ fun Application.setupAuth(
     }
 }
 
+class AuthConfiguration(
+    val jwkProviderTokenX: JwkProvider,
+    val tokenXIssuer: String,
+    val clientIdTokenX: String,
+)
+
+fun getProductionAuthConfig(env: Environment): AuthConfiguration {
+    val wellKnownTokenX = getWellKnownTokenX(env.tokenXWellKnownUrl)
+    val jwkProviderTokenX =
+        JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
+            .cached(10, 24, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
+    val tokenXIssuer: String = wellKnownTokenX.issuer
+
+    return AuthConfiguration(
+        jwkProviderTokenX = jwkProviderTokenX,
+        tokenXIssuer = tokenXIssuer,
+        clientIdTokenX = env.clientIdTokenX,
+    )
+}
+
 fun ApplicationCall.getToken(): String? {
     return when (val authHeader = request.header("Authorization")) {
         null -> request.cookies.get(name = "selvbetjening-idtoken")
@@ -57,7 +83,7 @@ fun hasClientIdAudience(credentials: JWTCredential, clientId: String): Boolean {
 }
 
 fun unauthorized(credentials: JWTCredential): Principal? {
-    log.warn(
+    logger.warn(
         "Auth: Unexpected audience for jwt {}, {}",
         StructuredArguments.keyValue("issuer", credentials.payload.issuer),
         StructuredArguments.keyValue("audience", credentials.payload.audience),
@@ -74,10 +100,10 @@ fun finnFnrFraToken(principal: JWTPrincipal): String {
         principal.payload.getClaim("pid") != null &&
             !principal.payload.getClaim("pid").asString().isNullOrEmpty()
     ) {
-        log.debug("Bruker fnr fra pid-claim")
+        logger.debug("Bruker fnr fra pid-claim")
         principal.payload.getClaim("pid").asString()
     } else {
-        log.debug("Bruker fnr fra subject")
+        logger.debug("Bruker fnr fra subject")
         principal.payload.subject
     }
 }
