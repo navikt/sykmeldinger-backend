@@ -1,180 +1,155 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
-import io.kotest.core.spec.style.FunSpec
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.authenticate
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.routing.*
+import io.ktor.server.testing.*
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockkClass
+import no.nav.syfo.plugins.configureAuth
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
-import no.nav.syfo.testutils.generateJWT
-import no.nav.syfo.testutils.setUpAuth
-import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.testutils.configureTestApplication
+import no.nav.syfo.testutils.createTestHttpClient
+import no.nav.syfo.testutils.invalidAudienceAuthHeader
+import no.nav.syfo.testutils.mockedAuthModule
+import no.nav.syfo.testutils.validAuthHeader
 import no.nav.syfo.utils.objectMapper
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-class SykmeldingSendApiKtTest :
-    FunSpec({
-        val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
+class SykmeldingSendApiKtTest : KoinTest {
+    val sykmeldingId = "123"
+    val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-        beforeTest {
-            clearAllMocks()
-            coEvery { sykmeldingStatusService.createSendtStatus(any(), any(), any()) } returns Unit
+    @BeforeEach
+    fun init() {
+        clearAllMocks()
+        coEvery { sykmeldingStatusService.createSendtStatus(any(), any(), any()) } returns Unit
+
+        startKoin {
+            modules(
+                mockedAuthModule,
+                module { single { sykmeldingStatusService } },
+            )
         }
+    }
 
-        context("Test SykmeldingSendApi for sluttbruker med tilgangskontroll") {
-            with(TestApplicationEngine()) {
-                setUpTestApplication()
-                setUpAuth()
+    @AfterEach fun cleanup() = stopKoin()
 
-                application.routing {
-                    authenticate("tokenx") { route("/api/v3") { registrerSykmeldingSendApiV3() } }
-                }
+    @Test
+    fun `Bruker skal få sende sin egen sykmelding`() = testApplication {
+        setupSendSykmeldingApi()
 
-                test("Bruker skal få sende sin egen sykmelding") {
-                    val sykmeldingId = "123"
-                    with(
-                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                            setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                "AUTHORIZATION",
-                                "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "clientId",
-                                    subject = "12345678910",
-                                    issuer = "issuer",
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.Accepted
-                    }
-                }
-
-                test("Får bad request ved empty body") {
-                    val sykmeldingId = "123"
-                    with(
-                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                "AUTHORIZATION",
-                                "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "clientId",
-                                    subject = "12345678910",
-                                    issuer = "issuer",
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                    }
-                }
-
-                test("Får bad request ved validateringsfeil") {
-                    val sykmeldingId = "123"
-                    with(
-                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/$sykmeldingId/send") {
-                            setBody(
-                                objectMapper.writeValueAsString(
-                                    opprettSykmeldingUserEvent()
-                                        .copy(
-                                            erOpplysningeneRiktige =
-                                                SporsmalSvar(
-                                                    sporsmaltekst = "",
-                                                    svar = JaEllerNei.NEI
-                                                )
-                                        )
-                                )
-                            )
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                "AUTHORIZATION",
-                                "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "clientId",
-                                    subject = "12345678910",
-                                    issuer = "issuer",
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                    }
-                }
-
-                test("Skal ikke kunne sende annen brukers sykmelding") {
-                    coEvery {
-                        sykmeldingStatusService.createSendtStatus(
-                            any(),
-                            any(),
-                            any(),
-                        )
-                    } throws
-                        SykmeldingStatusNotFoundException(
-                            "Not Found",
-                            RuntimeException("Ingen tilgang")
-                        )
-                    with(
-                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
-                            setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                "Authorization",
-                                "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "clientId",
-                                    subject = "00000000000",
-                                    issuer = "issuer",
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.NotFound
-                    }
-                }
-
-                test("Skal ikke kunne bruke apiet med token med feil audience") {
-                    with(
-                        handleRequest(HttpMethod.Post, "/api/v3/sykmeldinger/123/send") {
-                            setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
-                            addHeader("Content-Type", ContentType.Application.Json.toString())
-                            addHeader(
-                                "Authorization",
-                                "Bearer ${
-                                generateJWT(
-                                    "client",
-                                    "annenservice",
-                                    subject = "12345678910",
-                                    issuer = "issuer",
-                                )
-                            }",
-                            )
-                        },
-                    ) {
-                        response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                    }
+        val client = createTestHttpClient()
+        val response =
+            client.post("/api/v3/sykmeldinger/$sykmeldingId/send") {
+                setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    validAuthHeader()
                 }
             }
-        }
-    })
+
+        response.status shouldBeEqualTo HttpStatusCode.Accepted
+    }
+
+    @Test
+    fun `Får bad request ved empty body`() = testApplication {
+        setupSendSykmeldingApi()
+
+        val client = createTestHttpClient()
+        val response =
+            client.post("/api/v3/sykmeldinger/$sykmeldingId/send") {
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    validAuthHeader()
+                }
+            }
+
+        response.status shouldBeEqualTo HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `Får bad request ved valideringsfeil`() = testApplication {
+        setupSendSykmeldingApi()
+
+        val client = createTestHttpClient()
+        val response =
+            client.post("/api/v3/sykmeldinger/$sykmeldingId/send") {
+                setBody(
+                    objectMapper.writeValueAsString(
+                        opprettSykmeldingUserEvent()
+                            .copy(
+                                erOpplysningeneRiktige =
+                                    SporsmalSvar(
+                                        sporsmaltekst = "",
+                                        svar = JaEllerNei.NEI,
+                                    ),
+                            ),
+                    ),
+                )
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    validAuthHeader()
+                }
+            }
+
+        response.status shouldBeEqualTo HttpStatusCode.BadRequest
+    }
+
+    @Test
+    fun `Skal ikke kunne sende annen brukers sykmelding`() = testApplication {
+        setupSendSykmeldingApi()
+        coEvery {
+            sykmeldingStatusService.createSendtStatus(
+                any(),
+                any(),
+                any(),
+            )
+        } throws
+            SykmeldingStatusNotFoundException(
+                "Not Found",
+                RuntimeException("Ingen tilgang"),
+            )
+
+        val client = createTestHttpClient()
+        val response =
+            client.post("/api/v3/sykmeldinger/123/send") {
+                setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    validAuthHeader("00000000000")
+                }
+            }
+        response.status shouldBeEqualTo HttpStatusCode.NotFound
+    }
+
+    @Test
+    fun `Skal ikke kunne bruke apiet med token med feil audience`() = testApplication {
+        setupSendSykmeldingApi()
+
+        val client = createTestHttpClient()
+        val response =
+            client.post("/api/v3/sykmeldinger/123/send") {
+                setBody(objectMapper.writeValueAsString(opprettSykmeldingUserEvent()))
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    invalidAudienceAuthHeader()
+                }
+            }
+
+        response.status shouldBeEqualTo HttpStatusCode.Unauthorized
+    }
+}
 
 fun opprettSykmeldingUserEvent(): SykmeldingFormResponse {
     return SykmeldingFormResponse(
@@ -198,4 +173,13 @@ fun opprettSykmeldingUserEvent(): SykmeldingFormResponse {
         egenmeldingsdager = null,
         fisker = null,
     )
+}
+
+private fun TestApplicationBuilder.setupSendSykmeldingApi() {
+    application {
+        configureTestApplication()
+        configureAuth()
+    }
+
+    routing { authenticate("tokenx") { route("/api/v3") { registrerSykmeldingSendApiV3() } } }
 }
