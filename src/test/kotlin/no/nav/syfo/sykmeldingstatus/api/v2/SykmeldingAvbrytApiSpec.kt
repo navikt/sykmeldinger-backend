@@ -1,160 +1,147 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
-import io.kotest.core.spec.style.FunSpec
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
+import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.*
 import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockkClass
+import no.nav.syfo.plugins.configureAuth
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
-import no.nav.syfo.testutils.generateJWT
-import no.nav.syfo.testutils.setUpAuth
-import no.nav.syfo.testutils.setUpTestApplication
+import no.nav.syfo.testutils.configureTestApplication
+import no.nav.syfo.testutils.createTestHttpClient
+import no.nav.syfo.testutils.invalidAudienceAuthHeader
+import no.nav.syfo.testutils.mockedAuthModule
+import no.nav.syfo.testutils.validAuthHeader
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 
-class SykmeldingAvbrytApiSpec :
-    FunSpec(
-        {
-            val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
+class SykmeldingAvbrytApiSpec : KoinTest {
+    val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
 
-            beforeTest {
-                clearAllMocks()
-                coEvery {
-                    sykmeldingStatusService.createAvbruttStatus(
-                        any(),
-                        any(),
-                    )
-                } just Runs
-                coEvery {
-                    sykmeldingStatusService.createGjenapneStatus(
-                        any(),
-                        any(),
-                    )
-                } just Runs
-            }
+    @BeforeEach
+    fun init() {
+        clearAllMocks()
+        coEvery {
+            sykmeldingStatusService.createAvbruttStatus(
+                any(),
+                any(),
+            )
+        } just Runs
+        coEvery {
+            sykmeldingStatusService.createGjenapneStatus(
+                any(),
+                any(),
+            )
+        } just Runs
 
-            context("Test SykmeldingAvbrytAPI for sluttbruker med tilgangskontroll") {
-                with(TestApplicationEngine()) {
-                    setUpTestApplication()
-                    setUpAuth()
+        startKoin {
+            modules(
+                mockedAuthModule,
+                module { single { sykmeldingStatusService } },
+            )
+        }
+    }
 
-                    application.routing {
-                        authenticate("tokenx") {
-                            route("/api/v2") { registerSykmeldingAvbrytApiV2() }
-                        }
-                    }
+    @AfterEach fun cleanup() = stopKoin()
 
-                    test("Bruker skal få avbryte sin egen sykmelding") {
-                        val sykmeldingId = "123"
-                        with(
-                            handleRequest(
-                                HttpMethod.Post,
-                                "/api/v2/sykmeldinger/$sykmeldingId/avbryt",
-                            ) {
-                                addHeader("Content-Type", ContentType.Application.Json.toString())
-                                addHeader(
-                                    "AUTHORIZATION",
-                                    "Bearer ${
-                                        generateJWT(
-                                            "client",
-                                            "clientId",
-                                            subject = "12345678910",
-                                            issuer = "issuer",
-                                        )
-                                    }",
-                                )
-                            },
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Accepted
-                        }
-                    }
+    @Test
+    fun `Bruker skal få avbryte sin egen sykmelding`() = testApplication {
+        setUpAvbrytSykmeldingApi()
 
-                    test(
-                        "Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes"
-                    ) {
-                        val sykmeldingId = "123"
-                        coEvery { sykmeldingStatusService.createAvbruttStatus(any(), any()) } throws
-                            InvalidSykmeldingStatusException("Invalid status")
-                        with(
-                            handleRequest(
-                                HttpMethod.Post,
-                                "/api/v2/sykmeldinger/$sykmeldingId/avbryt",
-                            ) {
-                                addHeader("Content-Type", ContentType.Application.Json.toString())
-                                addHeader(
-                                    "AUTHORIZATION",
-                                    "Bearer ${
-                                        generateJWT(
-                                            "client",
-                                            "clientId",
-                                            subject = "12345678910",
-                                            issuer = "issuer",
-                                        )
-                                    }",
-                                )
-                            },
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.BadRequest
-                        }
-                    }
+        val client = createTestHttpClient()
 
-                    test("Skal ikke kunne avbryte annen brukers sykmelding") {
-                        coEvery { sykmeldingStatusService.createAvbruttStatus(any(), any()) } throws
-                            SykmeldingStatusNotFoundException(
-                                "Not Found",
-                                RuntimeException("Ingen tilgang"),
-                            )
-                        with(
-                            handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/avbryt") {
-                                addHeader("Content-Type", ContentType.Application.Json.toString())
-                                addHeader(
-                                    "Authorization",
-                                    "Bearer ${
-                                        generateJWT(
-                                            "client",
-                                            "clientId",
-                                            subject = "00000000000",
-                                            issuer = "issuer",
-                                        )
-                                    }",
-                                )
-                            },
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.NotFound
-                        }
-                    }
-
-                    test("Skal ikke kunne bruke apiet med token med feil audience") {
-                        with(
-                            handleRequest(HttpMethod.Post, "/api/v2/sykmeldinger/123/avbryt") {
-                                addHeader("Content-Type", ContentType.Application.Json.toString())
-                                addHeader(
-                                    "Authorization",
-                                    "Bearer ${
-                                        generateJWT(
-                                            "client",
-                                            "annenservice",
-                                            subject = "12345678910",
-                                            issuer = "issuer",
-                                        )
-                                    }",
-                                )
-                            },
-                        ) {
-                            response.status() shouldBeEqualTo HttpStatusCode.Unauthorized
-                        }
-                    }
+        val sykmeldingId = "123"
+        val response =
+            client.post("/api/v2/sykmeldinger/$sykmeldingId/avbryt") {
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    validAuthHeader()
                 }
             }
-        },
-    )
+
+        response.status shouldBeEqualTo HttpStatusCode.Accepted
+    }
+
+    @Test
+    fun `Bruker skal ikke få avbryte sin egen sykmelding når den ikke kan avbrytes`() =
+        testApplication {
+            setUpAvbrytSykmeldingApi()
+
+            val client = createTestHttpClient()
+
+            val sykmeldingId = "123"
+            coEvery { sykmeldingStatusService.createAvbruttStatus(any(), any()) } throws
+                InvalidSykmeldingStatusException("Invalid status")
+
+            val response =
+                client.post("/api/v2/sykmeldinger/$sykmeldingId/avbryt") {
+                    headers {
+                        append(HttpHeaders.ContentType, ContentType.Application.Json)
+                        validAuthHeader()
+                    }
+                }
+
+            response.status shouldBeEqualTo HttpStatusCode.BadRequest
+        }
+
+    @Test
+    fun `Skal ikke kunne avbryte annen brukers sykmelding`() = testApplication {
+        setUpAvbrytSykmeldingApi()
+
+        val client = createTestHttpClient()
+
+        coEvery { sykmeldingStatusService.createAvbruttStatus(any(), any()) } throws
+            SykmeldingStatusNotFoundException(
+                "Not Found",
+                RuntimeException("Ingen tilgang"),
+            )
+
+        val response =
+            client.post("/api/v2/sykmeldinger/123/avbryt") {
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    validAuthHeader()
+                }
+            }
+
+        response.status shouldBeEqualTo HttpStatusCode.NotFound
+    }
+
+    @Test
+    fun `Skal ikke kunne bruke apiet med token med feil audience`() = testApplication {
+        setUpAvbrytSykmeldingApi()
+
+        val client = createTestHttpClient()
+        val response =
+            client.post("/api/v2/sykmeldinger/123/avbryt") {
+                headers {
+                    append(HttpHeaders.ContentType, ContentType.Application.Json)
+                    invalidAudienceAuthHeader()
+                }
+            }
+
+        response.status shouldBeEqualTo HttpStatusCode.Unauthorized
+    }
+}
+
+private fun TestApplicationBuilder.setUpAvbrytSykmeldingApi() {
+    application {
+        configureTestApplication()
+        configureAuth()
+    }
+
+    routing { authenticate("tokenx") { route("/api/v2") { registerSykmeldingAvbrytApiV2() } } }
+}

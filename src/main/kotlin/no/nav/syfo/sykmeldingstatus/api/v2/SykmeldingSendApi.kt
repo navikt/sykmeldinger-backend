@@ -23,9 +23,7 @@ fun Route.registrerSykmeldingSendApiV3() {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
 
-        val sykmeldingFormResponse = call.safeReceiveOrNull<SykmeldingFormResponse>()
-
-        when (sykmeldingFormResponse) {
+        when (val sykmeldingFormResponse = call.safeReceiveOrNull<SykmeldingFormResponse>()) {
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
                 sykmeldingFormResponse.validate()

@@ -13,7 +13,7 @@ val nimbusdsVersion = "9.37.3"
 val kotestVersion = "5.8.0"
 val testcontainersVersion = "1.19.5"
 val swaggerUiVersion = "5.10.3"
-val kotlinVersion = "1.9.21"
+val kotlinVersion = "1.9.22"
 val flywayVersion = "10.7.2"
 val postgresVersion = "42.7.1"
 val koinVersion = "3.5.3"
@@ -103,12 +103,9 @@ dependencies {
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
-        exclude(group = "org.eclipse.jetty")
-    }
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-    testImplementation("io.kotest.extensions:kotest-extensions-koin:1.3.0")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")

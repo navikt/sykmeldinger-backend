@@ -2,6 +2,7 @@ package no.nav.syfo.plugins
 
 import io.ktor.server.application.*
 import no.nav.syfo.application.database.Database
+import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -36,7 +37,7 @@ val environmentModule = module { single { Environment() } }
 val applicationStateModule = module { single { ApplicationState() } }
 
 val databaseModule = module {
-    single { Database(get()).initializeDatasource().runFlywayMigrations() }
+    single<DatabaseInterface> { Database(get()).initializeDatasource().runFlywayMigrations() }
 }
 
 val authModule = module { single { getProductionAuthConfig(get()) } }
