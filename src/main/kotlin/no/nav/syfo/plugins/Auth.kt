@@ -7,15 +7,15 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
-import java.net.URL
-import java.util.concurrent.TimeUnit
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.utils.Environment
 import no.nav.syfo.utils.logger
 import org.koin.ktor.ext.inject
+import java.net.URL
+import java.util.concurrent.TimeUnit
 
-val logger = logger("Application.configureAuth")
+private val logger = logger("Application.configureAuth")
 
 fun Application.configureAuth() {
     val config by inject<AuthConfiguration>()
