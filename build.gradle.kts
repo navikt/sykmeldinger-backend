@@ -22,7 +22,7 @@ val commonsCodecVersion = "1.16.1"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val snappyJavaVersion = "1.1.10.5"
-val kafkaVersion = "3.6.1"
+val kafkaVersion = "3.7.0"
 plugins {
     id("application")
     kotlin("jvm") version "1.9.22"
