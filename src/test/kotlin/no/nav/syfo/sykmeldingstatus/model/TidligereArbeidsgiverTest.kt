@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 
 class TidligereArbeidsgiverTest {
     val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
-    val employmentHistoryRetriever = EmploymentHistoryRetriever(sykmeldingStatusDb)
+    val tidligereArbeidsgiver = TidligereArbeidsgiver(sykmeldingStatusDb)
     val AG1 = "ag1"
     val AG2 = "ag2"
 
@@ -57,7 +57,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val sisteSykmelding =
-            employmentHistoryRetriever.findLastCorrectSykmelding(
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
                 sykmeldingerFraDb,
                 currentSykmeldingId,
                 tidligereArbeidsgiverFraBruker
@@ -110,7 +110,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val sisteSykmelding =
-            employmentHistoryRetriever.findLastCorrectSykmelding(
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
                 sykmeldingerFraDb,
                 currentSykmeldingId,
                 tidligereArbeidsgiverFraBruker
@@ -149,7 +149,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val sisteSykmelding =
-            employmentHistoryRetriever.findLastCorrectSykmelding(
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
                 sykmeldingerFraDb,
                 currentSykmeldingId,
                 tidligereArbeidsgiverFraBruker
@@ -188,7 +188,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val sisteSykmelding =
-            employmentHistoryRetriever.findLastCorrectSykmelding(
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
                 sykmeldingerFraDb,
                 currentSykmeldingId,
                 tidligereArbeidsgiverFraBruker
@@ -225,11 +225,201 @@ class TidligereArbeidsgiverTest {
             )
 
         val sisteSykmelding =
-            employmentHistoryRetriever.findLastCorrectSykmelding(
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
                 sykmeldingerFraDb,
                 currentSykmeldingId,
                 null
             )
         assertEquals(null, sisteSykmelding)
+    }
+
+    @Test
+    fun `Flere ag arbeidsledig fra ag1, forlengelse på arbeidsledig, men nå arbeidsledig fra ag2`() {
+        val currentSykmeldingId = "4"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = AG2,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        )
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = null,
+                    status = STATUS_APEN
+                )
+            )
+
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG2
+            )
+        assertEquals(null, sisteSykmelding)
+    }
+
+    @Test
+    fun `Flere ag, arbeidsledig fra ag1, forlengelse på arbeidsledig ag1`() {
+        val currentSykmeldingId = "4"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = AG2,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        )
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = null,
+                    status = STATUS_APEN
+                )
+            )
+
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertNotNull(sisteSykmelding)
+        sisteSykmelding.tidligereArbeidsgiver?.let { assertEquals(AG1, it.orgnummer) }
+    }
+
+    @Test
+    fun `Flere ag, kant til kant med ag1 og ag2, tidligere ag svar fra bruker er null`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = AG2,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_APEN
+                ),
+            )
+
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                null
+            )
+        assertNull(sisteSykmelding)
+    }
+
+    @Test
+    fun `Flere ag, kant til kant med ag1 - brukersvar null, og ag2, tidligere ag svar fra bruker er null og ag2`() {
+        val currentSykmeldingId = "5"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = AG2,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                    tidligereArbeidsgiver = null
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = AG2,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = "5",
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG2
+            )
+        assertEquals(AG2, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 }
