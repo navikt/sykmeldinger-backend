@@ -33,7 +33,7 @@ class SykmeldingSendApiKtTest : KoinTest {
     @BeforeEach
     fun init() {
         clearAllMocks()
-        coEvery { sykmeldingStatusService.createSendtStatus(any(), any(), any()) } returns Unit
+        coEvery { sykmeldingStatusService.createStatus(any(), any(), any()) } returns Unit
 
         startKoin {
             modules(
@@ -110,7 +110,7 @@ class SykmeldingSendApiKtTest : KoinTest {
     fun `Skal ikke kunne sende annen brukers sykmelding`() = testApplication {
         setupSendSykmeldingApi()
         coEvery {
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 any(),
                 any(),
                 any(),

@@ -25,7 +25,7 @@ fun Route.registrerSykmeldingSendApiV3() {
             null -> call.respond(HttpStatusCode.BadRequest, "Empty body")
             else -> {
                 sykmeldingFormResponse.validate()
-                sendtSykmeldingStatusService.createSendtStatus(
+                sendtSykmeldingStatusService.createStatus(
                     sykmeldingFormResponse,
                     sykmeldingId,
                     fnr,

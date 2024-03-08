@@ -4,6 +4,7 @@ import io.mockk.MockKMatcherScope
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.sykmelding.model.AdresseDTO
 import no.nav.syfo.sykmelding.model.AnnenFraversArsakDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
@@ -111,6 +112,15 @@ fun getMedisinskVurdering() =
         svangerskap = false,
         yrkesskade = false,
         yrkesskadeDato = null,
+    )
+
+internal fun opprettArbeidsgiverInfo(orgnummer: String) =
+    Arbeidsgiverinfo(
+        orgnummer = orgnummer,
+        juridiskOrgnummer = "",
+        navn = "",
+        aktivtArbeidsforhold = true,
+        naermesteLeder = null,
     )
 
 internal fun opprettSykmelding(
