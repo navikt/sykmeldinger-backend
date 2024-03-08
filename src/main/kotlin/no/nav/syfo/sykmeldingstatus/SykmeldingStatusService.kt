@@ -27,7 +27,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.model.EmploymentHistoryRetriever
+import no.nav.syfo.sykmeldingstatus.model.TidligereArbeidsgiver
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
@@ -38,7 +38,7 @@ class SykmeldingStatusService(
     private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
     private val logger = logger()
-    private val employmentHistoryRetriever = EmploymentHistoryRetriever(sykmeldingStatusDb)
+    private val tidligereArbeidsgiver = TidligereArbeidsgiver(sykmeldingStatusDb)
 
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> =
@@ -184,7 +184,7 @@ class SykmeldingStatusService(
                 sykmeldingFormResponse.arbeidssituasjon.svar == ARBEIDSLEDIG ||
                     sykmeldingFormResponse.arbeidssituasjon.svar == ANNET
             ) {
-                employmentHistoryRetriever.tidligereArbeidsgiver(
+                tidligereArbeidsgiver.tidligereArbeidsgiver(
                     fnr,
                     sykmeldingId,
                     StatusEventDTO.BEKREFTET,
