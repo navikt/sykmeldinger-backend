@@ -2,11 +2,11 @@ package no.nav.syfo.sykmeldingstatus
 
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
-import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -166,17 +166,36 @@ class SykmeldingStatusService(
 
         if (nesteStatus == StatusEventDTO.SENDT) {
             createSendtStatus(fnr, sykmeldingId, sykmeldingFormResponse)
+            securelog.info(
+                "Opprettet sendt status for {} {} {}",
+                kv("fødselsnummer", fnr),
+                kv("sykmeldingId", sykmeldingId),
+                kv("nesteStatus", nesteStatus)
+            )
             SENDT_AV_BRUKER_COUNTER.inc()
             return
         }
-        createBekreftetStatus(fnr, sykmeldingId, sykmeldingFormResponse)
+        securelog.info(
+            "Prøver å opprette bekreftet status for {} {} {}",
+            kv("fødselsnummer", fnr),
+            kv("sykmeldingId", sykmeldingId),
+            kv("nesteStatus", nesteStatus)
+        )
+        createBekreftetStatus(fnr, sykmeldingId, sykmeldingFormResponse, nesteStatus)
+        securelog.info(
+            "Opprettet bekreftet status for {} {} {}",
+            kv("fødselsnummer", fnr),
+            kv("sykmeldingId", sykmeldingId),
+            kv("nesteStatus", nesteStatus)
+        )
         BEKREFTET_AV_BRUKER_COUNTER.inc()
     }
 
     private suspend fun createBekreftetStatus(
         fnr: String,
         sykmeldingId: String,
-        sykmeldingFormResponse: SykmeldingFormResponse
+        sykmeldingFormResponse: SykmeldingFormResponse,
+        nesteStatus: StatusEventDTO,
     ) {
         val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
         val tidligereArbeidsgiver =
@@ -184,13 +203,38 @@ class SykmeldingStatusService(
                 sykmeldingFormResponse.arbeidssituasjon.svar == ARBEIDSLEDIG ||
                     sykmeldingFormResponse.arbeidssituasjon.svar == ANNET
             ) {
+                securelog.info(
+                    "Prøver å finne tidligere arbeidsgiver for {} {} {} {}",
+                    kv("fødselsnummer", fnr),
+                    kv("sykmeldingId", sykmeldingId),
+                    kv("nesteStatus", nesteStatus),
+                    kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar)
+                )
                 tidligereArbeidsgiver.tidligereArbeidsgiver(
                     fnr,
                     sykmeldingId,
-                    StatusEventDTO.BEKREFTET,
+                    nesteStatus,
                     sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar,
                 )
             } else null
+        if (tidligereArbeidsgiver != null) {
+            securelog.info(
+                "Fant tidligere arbeidsgiver for {} {} {} {} {}",
+                kv("fødselsnummer", fnr),
+                kv("sykmeldingId", sykmeldingId),
+                kv("nesteStatus", nesteStatus),
+                kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar),
+                kv("tidligere arbeidsgiver", tidligereArbeidsgiver)
+            )
+        } else {
+            securelog.info(
+                "Fant ikke tidligere arbeidsgiver for {} {} {} {}",
+                kv("fødselsnummer", fnr),
+                kv("sykmeldingId", sykmeldingId),
+                kv("nesteStatus", nesteStatus),
+                kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar)
+            )
+        }
         val sykmeldingStatusKafkaEventDTO =
             sykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
                 timestamp,
@@ -199,7 +243,6 @@ class SykmeldingStatusService(
                 tidligereArbeidsgiver,
             )
         updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
-        BEKREFTET_AV_BRUKER_COUNTER.inc()
     }
 
     private suspend fun createSendtStatus(
@@ -217,30 +260,6 @@ class SykmeldingStatusService(
                 arbeidsgiver,
                 null,
             )
-        updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
-    }
-
-    private suspend fun createKafkaDTOAndUpdateStatus(
-        tidligereArbeidsgiver: TidligereArbeidsgiverDTO?,
-        arbeidsgiver: Arbeidsgiverinfo?,
-        sykmeldingFormResponse: SykmeldingFormResponse,
-        timestamp: OffsetDateTime,
-        sykmeldingId: String,
-        fnr: String,
-    ) {
-
-        val sykmeldingStatusKafkaEventDTO =
-            sykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
-                timestamp,
-                sykmeldingId,
-                arbeidsgiver,
-                tidligereArbeidsgiver,
-            )
-        if (tidligereArbeidsgiver != null) {
-            securelog.info(
-                "legger til tidligere arbeidsgiver for fnr: $fnr orgnummer: ${sykmeldingStatusKafkaEventDTO.tidligereArbeidsgiver?.orgnummer} sykmeldingsId: $sykmeldingId",
-            )
-        }
         updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
     }
 

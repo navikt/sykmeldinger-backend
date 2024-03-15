@@ -16,6 +16,7 @@ import no.nav.syfo.utils.logger
 
 class EmploymentHistoryRetriever(private val sykmeldingStatusDb: SykmeldingStatusDb) {
     private val logger = logger()
+
     suspend fun tidligereArbeidsgiver(
         sykmeldtFnr: String,
         sykmeldingId: String,
