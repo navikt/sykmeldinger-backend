@@ -310,7 +310,7 @@ class ValidationKtTest {
                     arbeidssituasjon =
                         SporsmalSvar(
                             sporsmaltekst = "",
-                            svar = Arbeidssituasjon.ANNET,
+                            svar = Arbeidssituasjon.NAERINGSDRIVENDE,
                         ),
                     arbeidsgiverOrgnummer =
                         SporsmalSvar(
