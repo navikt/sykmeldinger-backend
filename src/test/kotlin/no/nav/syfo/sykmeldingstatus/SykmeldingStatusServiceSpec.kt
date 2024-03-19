@@ -8,10 +8,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -43,6 +39,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpec {
     val sykmeldingId = "id"
@@ -1839,7 +1839,7 @@ class SykmeldingStatusServiceSpec {
     @DisplayName("Bruker går fra arbeidstaker til annet")
     inner class BrukerGarFraArbeidstakerTilAnnet {
         @Test
-        fun `skal ha tidligere arbeidsgiver`() = testApplication {
+        fun `skal ikke ha tidligere arbeidsgiver ved status annet`() = testApplication {
             val tidligereSykmelding =
                 opprettSykmelding(
                     fom = 1.januar(2023),
@@ -1876,10 +1876,9 @@ class SykmeldingStatusServiceSpec {
                 sykmeldingId,
                 fnr,
             )
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
             coVerify(exactly = 1) {
                 sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
+                    match { it.tidligereArbeidsgiver == null },
                     any(),
                     any(),
                 )
