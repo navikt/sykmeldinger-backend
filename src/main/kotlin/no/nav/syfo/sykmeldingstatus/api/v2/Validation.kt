@@ -17,11 +17,12 @@ fun SykmeldingFormResponse.validate() {
     } else if (
         arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER ||
             arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
-            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE
+            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
+            arbeidssituasjon.svar == Arbeidssituasjon.ANNET
     ) {
         require(
             arbeidsgiverOrgnummer == null,
-            "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker",
+            "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker eller arbeidsledig",
         )
         require(
             riktigNarmesteLeder == null,

@@ -1,7 +1,5 @@
 package no.nav.syfo.sykmeldingstatus
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -11,7 +9,6 @@ import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
-import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ANNET
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.FISKER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
@@ -31,6 +28,8 @@ import no.nav.syfo.sykmeldingstatus.model.TidligereArbeidsgiver
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
@@ -199,10 +198,7 @@ class SykmeldingStatusService(
     ) {
         val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
         val tidligereArbeidsgiver =
-            if (
-                sykmeldingFormResponse.arbeidssituasjon.svar == ARBEIDSLEDIG ||
-                    sykmeldingFormResponse.arbeidssituasjon.svar == ANNET
-            ) {
+            if (sykmeldingFormResponse.arbeidssituasjon.svar == ARBEIDSLEDIG) {
                 securelog.info(
                     "Prøver å finne tidligere arbeidsgiver for {} {} {} {}",
                     kv("fødselsnummer", fnr),
