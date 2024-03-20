@@ -10,6 +10,7 @@ import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
+import no.nav.syfo.sykmeldingstatus.exception.UserInputFlereArbeidsgivereIsNullException
 import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.utils.logger
@@ -155,6 +156,7 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         tidligereArbeidsgiverBrukerInput: String?,
         sykmeldingId: String
     ): SykmeldingWithArbeidsgiverStatus? {
+        if (filteredSykmeldinger.isEmpty()) return null
         val uniqueArbeidsgiverCount =
             filteredSykmeldinger.distinctBy { it.first.arbeidsgiver?.orgnummer }.size
         updateMetricsForArbeidsgivere(uniqueArbeidsgiverCount)
@@ -167,73 +169,44 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
                 uniqueArbeidsgiverCount
             )
         )
-        return when {
-            uniqueArbeidsgiverCount == 1 ->
-                findSingleRelevantSykmelding(
-                    filteredSykmeldinger,
-                    tidligereArbeidsgiverBrukerInput,
-                    sykmeldingId
-                )
-            tidligereArbeidsgiverBrukerInput == null -> {
-                securelog.info(
-                    "Finner ikke tidligere arbeidsgiver fordi antall relevante arbeidsgivere er > 1 og brukerInput er null {} {} {}",
-                    kv("sykmeldingId", sykmeldingId),
-                    kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput),
-                    kv(
-                        "antall unike arbeidsgivere kant til kant eller overlappende",
-                        uniqueArbeidsgiverCount
-                    )
-                )
-                null
-            }
-            else ->
-                findMatchingSykmeldingFromArbeidsgiver(
-                    filteredSykmeldinger,
-                    tidligereArbeidsgiverBrukerInput,
-                    sykmeldingId
-                )
+        if (uniqueArbeidsgiverCount == 1 && tidligereArbeidsgiverBrukerInput == null) {
+            return findSingleRelevantSykmelding(filteredSykmeldinger, sykmeldingId)
         }
+        return findMatchingSykmeldingFromArbeidsgiver(
+            filteredSykmeldinger,
+            tidligereArbeidsgiverBrukerInput,
+            sykmeldingId
+        )
     }
 
     private fun findSingleRelevantSykmelding(
         filtrerteSykmeldinger:
             List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>>,
-        tidligereArbeidsgiverBrukerInput: String?,
         sykmeldingId: String
     ): SykmeldingWithArbeidsgiverStatus? {
         securelog.info(
-            "Entrer kun-en-relevant-arbeidsgiver-flyten {} {}",
+            "Entrer kun-en-relevant-arbeidsgiver-flyten {}",
             kv("sykmeldingId", sykmeldingId),
-            kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput),
         )
         val relevantSykmelding = filtrerteSykmeldinger.firstOrNull()
-        relevantSykmelding?.let {
-            if (
-                tidligereArbeidsgiverBrukerInput == null ||
-                    it.first.arbeidsgiver?.orgnummer == tidligereArbeidsgiverBrukerInput ||
-                    it.first.tidligereArbeidsgiver?.orgnummer == tidligereArbeidsgiverBrukerInput
-            ) {
-                securelog.info(
-                    "Fant relevant sykmelding i kun-en-relevant-arbeidsgiver-flyten for {} {} {} {}",
-                    kv("sykmeldingId", sykmeldingId),
-                    kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput),
-                    kv("relevanteSykmelding orgnummer", it.first.arbeidsgiver?.orgnummer),
-                    kv(
-                        "relevanteSykmelding tidligereArbeidsgiver orgnummer",
-                        it.first.tidligereArbeidsgiver?.orgnummer
-                    )
-                )
-                TIDLIGERE_ARBEIDSGIVER_COUNTER.labels(it.second.name).inc()
-                logger.info("Tidligere arbeidsgiver counter er oppdatert: ${it.second.name}")
-                return it.first
-            }
+        if (relevantSykmelding == null) {
+            securelog.info("Fant ikke relevant sykmelding for {}", kv("sykmeldingId", sykmeldingId))
+            return relevantSykmelding
         }
         securelog.info(
-            "Fant ingen relevant sykmelding i kun-en-relevant-arbeidsgiver-flyten for {} {}",
+            "Fant relevant sykmelding i kun-en-relevant-arbeidsgiver-flyten for {} {} {}",
             kv("sykmeldingId", sykmeldingId),
-            kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput)
+            kv("relevanteSykmelding orgnummer", relevantSykmelding.first.arbeidsgiver?.orgnummer),
+            kv(
+                "relevanteSykmelding tidligereArbeidsgiver orgnummer",
+                relevantSykmelding.first.tidligereArbeidsgiver?.orgnummer
+            )
         )
-        return null
+        TIDLIGERE_ARBEIDSGIVER_COUNTER.labels(relevantSykmelding.second.name).inc()
+        logger.info(
+            "Tidligere arbeidsgiver counter er oppdatert: ${relevantSykmelding.second.name}"
+        )
+        return relevantSykmelding.first
     }
 
     private fun updateMetricsForArbeidsgivere(unikeArbeidsgivereCount: Int) {
@@ -244,7 +217,7 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
     private fun findMatchingSykmeldingFromArbeidsgiver(
         filtrerteSykmeldinger:
             List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>>,
-        tidligereArbeidsgiverBrukerInput: String,
+        tidligereArbeidsgiverBrukerInput: String?,
         sykmeldingId: String,
     ): SykmeldingWithArbeidsgiverStatus? {
         securelog.info(
@@ -252,6 +225,10 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
             kv("sykmeldingId", sykmeldingId),
             kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput)
         )
+        if (tidligereArbeidsgiverBrukerInput == null)
+            throw UserInputFlereArbeidsgivereIsNullException(
+                "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
+            )
         val sykmeldingMatch =
             filtrerteSykmeldinger.firstOrNull { sykmelding ->
                 sykmelding.first.arbeidsgiver?.orgnummer == tidligereArbeidsgiverBrukerInput ||
