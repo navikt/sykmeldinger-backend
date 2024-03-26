@@ -8,10 +8,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -32,6 +28,7 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
+import no.nav.syfo.sykmeldingstatus.exception.UserInputFlereArbeidsgivereIsNullException
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
@@ -43,6 +40,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpec {
     val sykmeldingId = "id"
@@ -148,7 +149,7 @@ class SykmeldingStatusServiceSpec {
                     ),
                 )
 
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(),
                 sykmeldingId,
                 fnr,
@@ -167,7 +168,7 @@ class SykmeldingStatusServiceSpec {
                 } throws SykmeldingStatusNotFoundException("Ingen tilgang")
 
                 assertFailsWith<SykmeldingStatusNotFoundException> {
-                    sykmeldingStatusService.createSendtStatus(
+                    sykmeldingStatusService.createStatus(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr,
@@ -317,6 +318,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -330,7 +332,7 @@ class SykmeldingStatusServiceSpec {
                     fisker = null,
                 )
 
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 sykmeldingFormResponse,
                 "test",
                 "fnr",
@@ -384,6 +386,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "feilOrnummer",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -399,7 +402,7 @@ class SykmeldingStatusServiceSpec {
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
                 runBlocking {
-                    sykmeldingStatusService.createSendtStatus(
+                    sykmeldingStatusService.createStatus(
                         sykmeldingFormResponse,
                         "test",
                         "fnr",
@@ -460,6 +463,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = JaEllerNei.NEI,
                         ),
+                    arbeidsledig = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
                     harForsikring = null,
@@ -470,7 +474,7 @@ class SykmeldingStatusServiceSpec {
 
             assertFailsWith(InvalidSykmeldingStatusException::class) {
                 runBlocking {
-                    sykmeldingStatusService.createSendtStatus(
+                    sykmeldingStatusService.createStatus(
                         sykmeldingFormResponse,
                         "test",
                         "fnr",
@@ -509,6 +513,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = FRILANSER,
                         ),
+                    arbeidsledig = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
@@ -519,7 +524,7 @@ class SykmeldingStatusServiceSpec {
                     fisker = null,
                 )
 
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 sykmeldingFormResponse,
                 "test",
                 "fnr",
@@ -576,6 +581,7 @@ class SykmeldingStatusServiceSpec {
                                 sporsmaltekst = "",
                                 svar = "123456789",
                             ),
+                        arbeidsledig = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
@@ -587,7 +593,7 @@ class SykmeldingStatusServiceSpec {
 
                 val expected = slot<SykmeldingStatusKafkaEventDTO>()
 
-                sykmeldingStatusService.createSendtStatus(
+                sykmeldingStatusService.createStatus(
                     sykmeldingFormResponse,
                     "test",
                     "fnr",
@@ -1044,7 +1050,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1091,7 +1097,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1132,7 +1138,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1189,19 +1195,16 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
-                )
-            }
+            val exception =
+                assertFailsWith<UserInputFlereArbeidsgivereIsNullException> {
+                    sykmeldingStatusService.createStatus(
+                        opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                        sykmeldingId,
+                        fnr,
+                    )
+                }
+            exception.message shouldBeEqualTo
+                "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
         }
 
         @Test
@@ -1235,7 +1238,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1281,7 +1284,8 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1330,7 +1334,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1379,7 +1383,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = FRILANSER),
                 sykmeldingId,
                 fnr,
@@ -1442,7 +1446,7 @@ class SykmeldingStatusServiceSpec {
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = true,
                     )
-                sykmeldingStatusService.createSendtStatus(
+                sykmeldingStatusService.createStatus(
                     opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                     sykmeldingId,
                     fnr,
@@ -1497,7 +1501,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1551,7 +1555,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1605,7 +1609,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1659,7 +1663,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1712,7 +1716,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1765,7 +1769,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1818,7 +1822,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                 sykmeldingId,
                 fnr,
@@ -1838,7 +1842,7 @@ class SykmeldingStatusServiceSpec {
     @DisplayName("Bruker går fra arbeidstaker til annet")
     inner class BrukerGarFraArbeidstakerTilAnnet {
         @Test
-        fun `skal ha tidligere arbeidsgiver`() = testApplication {
+        fun `skal ikke ha tidligere arbeidsgiver ved status annet`() = testApplication {
             val tidligereSykmelding =
                 opprettSykmelding(
                     fom = 1.januar(2023),
@@ -1870,15 +1874,14 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ANNET),
                 sykmeldingId,
                 fnr,
             )
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
             coVerify(exactly = 1) {
                 sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
+                    match { it.tidligereArbeidsgiver == null },
                     any(),
                     any(),
                 )
@@ -1918,7 +1921,7 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createSendtStatus(
+            sykmeldingStatusService.createStatus(
                 opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = FRILANSER),
                 sykmeldingId,
                 fnr,
@@ -1984,7 +1987,7 @@ class SykmeldingStatusServiceSpec {
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = true,
                     )
-                sykmeldingStatusService.createSendtStatus(
+                sykmeldingStatusService.createStatus(
                     opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
                     sykmeldingId,
                     fnr,
@@ -2036,13 +2039,13 @@ class SykmeldingStatusServiceSpec {
                 assertFailsWith<InvalidSykmeldingStatusException> {
                     when (newStatus) {
                         StatusEventDTO.SENDT ->
-                            sykmeldingStatusService.createSendtStatus(
+                            sykmeldingStatusService.createStatus(
                                 opprettSendtSykmeldingUserEvent(),
                                 sykmeldingId,
                                 fnr,
                             )
                         StatusEventDTO.BEKREFTET ->
-                            sykmeldingStatusService.createSendtStatus(
+                            sykmeldingStatusService.createStatus(
                                 opprettBekreftetSykmeldingUserEvent(),
                                 sykmeldingId,
                                 fnr,
@@ -2097,13 +2100,13 @@ class SykmeldingStatusServiceSpec {
                 )
             when (newStatus) {
                 StatusEventDTO.SENDT ->
-                    sykmeldingStatusService.createSendtStatus(
+                    sykmeldingStatusService.createStatus(
                         opprettSendtSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr,
                     )
                 StatusEventDTO.BEKREFTET ->
-                    sykmeldingStatusService.createSendtStatus(
+                    sykmeldingStatusService.createStatus(
                         opprettBekreftetSykmeldingUserEvent(),
                         sykmeldingId,
                         fnr,

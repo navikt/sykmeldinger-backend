@@ -14,10 +14,16 @@ fun SykmeldingFormResponse.validate() {
             arbeidsgiverOrgnummer,
             "Arbeidsgiver må være valgt når arbeidssituasjon er arbeidstaker",
         )
-    } else if (arbeidssituasjon.svar != Arbeidssituasjon.FISKER) {
+    } else if (
+            arbeidssituasjon.svar == Arbeidssituasjon.ARBEIDSLEDIG ||
+            arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER ||
+            arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
+            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
+            arbeidssituasjon.svar == Arbeidssituasjon.ANNET
+    ) {
         require(
             arbeidsgiverOrgnummer == null,
-            "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker",
+            "Arbeidsgiver kan ikke være valgt når arbeidssituasjon ikke er arbeidstaker eller arbeidsledig",
         )
         require(
             riktigNarmesteLeder == null,
