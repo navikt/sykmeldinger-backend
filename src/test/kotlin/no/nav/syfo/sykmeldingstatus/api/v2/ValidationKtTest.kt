@@ -1,7 +1,5 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
-import java.time.LocalDate
-import kotlin.test.assertFailsWith
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
@@ -16,6 +14,8 @@ import org.amshove.kluent.withMessage
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import kotlin.test.assertFailsWith
 
 class ValidationKtTest {
     @Test
@@ -34,6 +34,7 @@ class ValidationKtTest {
                         svar = Arbeidssituasjon.ANNET,
                     ),
                 arbeidsgiverOrgnummer = null,
+                arbeidsledig = null,
                 riktigNarmesteLeder = null,
                 harBruktEgenmelding = null,
                 egenmeldingsperioder = null,
@@ -65,6 +66,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.FISKER,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -95,6 +97,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.FISKER,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -141,6 +144,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -185,6 +189,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding =
                         SporsmalSvar(
@@ -237,6 +242,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding =
                         SporsmalSvar(
@@ -284,6 +290,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = Arbeidssituasjon.ARBEIDSTAKER,
                         ),
+                    arbeidsledig = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
@@ -317,6 +324,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "13456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -348,6 +356,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = Arbeidssituasjon.ARBEIDSTAKER,
                         ),
+                    arbeidsledig = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
@@ -381,6 +390,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "543263",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -418,6 +428,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "543263",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -459,6 +470,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "543263",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -498,6 +510,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.FRILANSER,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding =
                         SporsmalSvar(
@@ -534,6 +547,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.NAERINGSDRIVENDE,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding =
                         SporsmalSvar(
@@ -570,6 +584,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.ARBEIDSLEDIG,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder =
@@ -602,6 +617,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.ARBEIDSLEDIG,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -638,6 +654,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.ANNET,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder =
@@ -670,6 +687,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.ANNET,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -707,6 +725,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.FRILANSER,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -752,6 +771,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -815,6 +835,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -880,6 +901,7 @@ class ValidationKtTest {
                             sporsmaltekst = "",
                             svar = JaEllerNei.NEI,
                         ),
+                    arbeidsledig = null,
                     egenmeldingsperioder = null,
                     harForsikring =
                         SporsmalSvar(
@@ -935,6 +957,7 @@ class ValidationKtTest {
                             svar = Arbeidssituasjon.FRILANSER,
                         ),
                     arbeidsgiverOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding =
                         SporsmalSvar(

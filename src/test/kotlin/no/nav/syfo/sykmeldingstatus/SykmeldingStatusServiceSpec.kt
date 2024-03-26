@@ -8,10 +8,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -44,6 +40,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpec {
     val sykmeldingId = "id"
@@ -318,6 +318,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -385,6 +386,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "feilOrnummer",
                         ),
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -461,6 +463,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = JaEllerNei.NEI,
                         ),
+                    arbeidsledig = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
                     harForsikring = null,
@@ -510,6 +513,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = FRILANSER,
                         ),
+                    arbeidsledig = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
@@ -577,6 +581,7 @@ class SykmeldingStatusServiceSpec {
                                 sporsmaltekst = "",
                                 svar = "123456789",
                             ),
+                        arbeidsledig = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
