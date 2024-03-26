@@ -1,8 +1,5 @@
 package no.nav.syfo.sykmeldingstatus.model
 
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.metrics.ANTALL_TIDLIGERE_ARBEIDSGIVERE
 import no.nav.syfo.metrics.TIDLIGERE_ARBEIDSGIVER_COUNTER
@@ -15,6 +12,9 @@ import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.securelog
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) {
     private val logger = logger()
@@ -159,7 +159,7 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         if (filteredSykmeldinger.isEmpty()) return null
         val uniqueArbeidsgiverCount =
             filteredSykmeldinger.distinctBy { it.first.arbeidsgiver?.orgnummer }.size
-        updateMetricsForArbeidsgivere(uniqueArbeidsgiverCount)
+        updateMetricsForArbeidsgivere(uniqueArbeidsgiverCount, sykmeldingId)
         securelog.info(
             "Finner mest relevante sykmelding av de filterte sykmeldingene for å finne tidligere arbeidsgiver {} {} {}",
             kv("sykmeldingId", sykmeldingId),
@@ -209,9 +209,11 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         return relevantSykmelding.first
     }
 
-    private fun updateMetricsForArbeidsgivere(unikeArbeidsgivereCount: Int) {
+    private fun updateMetricsForArbeidsgivere(unikeArbeidsgivereCount: Int, sykmeldingId: String) {
         ANTALL_TIDLIGERE_ARBEIDSGIVERE.labels(unikeArbeidsgivereCount.toString()).inc()
-        logger.info("Antall unike arbeidsgivere oppdatert til: $unikeArbeidsgivereCount")
+        logger.info(
+            "Antall unike arbeidsgivere oppdatert til: $unikeArbeidsgivereCount for sykmeldingId: $sykmeldingId"
+        )
     }
 
     private fun findMatchingSykmeldingFromArbeidsgiver(
