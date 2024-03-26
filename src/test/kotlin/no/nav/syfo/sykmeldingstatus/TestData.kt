@@ -1,10 +1,6 @@
 package no.nav.syfo.sykmeldingstatus
 
 import io.mockk.MockKMatcherScope
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.sykmelding.model.AdresseDTO
 import no.nav.syfo.sykmelding.model.AnnenFraversArsakDTO
 import no.nav.syfo.sykmelding.model.BehandlerDTO
@@ -31,6 +27,9 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 fun getSykmeldingStatus(
     statusEventDTO: StatusEventDTO,
@@ -114,15 +113,6 @@ fun getMedisinskVurdering() =
         yrkesskadeDato = null,
     )
 
-internal fun opprettArbeidsgiverInfo(orgnummer: String) =
-    Arbeidsgiverinfo(
-        orgnummer = orgnummer,
-        juridiskOrgnummer = "",
-        navn = "",
-        aktivtArbeidsforhold = true,
-        naermesteLeder = null,
-    )
-
 internal fun opprettSykmelding(
     fom: LocalDate,
     tom: LocalDate,
@@ -189,6 +179,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
                 sporsmaltekst = "",
                 svar = JaEllerNei.JA,
             ),
+        arbeidsledig = null,
         harBruktEgenmelding = null,
         egenmeldingsperioder = null,
         harForsikring = null,
@@ -213,6 +204,7 @@ internal fun opprettBekreftetSykmeldingUserEvent(
                 svar = arbeidssituasjon,
             ),
         arbeidsgiverOrgnummer = null,
+        arbeidsledig = null,
         riktigNarmesteLeder = null,
         harBruktEgenmelding =
             SporsmalSvar(

@@ -15,7 +15,8 @@ fun SykmeldingFormResponse.validate() {
             "Arbeidsgiver må være valgt når arbeidssituasjon er arbeidstaker",
         )
     } else if (
-        arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER ||
+        arbeidssituasjon.svar == Arbeidssituasjon.ARBEIDSLEDIG ||
+            arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER ||
             arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
             arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
             arbeidssituasjon.svar == Arbeidssituasjon.ANNET
@@ -32,8 +33,8 @@ fun SykmeldingFormResponse.validate() {
 
     if (
         arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
-        arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
-        arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER
+            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
+            arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER
     ) {
         if (harBruktEgenmelding != null) {
             requireNotNull(
