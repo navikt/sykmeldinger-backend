@@ -27,8 +27,8 @@ fun SykmeldingFormResponse.validate() {
 
     if (
         arbeidssituasjon.svar == Arbeidssituasjon.FRILANSER ||
-            arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
-            arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER
+        arbeidssituasjon.svar == Arbeidssituasjon.NAERINGSDRIVENDE ||
+        arbeidssituasjon.svar == Arbeidssituasjon.JORDBRUKER
     ) {
         if (harBruktEgenmelding != null) {
             requireNotNull(
@@ -66,19 +66,24 @@ fun SykmeldingFormResponse.validate() {
     if (arbeidssituasjon.svar === Arbeidssituasjon.FISKER) {
         requireNotNull(fisker, "Fisker-seksjon må være definert når arbeidssituasjon er fisker")
 
+        // TODO, clean up this: Support both as næringsdrivende and arbeidstaker temporarily
+        if (fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE) {
+            requireNotNull(
+                arbeidsgiverOrgnummer ?: harBruktEgenmelding,
+                "Arbeidsgiver eller spørsmål om egenmelding må være valgt når arbeidssituasjon er fisker på lott og hyre",
+            )
+        }
+
         if (fisker?.lottOgHyre?.svar === LottOgHyre.HYRE) {
-            // Fisker on Hyre behaves much like a normal arbeidstaker
+            // Fisker on Hyre or BEGGE behaves much like a normal arbeidstaker
             requireNotNull(
                 arbeidsgiverOrgnummer,
                 "Arbeidsgiver må være valgt når arbeidssituasjon er fisker på hyre",
             )
         }
 
-        if (
-            fisker?.lottOgHyre?.svar === LottOgHyre.LOTT ||
-                fisker?.lottOgHyre?.svar === LottOgHyre.BEGGE
-        ) {
-            // Fisker on LOTT or BEGGE behaves like a næringsdrivende
+        if (fisker?.lottOgHyre?.svar === LottOgHyre.LOTT) {
+            // Fisker on LOTT behaves like a næringsdrivende
             requireNotNull(
                 harBruktEgenmelding,
                 "Spørsmål om egenmelding må være besvart når arbeidssituasjon er fisker på lott",
