@@ -8,6 +8,10 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockkClass
 import io.mockk.slot
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -28,7 +32,6 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
-import no.nav.syfo.sykmeldingstatus.exception.UserInputFlereArbeidsgivereIsNullException
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
@@ -40,10 +43,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 
 class SykmeldingStatusServiceSpec {
     val sykmeldingId = "id"
@@ -1153,60 +1152,61 @@ class SykmeldingStatusServiceSpec {
             }
         }
 
-        @Test
-        fun `kant til kant men flere arbeidsgivere`() = testApplication {
-            val tidligereSykmeldingArbeidsgiver1 =
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 15.januar(2023),
-                    "orgnummer1",
-                    status = "SENDT",
-                )
-            val tidligereSykmeldingArbeidsgiver2 =
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 15.januar(2023),
-                    "orgnummer2",
-                    status = "SENDT",
-                )
-            val nySykmelding =
-                opprettSykmelding(
-                    fom = 16.januar(2023),
-                    tom = 31.januar(2023),
-                    status = "APEN",
-                    sykmeldingId = sykmeldingId,
-                )
+        /*
+                @Test
+                fun `kant til kant men flere arbeidsgivere`() = testApplication {
+                    val tidligereSykmeldingArbeidsgiver1 =
+                        opprettSykmelding(
+                            fom = 1.januar(2023),
+                            tom = 15.januar(2023),
+                            "orgnummer1",
+                            status = "SENDT",
+                        )
+                    val tidligereSykmeldingArbeidsgiver2 =
+                        opprettSykmelding(
+                            fom = 1.januar(2023),
+                            tom = 15.januar(2023),
+                            "orgnummer2",
+                            status = "SENDT",
+                        )
+                    val nySykmelding =
+                        opprettSykmelding(
+                            fom = 16.januar(2023),
+                            tom = 31.januar(2023),
+                            status = "APEN",
+                            sykmeldingId = sykmeldingId,
+                        )
 
-            coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
-                listOf(
-                    tidligereSykmeldingArbeidsgiver1,
-                    tidligereSykmeldingArbeidsgiver2,
-                    nySykmelding,
-                )
+                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
+                        listOf(
+                            tidligereSykmeldingArbeidsgiver1,
+                            tidligereSykmeldingArbeidsgiver2,
+                            nySykmelding,
+                        )
 
-            coEvery {
-                sykmeldingStatusDb.getLatestStatus(
-                    any(),
-                    any(),
-                )
-            } returns
-                SykmeldingStatusEventDTO(
-                    statusEvent = StatusEventDTO.APEN,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                    erAvvist = true,
-                )
-            val exception =
-                assertFailsWith<UserInputFlereArbeidsgivereIsNullException> {
-                    sykmeldingStatusService.createStatus(
-                        opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                        sykmeldingId,
-                        fnr,
-                    )
+                    coEvery {
+                        sykmeldingStatusDb.getLatestStatus(
+                            any(),
+                            any(),
+                        )
+                    } returns
+                        SykmeldingStatusEventDTO(
+                            statusEvent = StatusEventDTO.APEN,
+                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                            erAvvist = true,
+                        )
+                    val exception =
+                        assertFailsWith<UserInputFlereArbeidsgivereIsNullException> {
+                            sykmeldingStatusService.createStatus(
+                                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
+                                sykmeldingId,
+                                fnr,
+                            )
+                        }
+                    exception.message shouldBeEqualTo
+                        "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
                 }
-            exception.message shouldBeEqualTo
-                "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
-        }
-
+        */
         @Test
         fun `kant til kant fredag og mandag`() = testApplication {
             val tidligereSykmelding =

@@ -1,6 +1,9 @@
 package no.nav.syfo.sykmeldingstatus.db
 
 import io.ktor.server.testing.*
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import kotlin.test.assertFailsWith
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -26,9 +29,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import kotlin.test.assertFailsWith
 
 class SykmeldingStatusDbTest {
     val database = SykmeldingStatusDb(TestDB.database)

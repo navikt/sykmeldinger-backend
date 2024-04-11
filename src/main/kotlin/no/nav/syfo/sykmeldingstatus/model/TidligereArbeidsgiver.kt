@@ -1,5 +1,8 @@
 package no.nav.syfo.sykmeldingstatus.model
 
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.metrics.ANTALL_TIDLIGERE_ARBEIDSGIVERE
 import no.nav.syfo.metrics.TIDLIGERE_ARBEIDSGIVER_COUNTER
@@ -11,9 +14,6 @@ import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.securelog
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) {
     private val logger = logger()
@@ -226,13 +226,15 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
             kv("sykmeldingId", sykmeldingId),
             kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput)
         )
-        if (tidligereArbeidsgiverBrukerInput == null){
-            logger.info("TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId")
+        if (tidligereArbeidsgiverBrukerInput == null) {
+            logger.info(
+                "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
+            )
             return null
         }
-          /*  throw UserInputFlereArbeidsgivereIsNullException(
-                "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
-            )*/
+        /*  throw UserInputFlereArbeidsgivereIsNullException(
+            "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
+        )*/
         val sykmeldingMatch =
             filtrerteSykmeldinger.firstOrNull { sykmelding ->
                 sykmelding.first.arbeidsgiver?.orgnummer == tidligereArbeidsgiverBrukerInput ||

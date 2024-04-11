@@ -2,19 +2,16 @@ package no.nav.syfo.sykmeldingstatus.model
 
 import io.mockk.clearAllMocks
 import io.mockk.mockkClass
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
-import no.nav.syfo.sykmeldingstatus.exception.UserInputFlereArbeidsgivereIsNullException
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.sykmeldingstatus.opprettSykmelding
 import org.amshove.kluent.internal.assertEquals
-import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -352,45 +349,47 @@ class TidligereArbeidsgiverTest {
         assertEquals(AG2, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
-    @Test
-    fun `Flere ag - brukersvar null - skal kaste exception`() {
-        val currentSykmeldingId = "3"
-        val sykmeldingerFraDb =
-            listOf(
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "1",
-                    orgnummer = AG1,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "2",
-                    orgnummer = AG2,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 17.januar(2023),
-                    tom = 31.januar(2023),
-                    sykmeldingId = "3",
-                    orgnummer = null,
-                    status = STATUS_APEN,
-                ),
-            )
-
-        val exception =
-            assertFailsWith<UserInputFlereArbeidsgivereIsNullException> {
-                tidligereArbeidsgiver.findLastRelevantSykmelding(
-                    sykmeldingerFraDb,
-                    currentSykmeldingId,
-                    null
+    /*
+        @Test
+        fun `Flere ag - brukersvar null - skal kaste exception`() {
+            val currentSykmeldingId = "3"
+            val sykmeldingerFraDb =
+                listOf(
+                    opprettSykmelding(
+                        fom = 1.januar(2023),
+                        tom = 16.januar(2023),
+                        sykmeldingId = "1",
+                        orgnummer = AG1,
+                        status = STATUS_SENDT
+                    ),
+                    opprettSykmelding(
+                        fom = 1.januar(2023),
+                        tom = 16.januar(2023),
+                        sykmeldingId = "2",
+                        orgnummer = AG2,
+                        status = STATUS_SENDT
+                    ),
+                    opprettSykmelding(
+                        fom = 17.januar(2023),
+                        tom = 31.januar(2023),
+                        sykmeldingId = "3",
+                        orgnummer = null,
+                        status = STATUS_APEN,
+                    ),
                 )
-            }
-        exception.message shouldBeEqualTo
-            "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $currentSykmeldingId"
-    }
+
+            val exception =
+                assertFailsWith<UserInputFlereArbeidsgivereIsNullException> {
+                    tidligereArbeidsgiver.findLastRelevantSykmelding(
+                        sykmeldingerFraDb,
+                        currentSykmeldingId,
+                        null
+                    )
+                }
+            exception.message shouldBeEqualTo
+                "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $currentSykmeldingId"
+        }
+    */
 
     @Test
     fun `En ag - brukersvar null - skal ikke kaste exception`() {

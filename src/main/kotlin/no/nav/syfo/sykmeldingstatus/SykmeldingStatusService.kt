@@ -1,5 +1,7 @@
 package no.nav.syfo.sykmeldingstatus
 
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -28,8 +30,6 @@ import no.nav.syfo.sykmeldingstatus.model.TidligereArbeidsgiver
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,

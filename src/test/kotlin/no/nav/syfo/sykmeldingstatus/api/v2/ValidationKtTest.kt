@@ -1,5 +1,7 @@
 package no.nav.syfo.sykmeldingstatus.api.v2
 
+import java.time.LocalDate
+import kotlin.test.assertFailsWith
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
@@ -14,8 +16,6 @@ import org.amshove.kluent.withMessage
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import kotlin.test.assertFailsWith
 
 class ValidationKtTest {
     @Test
