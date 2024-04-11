@@ -7,7 +7,6 @@ import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
-import no.nav.syfo.sykmeldingstatus.exception.UserInputFlereArbeidsgivereIsNullException
 import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.utils.logger
@@ -227,10 +226,13 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
             kv("sykmeldingId", sykmeldingId),
             kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput)
         )
-        if (tidligereArbeidsgiverBrukerInput == null)
-            throw UserInputFlereArbeidsgivereIsNullException(
+        if (tidligereArbeidsgiverBrukerInput == null){
+            logger.info("TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId")
+            return null
+        }
+          /*  throw UserInputFlereArbeidsgivereIsNullException(
                 "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
-            )
+            )*/
         val sykmeldingMatch =
             filtrerteSykmeldinger.firstOrNull { sykmelding ->
                 sykmelding.first.arbeidsgiver?.orgnummer == tidligereArbeidsgiverBrukerInput ||
