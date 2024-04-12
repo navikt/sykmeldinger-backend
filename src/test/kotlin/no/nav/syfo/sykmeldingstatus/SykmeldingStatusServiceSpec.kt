@@ -1464,7 +1464,7 @@ class SykmeldingStatusServiceSpec {
             }
 
         @Test
-        fun `direkte overlappende sykmelding`() = testApplication {
+        fun `en dag etter direkte overlappende sykmelding`() = testApplication {
             val tidligereSykmelding =
                 opprettSykmelding(
                     fom = 1.januar(2023),
@@ -1479,7 +1479,7 @@ class SykmeldingStatusServiceSpec {
                 )
             val nySykmelding =
                 opprettSykmelding(
-                    fom = 1.januar(2023),
+                    fom = 2.januar(2023),
                     tom = 31.januar(2023),
                     status = "APEN",
                     sykmeldingId = sykmeldingId,

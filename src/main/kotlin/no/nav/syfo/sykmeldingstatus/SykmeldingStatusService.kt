@@ -219,7 +219,10 @@ class SykmeldingStatusService(
                 kv("fødselsnummer", fnr),
                 kv("sykmeldingId", sykmeldingId),
                 kv("nesteStatus", nesteStatus),
-                kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar),
+                kv(
+                    "tidligereAgBrukerInput",
+                    sykmeldingFormResponse.arbeidsledig?.arbeidsledigFraOrgnummer?.svar
+                ),
                 kv("tidligere arbeidsgiver", tidligereArbeidsgiver)
             )
         }

@@ -417,4 +417,146 @@ class TidligereArbeidsgiverTest {
             null
         )
     }
+
+    @Test
+    fun `flere ag - brukersvar null - skal ikke kaste exception`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        ),
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                null
+            )
+        assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+
+    @Test
+    fun `flere ag - brukersvar ikke null - matche på brukersvar`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        ),
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG2
+            )
+        assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+
+    @Test
+    fun `flere ag - brukersvar null - direkte overlapp`() {
+        val currentSykmeldingId = "2"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                null
+            )
+        assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+
+    @Test
+    fun `flere ag - brukersvar ikke null - direkte overlapp`() {
+        val currentSykmeldingId = "2"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
 }

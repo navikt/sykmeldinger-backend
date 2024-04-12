@@ -68,7 +68,7 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         tidligereSmFom: LocalDate,
         fom: LocalDate
     ) =
-        (fom.isAfter(tidligereSmFom.minusDays(1)) &&
+        (fom.isAfter(tidligereSmFom) &&
             fom.isBefore(
                 tidligereSmTom.plusDays(1),
             ))
@@ -156,8 +156,23 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         sykmeldingId: String
     ): SykmeldingWithArbeidsgiverStatus? {
         if (filteredSykmeldinger.isEmpty()) return null
+        /*        val uniqueArbeidsgiverCount =
+        filteredSykmeldinger.distinctBy { it.first.arbeidsgiver?.orgnummer }.size*/
+
+        val uniqueArbeidsgiverList =
+            filteredSykmeldinger
+                .filter { it.first.tidligereArbeidsgiver == null }
+                .distinctBy { it.first.arbeidsgiver?.orgnummer }
+                .map { it.first.arbeidsgiver?.orgnummer }
+        val uniqueTidligereArbeidsgiverList =
+            filteredSykmeldinger
+                .filter { it.first.arbeidsgiver == null }
+                .distinctBy { it.first.tidligereArbeidsgiver?.orgnummer }
+                .map { it.first.tidligereArbeidsgiver?.orgnummer }
+
         val uniqueArbeidsgiverCount =
-            filteredSykmeldinger.distinctBy { it.first.arbeidsgiver?.orgnummer }.size
+            (uniqueTidligereArbeidsgiverList + uniqueArbeidsgiverList).distinctBy { it }.size
+
         updateMetricsForArbeidsgivere(uniqueArbeidsgiverCount, sykmeldingId)
         securelog.info(
             "Finner mest relevante sykmelding av de filterte sykmeldingene for å finne tidligere arbeidsgiver {} {} {}",
