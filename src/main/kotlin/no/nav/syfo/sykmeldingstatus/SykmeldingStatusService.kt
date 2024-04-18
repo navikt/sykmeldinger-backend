@@ -1,12 +1,11 @@
 package no.nav.syfo.sykmeldingstatus
 
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -26,10 +25,12 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.model.TidligereArbeidsgiver
+import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereAgStateMachine
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
@@ -37,7 +38,7 @@ class SykmeldingStatusService(
     private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
     private val logger = logger()
-    private val tidligereArbeidsgiver = TidligereArbeidsgiver(sykmeldingStatusDb)
+    // private val tidligereArbeidsgiver = TidligereArbeidsgiver(sykmeldingStatusDb)
 
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> =
@@ -206,7 +207,7 @@ class SykmeldingStatusService(
                     kv("nesteStatus", nesteStatus),
                     kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar)
                 )
-                tidligereArbeidsgiver.tidligereArbeidsgiver(
+                tidligereArbeidsgiver(
                     fnr,
                     sykmeldingId,
                     nesteStatus,
@@ -234,6 +235,47 @@ class SykmeldingStatusService(
                 tidligereArbeidsgiver,
             )
         updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
+    }
+
+    suspend fun tidligereArbeidsgiver(
+        sykmeldtFnr: String,
+        sykmeldingId: String,
+        nesteStatus: StatusEventDTO,
+        tidligereArbeidsgiverBrukerInput: String?,
+    ): TidligereArbeidsgiverDTO? {
+        if (nesteStatus == StatusEventDTO.BEKREFTET) {
+            return createTidligereArbeidsgiver(
+                sykmeldtFnr,
+                sykmeldingId,
+                tidligereArbeidsgiverBrukerInput
+            )
+        }
+        return null
+    }
+
+    private suspend fun createTidligereArbeidsgiver(
+        sykmeldtFnr: String,
+        sykmeldingId: String,
+        tidligereArbeidsgiverBrukerInput: String?,
+    ): TidligereArbeidsgiverDTO? {
+        // entering state machine
+        val tidligereAgStateMachine = TidligereAgStateMachine()
+        val allSykmeldingerfraDb = sykmeldingStatusDb.getSykmeldingWithStatus(sykmeldtFnr)
+        tidligereAgStateMachine.setTidligereArbeidsgiver(
+            sykmeldingId,
+            tidligereArbeidsgiverBrukerInput,
+            allSykmeldingerfraDb
+        )
+        val tidligereArbeidsgiver =
+            tidligereAgStateMachine.getTidligereArbeidsgiver() ?: return null
+        if (tidligereArbeidsgiver.arbeidsgiver == null) {
+            return tidligereArbeidsgiver.tidligereArbeidsgiver
+        }
+        return TidligereArbeidsgiverDTO(
+            orgNavn = tidligereArbeidsgiver.arbeidsgiver.orgNavn,
+            orgnummer = tidligereArbeidsgiver.arbeidsgiver.orgnummer,
+            sykmeldingsId = tidligereArbeidsgiver.sykmeldingId
+        )
     }
 
     private suspend fun createSendtStatus(

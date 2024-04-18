@@ -1,12 +1,10 @@
-package no.nav.syfo.sykmeldingstatus.model
+package no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver
 
 import io.mockk.clearAllMocks
-import io.mockk.mockkClass
 import kotlin.test.assertNotNull
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
-import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
@@ -17,8 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class TidligereArbeidsgiverTest {
-    val sykmeldingStatusDb = mockkClass(SykmeldingStatusDb::class)
-    val tidligereArbeidsgiver = TidligereArbeidsgiver(sykmeldingStatusDb)
     val AG1 = "ag1"
     val AG2 = "ag2"
 
@@ -29,6 +25,7 @@ class TidligereArbeidsgiverTest {
 
     @Test
     fun `flere arbeidsgivere med arbeidsledig kant til kant`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val tidligereArbeidsgiverFraBruker = AG1
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
@@ -56,12 +53,12 @@ class TidligereArbeidsgiverTest {
                 )
             )
 
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                tidligereArbeidsgiverFraBruker
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = tidligereArbeidsgiverFraBruker,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertNotNull(sisteSykmelding?.arbeidsgiver?.orgnummer)
         assertEquals(AG1, sisteSykmelding!!.arbeidsgiver!!.orgnummer)
         assertEquals("1", sisteSykmelding.sykmeldingId)
@@ -69,6 +66,7 @@ class TidligereArbeidsgiverTest {
 
     @Test
     fun `flere arbeidsgivere med arbeidsledig forlengelse`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val tidligereArbeidsgiverFraBruker = AG1
         val currentSykmeldingId = "4"
         val sykmeldingerFraDb =
@@ -108,19 +106,19 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN
                 )
             )
-
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                tidligereArbeidsgiverFraBruker
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = tidligereArbeidsgiverFraBruker,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertNull(sisteSykmelding?.arbeidsgiver?.orgnummer)
         assertEquals(AG1, sisteSykmelding!!.tidligereArbeidsgiver!!.orgnummer)
     }
 
     @Test
     fun `flere arbeidsgivere med arbeidsledig overlappende`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val tidligereArbeidsgiverFraBruker = AG1
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
@@ -148,18 +146,19 @@ class TidligereArbeidsgiverTest {
                 ),
             )
 
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                tidligereArbeidsgiverFraBruker
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = tidligereArbeidsgiverFraBruker,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG1, sisteSykmelding!!.arbeidsgiver!!.orgnummer)
         assertEquals("1", sisteSykmelding.sykmeldingId)
     }
 
     @Test
     fun `flere arbeidsgivere arbeidsledig ikke overlappende eller kant til kant `() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val tidligereArbeidsgiverFraBruker = AG1
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
@@ -187,17 +186,18 @@ class TidligereArbeidsgiverTest {
                 ),
             )
 
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                tidligereArbeidsgiverFraBruker
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = tidligereArbeidsgiverFraBruker,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding)
     }
 
     @Test
     fun `Flere ag arbeidsledig fra ag1, forlengelse på arbeidsledig, men nå arbeidsledig fra ag2`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "4"
         val sykmeldingerFraDb =
             listOf(
@@ -237,17 +237,18 @@ class TidligereArbeidsgiverTest {
                 )
             )
 
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG2
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG2,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding)
     }
 
     @Test
     fun `Flere ag, arbeidsledig fra ag1, forlengelse på arbeidsledig ag1`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "4"
         val sykmeldingerFraDb =
             listOf(
@@ -287,18 +288,19 @@ class TidligereArbeidsgiverTest {
                 )
             )
 
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertNotNull(sisteSykmelding)
         sisteSykmelding.tidligereArbeidsgiver?.let { assertEquals(AG1, it.orgnummer) }
     }
 
     @Test
     fun `Flere ag, kant til kant med ag1 - brukersvar null, og ag2, tidligere ag svar fra bruker er null og ag2`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "5"
         val sykmeldingerFraDb =
             listOf(
@@ -340,12 +342,12 @@ class TidligereArbeidsgiverTest {
                 )
             )
 
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG2
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG2,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG2, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
@@ -393,6 +395,8 @@ class TidligereArbeidsgiverTest {
 
     @Test
     fun `En ag - brukersvar null - skal ikke kaste exception`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
+
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -411,15 +415,17 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 ),
             )
-        tidligereArbeidsgiver.findLastRelevantSykmelding(
-            sykmeldingerFraDb,
-            currentSykmeldingId,
-            null
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = null,
+            alleSykmeldingerDb = sykmeldingerFraDb,
         )
     }
 
     @Test
     fun `flere ag - brukersvar null - skal ikke kaste exception`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
+
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -451,17 +457,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                null
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = null,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `flere ag - brukersvar ikke null - matche på brukersvar`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -493,17 +500,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG2
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG2,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `flere ag - brukersvar null - direkte overlapp`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "2"
         val sykmeldingerFraDb =
             listOf(
@@ -522,17 +530,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                null
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = null,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `flere ag - brukersvar ikke null - direkte overlapp`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "2"
         val sykmeldingerFraDb =
             listOf(
@@ -551,17 +560,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `flere ag - to direkte overlappende bekreftede - tidligereag kun på en`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -587,17 +597,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_BEKREFTET,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `flere ag - to direkte overlappende bekreftede - tidligereag allerede satt på en`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -629,17 +640,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_BEKREFTET,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `en ag - to direkte overlappende bekreftede - tidligereag allerede satt på en - brukerinput null`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -671,17 +683,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_BEKREFTET,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                null
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = null,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `en ag - to direkte overlappende bekreftede - tidligereag kun på en - brukerinput null`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "3"
         val sykmeldingerFraDb =
             listOf(
@@ -707,18 +720,19 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_BEKREFTET,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                null
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = null,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `fire direkte overlappende bekreftede - tidligereag på en som ikke er kant til kant`() {
-        val currentSykmeldingId = "3"
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
+        val currentSykmeldingId = "5"
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -729,7 +743,7 @@ class TidligereArbeidsgiverTest {
                         TidligereArbeidsgiverDTO(
                             orgNavn = AG1,
                             orgnummer = AG1,
-                            sykmeldingsId = "1"
+                            sykmeldingsId = "01"
                         ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET
@@ -763,18 +777,19 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `fire direkte overlappende bekreftede - tidligereag på ingen`() {
-        val currentSykmeldingId = "3"
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
+        val currentSykmeldingId = "5"
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -813,17 +828,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `fire direkte overlappende bekreftede - to forskjellige tidligere ag - skal kun ta med en`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "5"
         val sykmeldingerFraDb =
             listOf(
@@ -881,17 +897,18 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                AG1
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = AG1,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG1, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
 
     @Test
     fun `fire direkte overlappende bekreftede - to forskjellige tidligere ag - brukerinput er null`() {
+        val tidligereArbeidsgiver = TidligereAgStateMachine()
         val currentSykmeldingId = "5"
         val sykmeldingerFraDb =
             listOf(
@@ -949,12 +966,12 @@ class TidligereArbeidsgiverTest {
                     status = STATUS_APEN,
                 )
             )
-        val sisteSykmelding =
-            tidligereArbeidsgiver.findLastRelevantSykmelding(
-                sykmeldingerFraDb,
-                currentSykmeldingId,
-                null
-            )
+        tidligereArbeidsgiver.setTidligereArbeidsgiver(
+            sykmeldingId = currentSykmeldingId,
+            tidligereArbeidsgiverInput = null,
+            alleSykmeldingerDb = sykmeldingerFraDb,
+        )
+        val sisteSykmelding = tidligereArbeidsgiver.getTidligereArbeidsgiver()
         assertEquals(AG1, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
 }
