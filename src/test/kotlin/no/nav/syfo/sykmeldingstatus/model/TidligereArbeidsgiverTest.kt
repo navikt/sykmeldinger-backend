@@ -715,6 +715,7 @@ class TidligereArbeidsgiverTest {
             )
         assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
+
     @Test
     fun `fire direkte overlappende bekreftede - tidligereag på en som ikke er kant til kant`() {
         val currentSykmeldingId = "3"
@@ -770,6 +771,7 @@ class TidligereArbeidsgiverTest {
             )
         assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
+
     @Test
     fun `fire direkte overlappende bekreftede - tidligereag på ingen`() {
         val currentSykmeldingId = "3"
@@ -819,6 +821,7 @@ class TidligereArbeidsgiverTest {
             )
         assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
+
     @Test
     fun `fire direkte overlappende bekreftede - to forskjellige tidligere ag - skal kun ta med en`() {
         val currentSykmeldingId = "5"
@@ -829,11 +832,11 @@ class TidligereArbeidsgiverTest {
                     tom = 16.januar(2023),
                     sykmeldingId = "1",
                     tidligereArbeidsgiver =
-                    TidligereArbeidsgiverDTO(
-                        orgNavn = AG2,
-                        orgnummer = AG2,
-                        sykmeldingsId = "0"
-                    ),
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG2,
+                            orgnummer = AG2,
+                            sykmeldingsId = "0"
+                        ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET
                 ),
@@ -842,11 +845,11 @@ class TidligereArbeidsgiverTest {
                     tom = 16.januar(2023),
                     sykmeldingId = "2",
                     tidligereArbeidsgiver =
-                    TidligereArbeidsgiverDTO(
-                        orgNavn = AG1,
-                        orgnummer = AG1,
-                        sykmeldingsId = "01"
-                    ),
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "01"
+                        ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET,
                 ),
@@ -855,11 +858,11 @@ class TidligereArbeidsgiverTest {
                     tom = 31.januar(2023),
                     sykmeldingId = "3",
                     tidligereArbeidsgiver =
-                    TidligereArbeidsgiverDTO(
-                        orgNavn = AG1,
-                        orgnummer = AG1,
-                        sykmeldingsId = "2"
-                    ),
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "2"
+                        ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET,
                 ),
@@ -886,6 +889,7 @@ class TidligereArbeidsgiverTest {
             )
         assertEquals(AG1, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
+
     @Test
     fun `fire direkte overlappende bekreftede - to forskjellige tidligere ag - brukerinput er null`() {
         val currentSykmeldingId = "5"
@@ -896,11 +900,11 @@ class TidligereArbeidsgiverTest {
                     tom = 16.januar(2023),
                     sykmeldingId = "1",
                     tidligereArbeidsgiver =
-                    TidligereArbeidsgiverDTO(
-                        orgNavn = AG2,
-                        orgnummer = AG2,
-                        sykmeldingsId = "0"
-                    ),
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG2,
+                            orgnummer = AG2,
+                            sykmeldingsId = "0"
+                        ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET
                 ),
@@ -909,11 +913,11 @@ class TidligereArbeidsgiverTest {
                     tom = 16.januar(2023),
                     sykmeldingId = "2",
                     tidligereArbeidsgiver =
-                    TidligereArbeidsgiverDTO(
-                        orgNavn = AG1,
-                        orgnummer = AG1,
-                        sykmeldingsId = "01"
-                    ),
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "01"
+                        ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET,
                 ),
@@ -922,11 +926,11 @@ class TidligereArbeidsgiverTest {
                     tom = 31.januar(2023),
                     sykmeldingId = "3",
                     tidligereArbeidsgiver =
-                    TidligereArbeidsgiverDTO(
-                        orgNavn = AG1,
-                        orgnummer = AG1,
-                        sykmeldingsId = "2"
-                    ),
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "2"
+                        ),
                     orgnummer = null,
                     status = STATUS_BEKREFTET,
                 ),
@@ -951,6 +955,6 @@ class TidligereArbeidsgiverTest {
                 currentSykmeldingId,
                 null
             )
-        assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
+        assertEquals(AG1, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
     }
 }

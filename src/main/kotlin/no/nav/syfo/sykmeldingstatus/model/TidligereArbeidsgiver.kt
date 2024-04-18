@@ -17,6 +17,39 @@ import no.nav.syfo.utils.securelog
 
 class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) {
     private val logger = logger()
+    var state: State = State.Start
+    var tidligereArbeidsgiverResultat: SykmeldingWithArbeidsgiverStatus? = null
+
+
+    fun handleEvent(event: Event) {
+        state =
+            when (state) {
+                State.Start ->
+                    when (event) {
+                        Event.StartBehandling -> State.SjekkerSykmeldinger
+                        else -> throw IllegalStateException("Ugyldig hendelse i start tilstand")
+                    }
+                State.SjekkerSykmeldinger ->
+                    when (event) {
+                        Event.SykmeldingerFunnet -> State.SjekkerMuligeKandidater
+                        Event.IngenRelevanteSykmeldinger -> State.TidligereAgIkkeFunnet
+                        else ->
+                            throw IllegalStateException("Ugyldig hendelse i tidligere ag funnet")
+                    }
+                State.SjekkerMuligeKandidater ->
+                    when (event) {
+                        Event.GyldigTidligereAgFunnet -> State.TidligereAgFunnet
+                        Event.IngenRelevanteSykmeldinger -> State.TidligereAgIkkeFunnet
+                        Event.FeilOppstår -> State.Feil
+                        else ->
+                            throw IllegalStateException("Ugyldig hendelse i tidligere ag funnet")
+                    }
+                State.TidligereAgFunnet -> State.TidligereAgFunnet
+                State.TidligereAgIkkeFunnet -> State.TidligereAgIkkeFunnet
+                else -> throw IllegalStateException("Ugyldig hendelse i tidligere ag funnet")
+            }
+    }
+
 
     suspend fun tidligereArbeidsgiver(
         sykmeldtFnr: String,
@@ -39,17 +72,47 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         sykmeldingId: String,
         tidligereArbeidsgiverBrukerInput: String?,
     ): TidligereArbeidsgiverDTO? {
-        val sisteSykmelding =
-            findLastSendtSykmelding(sykmeldtFnr, sykmeldingId, tidligereArbeidsgiverBrukerInput)
-        if (sisteSykmelding?.arbeidsgiver == null) {
-            return sisteSykmelding?.tidligereArbeidsgiver
+        startBehandling(sykmeldtFnr, sykmeldingId, tidligereArbeidsgiverBrukerInput)
+        val tidligereArbeidsgiver = tidligereArbeidsgiverResultat ?: return null
+        if (tidligereArbeidsgiver.arbeidsgiver == null) {
+            return tidligereArbeidsgiver.tidligereArbeidsgiver
         }
-        return sisteSykmelding.arbeidsgiver.let {
-            TidligereArbeidsgiverDTO(
-                orgNavn = it.orgNavn,
-                orgnummer = it.orgnummer,
-                sykmeldingsId = sisteSykmelding.sykmeldingId,
+        return TidligereArbeidsgiverDTO(
+            orgNavn = tidligereArbeidsgiver.arbeidsgiver.orgNavn,
+            orgnummer = tidligereArbeidsgiver.arbeidsgiver.orgnummer,
+            sykmeldingsId = tidligereArbeidsgiver.sykmeldingId
+        )
+    }
+    suspend fun startBehandling(
+        sykmeldtFnr: String,
+        sykmeldingId: String,
+        tidligereArbeidsgiverBrukerInput: String?
+    ) {
+        handleEvent(Event.StartBehandling)
+        val sykmeldinger = sykmeldingStatusDb.getSykmeldingWithStatus(sykmeldtFnr)
+        val currentSykmelding = sykmeldinger.find { it.sykmeldingId == sykmeldingId } ?: return
+        val relevanteSykmeldinger =
+            filterRelevantSykmeldinger(
+                sykmeldinger,
+                currentSykmelding,
+                tidligereArbeidsgiverBrukerInput
             )
+        if (relevanteSykmeldinger.isNotEmpty()) {
+            handleEvent(Event.SykmeldingerFunnet)
+            val gyldigTidligereAg =
+                decideMostRelevantSykmelding(
+                    relevanteSykmeldinger,
+                    tidligereArbeidsgiverBrukerInput,
+                    sykmeldingId
+                )
+            if (gyldigTidligereAg != null) {
+                tidligereArbeidsgiverResultat = gyldigTidligereAg
+                handleEvent(Event.GyldigTidligereAgFunnet)
+            } else {
+                handleEvent(Event.IngenRelevanteSykmeldinger)
+            }
+        } else {
+            handleEvent(Event.IngenRelevanteSykmeldinger)
         }
     }
 
@@ -412,4 +475,21 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         return perioder.maxByOrNull { it.tom }?.tom
             ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
     }
+}
+
+enum class State {
+    Start,
+    SjekkerSykmeldinger,
+    SjekkerMuligeKandidater,
+    TidligereAgFunnet,
+    TidligereAgIkkeFunnet,
+    Feil
+}
+
+enum class Event {
+    StartBehandling,
+    SykmeldingerFunnet,
+    IngenRelevanteSykmeldinger,
+    GyldigTidligereAgFunnet,
+    FeilOppstår
 }
