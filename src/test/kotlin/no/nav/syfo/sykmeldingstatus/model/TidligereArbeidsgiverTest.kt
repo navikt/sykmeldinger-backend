@@ -559,4 +559,398 @@ class TidligereArbeidsgiverTest {
             )
         assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
     }
+
+    @Test
+    fun `flere ag - to direkte overlappende bekreftede - tidligereag kun på en`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+
+    @Test
+    fun `flere ag - to direkte overlappende bekreftede - tidligereag allerede satt på en`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "2",
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+
+    @Test
+    fun `en ag - to direkte overlappende bekreftede - tidligereag allerede satt på en - brukerinput null`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "2",
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                null
+            )
+        assertEquals(null, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+
+    @Test
+    fun `en ag - to direkte overlappende bekreftede - tidligereag kun på en - brukerinput null`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = AG1,
+                    status = STATUS_SENDT
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                null
+            )
+        assertEquals(AG1, sisteSykmelding?.arbeidsgiver?.orgnummer)
+    }
+    @Test
+    fun `fire direkte overlappende bekreftede - tidligereag på en som ikke er kant til kant`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgNavn = AG1,
+                            orgnummer = AG1,
+                            sykmeldingsId = "1"
+                        ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = currentSykmeldingId,
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
+    }
+    @Test
+    fun `fire direkte overlappende bekreftede - tidligereag på ingen`() {
+        val currentSykmeldingId = "3"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = currentSykmeldingId,
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
+    }
+    @Test
+    fun `fire direkte overlappende bekreftede - to forskjellige tidligere ag - skal kun ta med en`() {
+        val currentSykmeldingId = "5"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    tidligereArbeidsgiver =
+                    TidligereArbeidsgiverDTO(
+                        orgNavn = AG2,
+                        orgnummer = AG2,
+                        sykmeldingsId = "0"
+                    ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    tidligereArbeidsgiver =
+                    TidligereArbeidsgiverDTO(
+                        orgNavn = AG1,
+                        orgnummer = AG1,
+                        sykmeldingsId = "01"
+                    ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    tidligereArbeidsgiver =
+                    TidligereArbeidsgiverDTO(
+                        orgNavn = AG1,
+                        orgnummer = AG1,
+                        sykmeldingsId = "2"
+                    ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = currentSykmeldingId,
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                AG1
+            )
+        assertEquals(AG1, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
+    }
+    @Test
+    fun `fire direkte overlappende bekreftede - to forskjellige tidligere ag - brukerinput er null`() {
+        val currentSykmeldingId = "5"
+        val sykmeldingerFraDb =
+            listOf(
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "1",
+                    tidligereArbeidsgiver =
+                    TidligereArbeidsgiverDTO(
+                        orgNavn = AG2,
+                        orgnummer = AG2,
+                        sykmeldingsId = "0"
+                    ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET
+                ),
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 16.januar(2023),
+                    sykmeldingId = "2",
+                    tidligereArbeidsgiver =
+                    TidligereArbeidsgiverDTO(
+                        orgNavn = AG1,
+                        orgnummer = AG1,
+                        sykmeldingsId = "01"
+                    ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "3",
+                    tidligereArbeidsgiver =
+                    TidligereArbeidsgiverDTO(
+                        orgNavn = AG1,
+                        orgnummer = AG1,
+                        sykmeldingsId = "2"
+                    ),
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 17.januar(2023),
+                    tom = 31.januar(2023),
+                    sykmeldingId = "4",
+                    orgnummer = null,
+                    status = STATUS_BEKREFTET,
+                ),
+                opprettSykmelding(
+                    fom = 1.februar(2023),
+                    tom = 15.februar(2023),
+                    sykmeldingId = currentSykmeldingId,
+                    orgnummer = null,
+                    status = STATUS_APEN,
+                )
+            )
+        val sisteSykmelding =
+            tidligereArbeidsgiver.findLastRelevantSykmelding(
+                sykmeldingerFraDb,
+                currentSykmeldingId,
+                null
+            )
+        assertEquals(null, sisteSykmelding?.tidligereArbeidsgiver?.orgnummer)
+    }
 }

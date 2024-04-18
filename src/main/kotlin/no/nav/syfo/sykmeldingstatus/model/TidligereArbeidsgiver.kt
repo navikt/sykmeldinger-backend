@@ -73,6 +73,13 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
                 tidligereSmTom.plusDays(1),
             ))
 
+    private fun isDirekteOverlappende(
+        tidligereSmTom: LocalDate,
+        tidligereSmFom: LocalDate,
+        fom: LocalDate,
+        tom: LocalDate,
+    ) = (tidligereSmFom == fom && tidligereSmTom == tom)
+
     suspend fun findLastSendtSykmelding(
         fnr: String,
         sykmeldingId: String,
@@ -115,7 +122,12 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
                 }
             )
         )
-        val filteredSykmeldinger = filterRelevantSykmeldinger(allSykmeldinger, currentSykmelding)
+        val filteredSykmeldinger =
+            filterRelevantSykmeldinger(
+                allSykmeldinger,
+                currentSykmelding,
+                tidligereArbeidsgiverBrukerInput
+            )
         securelog.info(
             "Filtrerte sykmeldinger som er relevante {} {} {}",
             kv("sykmeldingId", sykmeldingId),
@@ -125,54 +137,116 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         return decideMostRelevantSykmelding(
             filteredSykmeldinger,
             tidligereArbeidsgiverBrukerInput,
-            sykmeldingId
+            sykmeldingId,
         )
     }
 
     private fun filterRelevantSykmeldinger(
         allSykmeldinger: List<SykmeldingWithArbeidsgiverStatus>,
+        currentSykmelding: SykmeldingWithArbeidsgiverStatus,
+        tidligereArbeidsgiverBrukerInput: String?
+    ): List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>> {
+        val relevante =
+            allSykmeldinger.filterNot { it.sykmeldingId == currentSykmelding.sykmeldingId }
+        val sendte = relevante.filter { it.statusEvent == STATUS_SENDT }
+        val bekreftedeWithTidligereAg =
+            relevante.filter { it.tidligereArbeidsgiver?.orgnummer != null }
+        val relevantsykmeldingerMappedToPairs =
+            mapToRelevantPairs(sendte + bekreftedeWithTidligereAg, currentSykmelding)
+        val finalRelevantSykmeldingerPairs =
+            filterOutDirectOverlapp(
+                bekreftedeWithTidligereAg,
+                relevantsykmeldingerMappedToPairs,
+                currentSykmelding,
+                tidligereArbeidsgiverBrukerInput
+            )
+        return finalRelevantSykmeldingerPairs
+    }
+
+    private fun filterOutDirectOverlapp(
+        bekreftedeSykmeldinger: List<SykmeldingWithArbeidsgiverStatus>,
+        relevantsykmeldingerMappedToPairs:
+            List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>>,
+        currentSykmelding: SykmeldingWithArbeidsgiverStatus,
+        tidligereArbeidsgiverBrukerInput: String?
+    ): List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>> {
+        val bekreftedeDirectOverlapp =
+            bekreftedeSykmeldinger.filter {
+                getBekreftedeDirectOverlapp(
+                    tidligereArbeidsgiverBrukerInput = tidligereArbeidsgiverBrukerInput,
+                    tidligereAgPaaTidligereSykmelding = it.tidligereArbeidsgiver!!.orgnummer,
+                    fom = findFirstFom(currentSykmelding.sykmeldingsperioder),
+                    tom = findLastTom(currentSykmelding.sykmeldingsperioder),
+                    sykmeldingsperioder = it.sykmeldingsperioder
+                )
+            }
+        val updatedMapOfRelevantSykmeldingerPairs =
+            removeBekreftedDirectOverlapp(
+                bekreftedeDirectOverlapp,
+                relevantsykmeldingerMappedToPairs
+            )
+        return updatedMapOfRelevantSykmeldingerPairs
+    }
+
+    private fun removeBekreftedDirectOverlapp(
+        bekreftedeDirectOverlapp: List<SykmeldingWithArbeidsgiverStatus>,
+        relevantsykmeldingerMappedToPairs:
+            List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>>
+    ): List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>> {
+        var filteredList = relevantsykmeldingerMappedToPairs
+        bekreftedeDirectOverlapp.forEach { overlapp ->
+            filteredList =
+                filteredList.filterNot { relevantPair ->
+                    isKantTilKant(
+                        relevantPair.first.sykmeldingsperioder,
+                        findFirstFom(overlapp.sykmeldingsperioder)
+                    ) || relevantPair.first.sykmeldingId == overlapp.sykmeldingId
+                }
+        }
+        return filteredList
+    }
+
+    private fun mapToRelevantPairs(
+        sykmeldingWithArbeidsgiverStatuses: List<SykmeldingWithArbeidsgiverStatus>,
         currentSykmelding: SykmeldingWithArbeidsgiverStatus
-    ): List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>> =
-        allSykmeldinger
-            .filterNot { it.sykmeldingId == currentSykmelding.sykmeldingId }
-            .filter {
-                it.statusEvent == STATUS_SENDT || it.tidligereArbeidsgiver?.orgnummer != null
-            }
-            .mapNotNull {
-                val tidligereArbeidsgiverType =
-                    tidligereArbeidsgiverType(
-                        findFirstFom(currentSykmelding.sykmeldingsperioder),
-                        it.sykmeldingsperioder
-                    )
-                if (tidligereArbeidsgiverType != TidligereArbeidsgiverType.INGEN)
-                    it to tidligereArbeidsgiverType
-                else null
-            }
+    ): List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>> {
+        return sykmeldingWithArbeidsgiverStatuses.mapNotNull {
+            val tidligereArbeidsgiverType =
+                tidligereArbeidsgiverPeriodeType(
+                    findFirstFom(currentSykmelding.sykmeldingsperioder),
+                    it.sykmeldingsperioder
+                )
+            if (tidligereArbeidsgiverType != TidligereArbeidsgiverType.INGEN)
+                it to tidligereArbeidsgiverType
+            else null
+        }
+    }
+
+    private fun getBekreftedeDirectOverlapp(
+        tidligereArbeidsgiverBrukerInput: String?,
+        tidligereAgPaaTidligereSykmelding: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        sykmeldingsperioder: List<SykmeldingsperiodeDTO>
+    ): Boolean {
+        return (isDirekteOverlappende(
+            tidligereSmTom = sykmeldingsperioder.maxOf { it.tom },
+            tidligereSmFom = sykmeldingsperioder.minOf { it.fom },
+            fom = fom,
+            tom = tom
+        ) &&
+            (tidligereArbeidsgiverBrukerInput == tidligereAgPaaTidligereSykmelding ||
+                tidligereArbeidsgiverBrukerInput == null))
+    }
 
     private fun decideMostRelevantSykmelding(
         filteredSykmeldinger:
             List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>>,
         tidligereArbeidsgiverBrukerInput: String?,
-        sykmeldingId: String
+        sykmeldingId: String,
     ): SykmeldingWithArbeidsgiverStatus? {
         if (filteredSykmeldinger.isEmpty()) return null
-        /*        val uniqueArbeidsgiverCount =
-        filteredSykmeldinger.distinctBy { it.first.arbeidsgiver?.orgnummer }.size*/
-
-        val uniqueArbeidsgiverList =
-            filteredSykmeldinger
-                .filter { it.first.tidligereArbeidsgiver == null }
-                .distinctBy { it.first.arbeidsgiver?.orgnummer }
-                .map { it.first.arbeidsgiver?.orgnummer }
-        val uniqueTidligereArbeidsgiverList =
-            filteredSykmeldinger
-                .filter { it.first.arbeidsgiver == null }
-                .distinctBy { it.first.tidligereArbeidsgiver?.orgnummer }
-                .map { it.first.tidligereArbeidsgiver?.orgnummer }
-
-        val uniqueArbeidsgiverCount =
-            (uniqueTidligereArbeidsgiverList + uniqueArbeidsgiverList).distinctBy { it }.size
-
+        val uniqueArbeidsgiverCount = getUniqueArbeidsgiverCount(filteredSykmeldinger)
         updateMetricsForArbeidsgivere(uniqueArbeidsgiverCount, sykmeldingId)
         securelog.info(
             "Finner mest relevante sykmelding av de filterte sykmeldingene for å finne tidligere arbeidsgiver {} {} {}",
@@ -189,8 +263,25 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         return findMatchingSykmeldingFromArbeidsgiver(
             filteredSykmeldinger,
             tidligereArbeidsgiverBrukerInput,
-            sykmeldingId
+            sykmeldingId,
         )
+    }
+
+    private fun getUniqueArbeidsgiverCount(
+        filteredSykmeldinger:
+            List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>>
+    ): Int {
+        val uniqueArbeidsgiverList =
+            filteredSykmeldinger
+                .filter { it.first.tidligereArbeidsgiver == null }
+                .distinctBy { it.first.arbeidsgiver?.orgnummer }
+                .map { it.first.arbeidsgiver?.orgnummer }
+        val uniqueTidligereArbeidsgiverList =
+            filteredSykmeldinger
+                .filter { it.first.arbeidsgiver == null }
+                .distinctBy { it.first.tidligereArbeidsgiver?.orgnummer }
+                .map { it.first.tidligereArbeidsgiver?.orgnummer }
+        return (uniqueTidligereArbeidsgiverList + uniqueArbeidsgiverList).distinctBy { it }.size
     }
 
     private fun findSingleRelevantSykmelding(
@@ -242,14 +333,11 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
             kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput)
         )
         if (tidligereArbeidsgiverBrukerInput == null) {
-            logger.info(
+            securelog.info(
                 "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
             )
             return null
         }
-        /*  throw UserInputFlereArbeidsgivereIsNullException(
-            "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
-        )*/
         val sykmeldingMatch =
             filtrerteSykmeldinger.firstOrNull { sykmelding ->
                 sykmelding.first.arbeidsgiver?.orgnummer == tidligereArbeidsgiverBrukerInput ||
@@ -257,21 +345,7 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
                         tidligereArbeidsgiverBrukerInput
             }
         if (sykmeldingMatch != null) {
-            securelog.info(
-                "Fant relevant sykmelding match i flere-relevante-arbeidsgivere-flyten {} {} {} {} {}",
-                kv("sykmeldingId", sykmeldingId),
-                kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput),
-                kv(
-                    "relevanteSykmelding tidligereArbeidsgiver orgnummer",
-                    sykmeldingMatch.first.tidligereArbeidsgiver?.orgnummer
-                ),
-                kv("relevantSykmelding orgnummer", sykmeldingMatch.first.arbeidsgiver?.orgnummer),
-                kv("relevant sykmeldingId", sykmeldingMatch.first.sykmeldingId)
-            )
-            TIDLIGERE_ARBEIDSGIVER_COUNTER.labels(sykmeldingMatch.second.name).inc()
-            logger.info(
-                "Tidligere arbeidsgiver counter er oppdatert: ${sykmeldingMatch.second.name}"
-            )
+            logInfoAndUpdateMetrics(sykmeldingId, tidligereArbeidsgiverBrukerInput, sykmeldingMatch)
             return sykmeldingMatch.first
         }
         securelog.info(
@@ -282,11 +356,31 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         return null
     }
 
-    private fun tidligereArbeidsgiverType(
+    private fun logInfoAndUpdateMetrics(
+        sykmeldingId: String,
+        tidligereArbeidsgiverBrukerInput: String?,
+        sykmeldingMatch: Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>
+    ) {
+        securelog.info(
+            "Fant relevant sykmelding match i flere-relevante-arbeidsgivere-flyten {} {} {} {} {}",
+            kv("sykmeldingId", sykmeldingId),
+            kv("tidligereAgBrukerInput", tidligereArbeidsgiverBrukerInput),
+            kv(
+                "relevanteSykmelding tidligereArbeidsgiver orgnummer",
+                sykmeldingMatch.first.tidligereArbeidsgiver?.orgnummer
+            ),
+            kv("relevantSykmelding orgnummer", sykmeldingMatch.first.arbeidsgiver?.orgnummer),
+            kv("relevant sykmeldingId", sykmeldingMatch.first.sykmeldingId)
+        )
+        TIDLIGERE_ARBEIDSGIVER_COUNTER.labels(sykmeldingMatch.second.name).inc()
+        logger.info("Tidligere arbeidsgiver counter er oppdatert: ${sykmeldingMatch.second.name}")
+    }
+
+    private fun tidligereArbeidsgiverPeriodeType(
         currentSykmeldingFirstFomDate: LocalDate,
         sykmeldingsperioder: List<SykmeldingsperiodeDTO>
     ): TidligereArbeidsgiverType {
-        val kantTilKant = sisteTomIKantMedDag(sykmeldingsperioder, currentSykmeldingFirstFomDate)
+        val kantTilKant = isKantTilKant(sykmeldingsperioder, currentSykmeldingFirstFomDate)
         if (kantTilKant) return TidligereArbeidsgiverType.KANT_TIL_KANT
         val overlappende =
             isOverlappende(
@@ -304,18 +398,18 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
         INGEN
     }
 
-    private fun sisteTomIKantMedDag(
-        perioder: List<SykmeldingsperiodeDTO>,
-        dag: LocalDate
-    ): Boolean {
-        val sisteTom =
-            perioder.maxByOrNull { it.tom }?.tom
-                ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
+    private fun isKantTilKant(perioder: List<SykmeldingsperiodeDTO>, dag: LocalDate): Boolean {
+        val sisteTom = findLastTom(perioder)
         return !isWorkingdaysBetween(sisteTom, dag)
     }
 
     private fun findFirstFom(perioder: List<SykmeldingsperiodeDTO>): LocalDate {
         return perioder.minByOrNull { it.fom }?.fom
             ?: throw IllegalStateException("Skal ikke kunne ha periode uten fom")
+    }
+
+    private fun findLastTom(perioder: List<SykmeldingsperiodeDTO>): LocalDate {
+        return perioder.maxByOrNull { it.tom }?.tom
+            ?: throw IllegalStateException("Skal ikke kunne ha periode uten tom")
     }
 }

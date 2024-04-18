@@ -1577,7 +1577,7 @@ class SykmeldingStatusServiceSpec {
                 opprettSykmelding(
                     fom = 1.januar(2023),
                     tom = 31.januar(2023),
-                    status = "SENDT",
+                    status = "BEKREFTET",
                     tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO(
                             "orgNavn",
