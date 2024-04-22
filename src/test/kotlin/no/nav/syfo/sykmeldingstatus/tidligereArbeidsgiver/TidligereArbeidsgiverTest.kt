@@ -11,6 +11,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_APEN
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.sykmeldingstatus.opprettSykmelding
+import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereArbeidsgiver
 import org.amshove.kluent.internal.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach

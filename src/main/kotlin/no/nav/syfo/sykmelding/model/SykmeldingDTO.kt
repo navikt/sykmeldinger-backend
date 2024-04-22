@@ -32,4 +32,5 @@ data class SykmeldingDTO(
     val merknader: List<MerknadDTO>?,
     val rulesetVersion: String?,
     val utenlandskSykmelding: UtenlandskSykmelding?,
+    var tidligereArbeidsgivere: List<TidligereArbeidsgiverDTO>?
 )
