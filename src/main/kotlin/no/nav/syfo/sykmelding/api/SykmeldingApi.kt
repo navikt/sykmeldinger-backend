@@ -8,6 +8,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.sykmelding.SykmeldingService
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.securelog
 import org.koin.ktor.ext.inject
@@ -15,6 +16,7 @@ import org.koin.ktor.ext.inject
 fun Route.registerSykmeldingApiV2() {
     val logger = logger()
     val sykmeldingService by inject<SykmeldingService>()
+
 
     get("/sykmeldinger") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
@@ -37,6 +39,9 @@ fun Route.registerSykmeldingApiV2() {
         } else {
             logger.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
             val sykmelding = sykmeldingService.getSykmelding(fnr, sykmeldingId)
+
+            sykmelding?.tidligereArbeidsgivere = finnTidligereArbeidsgiver()
+            // legg den til på sykmeldingen
             logger.info(
                 "Er over 70 år : {} Og sykmeldingsId: {}",
                 sykmelding?.pasient?.overSyttiAar,
@@ -55,4 +60,8 @@ fun Route.registerSykmeldingApiV2() {
             }
         }
     }
+}
+
+fun finnTidligereArbeidsgiver(): List<TidligereArbeidsgiverDTO>? {
+    TODO("Not yet implemented")
 }

@@ -7,6 +7,7 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
@@ -206,6 +207,8 @@ class SykmeldingStatusService(
                     kv("nesteStatus", nesteStatus),
                     kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar)
                 )
+                // vi trenger et TidligereArbeidsgiverDTO objekt / orgnummer og navn
+
                 tidligereArbeidsgiver.tidligereArbeidsgiver(
                     fnr,
                     sykmeldingId,

@@ -19,6 +19,7 @@ import no.nav.syfo.sykmelding.model.SvarDTO
 import no.nav.syfo.sykmelding.model.SvartypeDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.utils.objectMapper
@@ -228,6 +229,7 @@ private fun ResultSet.toSykmelding(): SykmeldingDTO {
         skjermesForPasient = false,
         rulesetVersion = sykmelding.rulesetVersion,
         utenlandskSykmelding = sykmelding.utenlandskSykmelding,
+        tidligereArbeidsgivere = null,
     )
 }
 
