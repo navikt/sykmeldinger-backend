@@ -24,6 +24,7 @@ data class SykmeldingFormResponse(
 
 data class ArbeidsledigFraOrgnummer(
     val arbeidsledigFraOrgnummer: SporsmalSvar<String>?,
+    val arbeidsledigOrgnavn: SporsmalSvar<String>?,
 )
 
 data class FiskerSvar(

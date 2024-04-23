@@ -103,6 +103,14 @@ fun getSykmeldingDTO(
         utenlandskSykmelding = null,
     )
 
+fun getTidligereArbeidsgiver(): TidligereArbeidsgiverDTO {
+    return TidligereArbeidsgiverDTO(
+        orgNavn = "Organisasjonen",
+        orgnummer = "123123123",
+        sykmeldingsId = "1"
+    )
+}
+
 fun getMedisinskVurdering() =
     MedisinskVurderingDTO(
         hovedDiagnose = DiagnoseDTO("1", "system", "hoveddiagnose"),

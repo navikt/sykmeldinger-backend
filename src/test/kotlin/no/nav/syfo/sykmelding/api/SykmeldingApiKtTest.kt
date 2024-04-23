@@ -15,7 +15,9 @@ import io.mockk.mockkClass
 import no.nav.syfo.plugins.configureAuth
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.Sykmelding
+import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.sykmeldingstatus.getSykmeldingDTO
+import no.nav.syfo.sykmeldingstatus.getTidligereArbeidsgiver
 import no.nav.syfo.testutils.configureTestApplication
 import no.nav.syfo.testutils.createTestHttpClient
 import no.nav.syfo.testutils.generateJWT
@@ -31,6 +33,7 @@ import org.koin.test.KoinTest
 
 class SykmeldingApiKtTest : KoinTest {
     val sykmeldingService = mockkClass(SykmeldingService::class)
+    val sykmeldingStatusService = mockkClass(SykmeldingStatusService::class)
     val mockPayload = mockk<Payload>()
 
     @BeforeEach
@@ -38,12 +41,17 @@ class SykmeldingApiKtTest : KoinTest {
         clearAllMocks()
         coEvery { sykmeldingService.getSykmelding(any(), any()) } returns getSykmeldingDTO()
         coEvery { sykmeldingService.getSykmeldinger(any()) } returns listOf(getSykmeldingDTO())
+        coEvery { sykmeldingStatusService.finnTidligereArbeidsgivere(any(), any()) } returns
+            listOf(getTidligereArbeidsgiver())
         every { mockPayload.subject } returns "123"
 
         startKoin {
             modules(
                 mockedAuthModule,
-                module { single { sykmeldingService } },
+                module {
+                    single { sykmeldingService }
+                    single { sykmeldingStatusService }
+                },
             )
         }
     }

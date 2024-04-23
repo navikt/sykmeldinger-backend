@@ -46,8 +46,8 @@ enum class SvartypeKafkaDTO {
 }
 
 data class TidligereArbeidsgiverKafkaDTO(
-    val orgNavn: String,
-    val orgnummer: String,
+    val orgNavn: String?,
+    val orgnummer: String?,
     val sykmeldingsId: String,
 )
 
