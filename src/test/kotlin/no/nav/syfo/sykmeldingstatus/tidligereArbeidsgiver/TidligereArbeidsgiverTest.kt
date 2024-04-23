@@ -1,4 +1,4 @@
-package no.nav.syfo.sykmeldingstatus.model
+package no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver
 
 import io.mockk.clearAllMocks
 import io.mockk.mockkClass

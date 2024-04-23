@@ -26,7 +26,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.model.TidligereArbeidsgiver
+import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereArbeidsgiver
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
