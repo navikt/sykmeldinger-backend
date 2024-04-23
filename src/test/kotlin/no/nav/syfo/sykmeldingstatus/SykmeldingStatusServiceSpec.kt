@@ -11,7 +11,9 @@ import io.mockk.slot
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -36,7 +38,6 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.jupiter.api.BeforeEach
@@ -1049,19 +1050,13 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1238,20 +1233,13 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1334,20 +1322,64 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
+                )
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
+        }
 
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
+        @Test
+        fun `arbeidstaker til arbeidsledig flere potensielle kandidater`() = testApplication {
+            val ag1 =
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 15.januar(2023),
+                    orgnummer = "ag1",
+                    status = "SENDT",
+                )
+            val ag2 =
+                opprettSykmelding(
+                    fom = 1.januar(2023),
+                    tom = 15.januar(2023),
+                    orgnummer = "ag2",
+                    status = "SENDT",
+                )
+            val nySykmelding =
+                opprettSykmelding(
+                    fom = 16.januar(2023),
+                    tom = 31.januar(2023),
+                    status = "APEN",
+                    sykmeldingId = sykmeldingId,
+                )
+
+            coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
+                listOf(
+                    ag1,
+                    ag2,
+                    nySykmelding,
+                )
+
+            coEvery {
+                sykmeldingStatusDb.getLatestStatus(
                     any(),
                     any(),
                 )
-            }
+            } returns
+                SykmeldingStatusEventDTO(
+                    statusEvent = StatusEventDTO.APEN,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                    erAvvist = true,
+                )
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
+                )
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(2, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1446,21 +1478,13 @@ class SykmeldingStatusServiceSpec {
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = true,
                     )
-                sykmeldingStatusService.createStatus(
-                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                    sykmeldingId,
-                    fnr,
-                )
-
-                val tidligereArbeidsgiver =
-                    TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-                coVerify(exactly = 1) {
-                    sykmeldingStatusDb.insertStatus(
-                        match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                        any(),
-                        any(),
+                val tidligereArbeidsgivere =
+                    sykmeldingStatusService.finnTidligereArbeidsgivere(
+                        fnr,
+                        sykmeldingId,
                     )
-                }
+                assertNotNull(tidligereArbeidsgivere)
+                assertEquals(1, tidligereArbeidsgivere.size)
             }
 
         @Test
@@ -1501,20 +1525,13 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1555,20 +1572,13 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1609,20 +1619,13 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            val tidligereArbeidsgiver = TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1987,21 +1990,13 @@ class SykmeldingStatusServiceSpec {
                         timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                         erAvvist = true,
                     )
-                sykmeldingStatusService.createStatus(
-                    opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                    sykmeldingId,
-                    fnr,
-                )
-
-                val tidligereArbeidsgiver =
-                    TidligereArbeidsgiverKafkaDTO("orgNavn", "orgnummer", "1")
-                coVerify(exactly = 1) {
-                    sykmeldingStatusDb.insertStatus(
-                        match { it.tidligereArbeidsgiver == tidligereArbeidsgiver },
-                        any(),
-                        any(),
+                val tidligereArbeidsgivere =
+                    sykmeldingStatusService.finnTidligereArbeidsgivere(
+                        fnr,
+                        sykmeldingId,
                     )
-                }
+                assertNotNull(tidligereArbeidsgivere)
+                assertEquals(1, tidligereArbeidsgivere.size)
             }
     }
 

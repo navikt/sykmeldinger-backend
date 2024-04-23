@@ -115,6 +115,7 @@ class TidligereArbeidsgiver(private val sykmeldingStatusDb: SykmeldingStatusDb) 
                 }
             )
         )
+        // vi trenger kun denne
         val filteredSykmeldinger = filterRelevantSykmeldinger(allSykmeldinger, currentSykmelding)
         securelog.info(
             "Filtrerte sykmeldinger som er relevante {} {} {}",
