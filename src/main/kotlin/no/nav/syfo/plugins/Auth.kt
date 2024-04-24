@@ -7,13 +7,13 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
-import java.net.URL
-import java.util.concurrent.TimeUnit
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.utils.Environment
 import no.nav.syfo.utils.logger
 import org.koin.ktor.ext.inject
+import java.net.URL
+import java.util.concurrent.TimeUnit
 
 private val logger = logger("Application.configureAuth")
 
@@ -71,12 +71,7 @@ fun getProductionAuthConfig(env: Environment): AuthConfiguration {
     )
 }
 
-fun ApplicationCall.getToken(): String? {
-    return when (val authHeader = request.header("Authorization")) {
-        null -> request.cookies.get(name = "selvbetjening-idtoken")
-        else -> authHeader.removePrefix("Bearer ")
-    }
-}
+fun ApplicationCall.getToken(): String? = request.header("Authorization")?.removePrefix("Bearer ")
 
 fun hasClientIdAudience(credentials: JWTCredential, clientId: String): Boolean {
     return credentials.payload.audience.contains(clientId)
