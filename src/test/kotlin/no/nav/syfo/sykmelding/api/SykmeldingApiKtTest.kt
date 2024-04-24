@@ -111,7 +111,7 @@ class SykmeldingApiKtTest : KoinTest {
     }
 
     @Test
-    fun `Sykmeldinger OK, with cookie`() = testApplication {
+    fun `Sykmeldinger unauthorized, with old ass auth-cookie`() = testApplication {
         setUpSykmeldingApi()
 
         val client = createTestHttpClient()
@@ -131,7 +131,7 @@ class SykmeldingApiKtTest : KoinTest {
                     )
                 }
             }
-        response.status shouldBeEqualTo HttpStatusCode.OK
+        response.status shouldBeEqualTo HttpStatusCode.Unauthorized
     }
 
     @Test
