@@ -12,6 +12,7 @@ import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.securelog
 import org.koin.ktor.ext.inject
+import kotlin.concurrent.timer
 
 fun Route.registerSykmeldingApiV2() {
     val logger = logger()
@@ -39,11 +40,15 @@ fun Route.registerSykmeldingApiV2() {
         } else {
             logger.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
             val sykmelding = sykmeldingService.getSykmelding(fnr, sykmeldingId)
+            val startTime = System.nanoTime()
             val tidligereArbeidsgivereList =
                 sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId)
             if (!tidligereArbeidsgivereList.isNullOrEmpty() && sykmelding != null) {
                 sykmelding.tidligereArbeidsgiverList = tidligereArbeidsgivereList
             }
+            val endTime = System.nanoTime()
+            val duration = endTime - startTime
+            logger.info("Henter ut tidligereArbeidsgiver fra $sykmeldingId til $duration")
             logger.info(
                 "Er over 70 år : {} Og sykmeldingsId: {}",
                 sykmelding?.pasient?.overSyttiAar,
