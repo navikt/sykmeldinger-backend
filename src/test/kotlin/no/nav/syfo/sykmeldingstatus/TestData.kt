@@ -18,6 +18,7 @@ import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.sykmelding.model.SykmeldingStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiver
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
@@ -103,11 +104,10 @@ fun getSykmeldingDTO(
         utenlandskSykmelding = null,
     )
 
-fun getTidligereArbeidsgiver(): TidligereArbeidsgiverDTO {
-    return TidligereArbeidsgiverDTO(
+fun getTidligereArbeidsgiver(): TidligereArbeidsgiver {
+    return TidligereArbeidsgiver(
         orgNavn = "Organisasjonen",
         orgnummer = "123123123",
-        sykmeldingsId = "1"
     )
 }
 

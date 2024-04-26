@@ -13,8 +13,8 @@ import org.amshove.kluent.internal.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class TidligereArbeidsgiverTest {
-    val tidligereArbeidsgiver = TidligereArbeidsgiver()
+class TidligereArbeidsgiverServiceTest {
+    val tidligereArbeidsgiverService = TidligereArbeidsgiverService()
     val AG1 = "ag1"
     val AG2 = "ag2"
 
@@ -60,7 +60,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(2, relevanteSykmeldinger.size)
         assertEquals(AG1, relevanteSykmeldinger.first().first.arbeidsgiver?.orgnummer)
@@ -116,7 +116,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
         assertEquals(AG1, relevanteSykmeldinger.first().first.tidligereArbeidsgiver?.orgnummer)
@@ -172,7 +172,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(2, relevanteSykmeldinger.size)
     }
@@ -237,7 +237,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(2, relevanteSykmeldinger.size)
     }
@@ -279,7 +279,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(2, relevanteSykmeldinger.size)
     }
@@ -321,7 +321,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(0, relevanteSykmeldinger.size)
     }
@@ -376,7 +376,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
         assertEquals(AG1, relevanteSykmeldinger.first().first.tidligereArbeidsgiver?.orgnummer)
@@ -432,7 +432,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
         assertEquals(AG1, relevanteSykmeldinger.first().first.tidligereArbeidsgiver?.orgnummer)
@@ -490,7 +490,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
     }
@@ -524,7 +524,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
     }
@@ -571,7 +571,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
     }
@@ -618,7 +618,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(1, relevanteSykmeldinger.size)
     }
@@ -652,7 +652,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(0, relevanteSykmeldinger.size)
     }
@@ -686,7 +686,7 @@ class TidligereArbeidsgiverTest {
             )
 
         val relevanteSykmeldinger =
-            tidligereArbeidsgiver.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
         assertEquals(0, relevanteSykmeldinger.size)
     }

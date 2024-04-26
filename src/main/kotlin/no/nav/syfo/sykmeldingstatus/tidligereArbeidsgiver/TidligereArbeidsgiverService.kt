@@ -8,7 +8,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 import no.nav.syfo.utils.logger
 
-class TidligereArbeidsgiver() {
+class TidligereArbeidsgiverService() {
     private val logger = logger()
 
     fun filterRelevantSykmeldinger(

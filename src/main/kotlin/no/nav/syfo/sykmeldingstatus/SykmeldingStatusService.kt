@@ -7,6 +7,7 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.metrics.BEKREFTET_AV_BRUKER_COUNTER
 import no.nav.syfo.metrics.SENDT_AV_BRUKER_COUNTER
+import no.nav.syfo.sykmelding.model.TidligereArbeidsgiver
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingBekreftEventDTO
@@ -20,6 +21,7 @@ import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
+import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
@@ -27,7 +29,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
-import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereArbeidsgiver
+import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereArbeidsgiverService
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
@@ -38,7 +40,7 @@ class SykmeldingStatusService(
     private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
     private val logger = logger()
-    private val tidligereArbeidsgiver = TidligereArbeidsgiver()
+    private val tidligereArbeidsgiverService = TidligereArbeidsgiverService()
 
     companion object {
         private val statusStates: Map<StatusEventDTO, List<StatusEventDTO>> =
@@ -149,17 +151,15 @@ class SykmeldingStatusService(
         )
     }
 
-    /// tidligereag.orgnummer == AG1, arbeidsgiver.orgnummer== AG1
-
     suspend fun finnTidligereArbeidsgivere(
         fnr: String,
         sykmeldingId: String
-    ): List<TidligereArbeidsgiverDTO>? {
+    ): List<TidligereArbeidsgiver>? {
         val sykmeldingerWithStatus = sykmeldingStatusDb.getSykmeldingWithStatus(fnr)
         val sykmeldingWithStatus = sykmeldingerWithStatus.find { it.sykmeldingId == sykmeldingId }
         if (sykmeldingWithStatus != null) {
             val muligeTidligereArbeidsgivere =
-                tidligereArbeidsgiver.filterRelevantSykmeldinger(
+                tidligereArbeidsgiverService.filterRelevantSykmeldinger(
                     sykmeldingerWithStatus,
                     sykmeldingWithStatus
                 )
@@ -169,20 +169,32 @@ class SykmeldingStatusService(
                 kv("fnr", fnr),
                 kv("antall", muligeTidligereArbeidsgivere.size)
             )
+
             if (muligeTidligereArbeidsgivere.isNotEmpty()) {
                 return muligeTidligereArbeidsgivere.mapNotNull {
-                    val arbeidsgiver = it.first.arbeidsgiver
-                    if (arbeidsgiver != null) {
-                        TidligereArbeidsgiverDTO(
-                            orgNavn = arbeidsgiver.orgNavn,
-                            orgnummer = arbeidsgiver.orgnummer,
-                            sykmeldingsId = sykmeldingId
-                        )
-                    } else {
-                        it.first.tidligereArbeidsgiver
-                    }
+                    transformToTidligereArbeidsgiver(it.first)
                 }
             }
+        }
+        return null
+    }
+
+    private fun transformToTidligereArbeidsgiver(
+        data: SykmeldingWithArbeidsgiverStatus
+    ): TidligereArbeidsgiver? {
+        val arbeidsgiver = data.arbeidsgiver
+        val tidligereArbeidsgiver = data.tidligereArbeidsgiver
+        if (arbeidsgiver != null) {
+            return TidligereArbeidsgiver(
+                orgNavn = arbeidsgiver.orgNavn,
+                orgnummer = arbeidsgiver.orgnummer,
+            )
+        }
+        if (tidligereArbeidsgiver != null) {
+            return TidligereArbeidsgiver(
+                tidligereArbeidsgiver.orgNavn,
+                tidligereArbeidsgiver.orgnummer
+            )
         }
         return null
     }
