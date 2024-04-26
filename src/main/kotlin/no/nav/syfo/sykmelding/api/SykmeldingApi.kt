@@ -12,7 +12,6 @@ import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
 import no.nav.syfo.utils.logger
 import no.nav.syfo.utils.securelog
 import org.koin.ktor.ext.inject
-import kotlin.concurrent.timer
 
 fun Route.registerSykmeldingApiV2() {
     val logger = logger()
