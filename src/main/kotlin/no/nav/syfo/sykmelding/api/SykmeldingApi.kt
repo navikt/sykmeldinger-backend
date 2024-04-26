@@ -28,6 +28,23 @@ fun Route.registerSykmeldingApiV2() {
         call.respond(sykmeldinger)
     }
 
+    get("/sykmeldinger/{sykmeldingid}/tidligere-arbeidsgivere") {
+        val sykmeldingId = call.parameters["sykmeldingid"]!!
+        val principal: BrukerPrincipal = call.authentication.principal()!!
+        val fnr = principal.fnr
+        if (sykmeldingId == "null") {
+            logger.warn("Mottok kall for å hente sykmelding med id null, returnerer 404 Not Found")
+            call.respond(HttpStatusCode.NotFound)
+        } else {
+            logger.info("Henter ut tidligere arbeidsgivere for sykmeldingid: $sykmeldingId")
+            val tidligereArbeidsgivereList =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId)
+            if (!tidligereArbeidsgivereList.isNullOrEmpty()) {
+                call.respond(tidligereArbeidsgivereList)
+            }
+        }
+    }
+
     get("/sykmeldinger/{sykmeldingid}") {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
@@ -39,15 +56,6 @@ fun Route.registerSykmeldingApiV2() {
         } else {
             logger.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
             val sykmelding = sykmeldingService.getSykmelding(fnr, sykmeldingId)
-            val startTime = System.nanoTime()
-            val tidligereArbeidsgivereList =
-                sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId)
-            if (!tidligereArbeidsgivereList.isNullOrEmpty() && sykmelding != null) {
-                sykmelding.tidligereArbeidsgiverList = tidligereArbeidsgivereList
-            }
-            val endTime = System.nanoTime()
-            val duration = endTime - startTime
-            logger.info("Henter ut tidligereArbeidsgiver fra $sykmeldingId til $duration")
             logger.info(
                 "Er over 70 år : {} Og sykmeldingsId: {}",
                 sykmelding?.pasient?.overSyttiAar,

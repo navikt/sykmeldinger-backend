@@ -32,5 +32,4 @@ data class SykmeldingDTO(
     val merknader: List<MerknadDTO>?,
     val rulesetVersion: String?,
     val utenlandskSykmelding: UtenlandskSykmelding?,
-    var tidligereArbeidsgiverList: List<TidligereArbeidsgiverDTO> = emptyList()
 )
