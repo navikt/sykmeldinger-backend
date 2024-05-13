@@ -154,10 +154,10 @@ class SykmeldingStatusService(
     suspend fun finnTidligereArbeidsgivere(
         fnr: String,
         sykmeldingId: String
-    ): List<TidligereArbeidsgiver>? {
+    ): List<TidligereArbeidsgiver> {
         val sykmeldingerWithStatus = sykmeldingStatusDb.getSykmeldingWithStatus(fnr)
         val sykmeldingWithStatus = sykmeldingerWithStatus.find { it.sykmeldingId == sykmeldingId }
-        if (sykmeldingWithStatus == null) return null
+        if (sykmeldingWithStatus == null) return emptyList()
         val muligeTidligereArbeidsgivere =
             tidligereArbeidsgiverService.filterRelevantSykmeldinger(
                 sykmeldingerWithStatus,
@@ -175,7 +175,7 @@ class SykmeldingStatusService(
                 transformToTidligereArbeidsgiver(it.first)
             }
         }
-        return null
+        return emptyList()
     }
 
     private fun transformToTidligereArbeidsgiver(
