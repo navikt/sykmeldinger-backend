@@ -24,7 +24,6 @@ import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.mars
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ANNET
-import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSTAKER
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.FRILANSER
 import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
@@ -40,6 +39,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -318,7 +318,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
-                    arbeidsledig = null,
+                    arbeidsledigOrgnummer = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -386,7 +386,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "feilOrnummer",
                         ),
-                    arbeidsledig = null,
+                    arbeidsledigOrgnummer = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -463,7 +463,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = JaEllerNei.NEI,
                         ),
-                    arbeidsledig = null,
+                    arbeidsledigOrgnummer = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
                     harForsikring = null,
@@ -513,7 +513,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = FRILANSER,
                         ),
-                    arbeidsledig = null,
+                    arbeidsledigOrgnummer = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
@@ -581,7 +581,7 @@ class SykmeldingStatusServiceSpec {
                                 sporsmaltekst = "",
                                 svar = "123456789",
                             ),
-                        arbeidsledig = null,
+                        arbeidsledigOrgnummer = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
@@ -1066,6 +1066,12 @@ class SykmeldingStatusServiceSpec {
                     fom = 1.januar(2023),
                     tom = 15.januar(2023),
                     status = "BEKREFTET",
+                    tidligereArbeidsgiver =
+                        TidligereArbeidsgiverDTO(
+                            orgnummer = "orgnummer",
+                            orgNavn = "navn",
+                            sykmeldingsId = "1"
+                        )
                 )
             val nySykmelding =
                 opprettSykmelding(
@@ -1091,18 +1097,13 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(1, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1132,76 +1133,14 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNull(tidligereArbeidsgivere)
         }
 
-        /*
-                @Test
-                fun `kant til kant men flere arbeidsgivere`() = testApplication {
-                    val tidligereSykmeldingArbeidsgiver1 =
-                        opprettSykmelding(
-                            fom = 1.januar(2023),
-                            tom = 15.januar(2023),
-                            "orgnummer1",
-                            status = "SENDT",
-                        )
-                    val tidligereSykmeldingArbeidsgiver2 =
-                        opprettSykmelding(
-                            fom = 1.januar(2023),
-                            tom = 15.januar(2023),
-                            "orgnummer2",
-                            status = "SENDT",
-                        )
-                    val nySykmelding =
-                        opprettSykmelding(
-                            fom = 16.januar(2023),
-                            tom = 31.januar(2023),
-                            status = "APEN",
-                            sykmeldingId = sykmeldingId,
-                        )
-
-                    coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
-                        listOf(
-                            tidligereSykmeldingArbeidsgiver1,
-                            tidligereSykmeldingArbeidsgiver2,
-                            nySykmelding,
-                        )
-
-                    coEvery {
-                        sykmeldingStatusDb.getLatestStatus(
-                            any(),
-                            any(),
-                        )
-                    } returns
-                        SykmeldingStatusEventDTO(
-                            statusEvent = StatusEventDTO.APEN,
-                            timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                            erAvvist = true,
-                        )
-                    val exception =
-                        assertFailsWith<UserInputFlereArbeidsgivereIsNullException> {
-                            sykmeldingStatusService.createStatus(
-                                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                                sykmeldingId,
-                                fnr,
-                            )
-                        }
-                    exception.message shouldBeEqualTo
-                        "TidligereArbeidsgivereBrukerInput felt er null i flere-relevante-arbeidsgivere-flyten. Dette skal ikke være mulig for sykmeldingId $sykmeldingId"
-                }
-        */
         @Test
         fun `kant til kant fredag og mandag`() = testApplication {
             val tidligereSykmelding =
@@ -1273,19 +1212,12 @@ class SykmeldingStatusServiceSpec {
                     erAvvist = true,
                 )
 
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNull(tidligereArbeidsgivere)
         }
 
         @Test
@@ -1588,12 +1520,7 @@ class SykmeldingStatusServiceSpec {
                     fom = 1.januar(2023),
                     tom = 31.januar(2023),
                     status = "SENDT",
-                    tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        ),
+                    orgnummer = "123",
                 )
             val nySykmelding =
                 opprettSykmelding(
@@ -1635,12 +1562,7 @@ class SykmeldingStatusServiceSpec {
                     fom = 28.januar(2023),
                     tom = 31.januar(2023),
                     status = "SENDT",
-                    tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        ),
+                    orgnummer = "123",
                 )
             val nySykmelding =
                 opprettSykmelding(
@@ -1666,19 +1588,12 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNull(tidligereArbeidsgivere)
         }
 
         @Test
@@ -1688,12 +1603,7 @@ class SykmeldingStatusServiceSpec {
                     fom = 28.januar(2023),
                     tom = 31.januar(2023),
                     status = "SENDT",
-                    tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        ),
+                    orgnummer = "123",
                 )
             val nySykmelding =
                 opprettSykmelding(
@@ -1719,19 +1629,12 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNull(tidligereArbeidsgivere)
         }
 
         @Test
@@ -1772,19 +1675,12 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNull(tidligereArbeidsgivere)
         }
 
         @Test
@@ -1794,12 +1690,7 @@ class SykmeldingStatusServiceSpec {
                     fom = 28.januar(2023),
                     tom = 31.januar(2023),
                     status = "SENDT",
-                    tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            "orgNavn",
-                            orgnummer = "orgnummer",
-                            sykmeldingsId = "1",
-                        ),
+                    orgnummer = "1",
                 )
             val nySykmelding =
                 opprettSykmelding(
@@ -1825,19 +1716,12 @@ class SykmeldingStatusServiceSpec {
                     timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
                     erAvvist = true,
                 )
-            sykmeldingStatusService.createStatus(
-                opprettBekreftetSykmeldingUserEvent(arbeidssituasjon = ARBEIDSLEDIG),
-                sykmeldingId,
-                fnr,
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match { it.tidligereArbeidsgiver == null },
-                    any(),
-                    any(),
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
                 )
-            }
+            assertNull(tidligereArbeidsgivere)
         }
     }
 

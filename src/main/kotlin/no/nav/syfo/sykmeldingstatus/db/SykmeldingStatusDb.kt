@@ -170,6 +170,34 @@ class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
             }
         }
 
+    suspend fun getArbeidsledigOrgNavnFromOrgnummer(fnr: String, arbeidsledigOrgnummer: String?) =
+        withContext(Dispatchers.IO) {
+            databaseInterface.connection.use { connection: Connection ->
+                connection
+                    .prepareStatement(
+                        """
+                select
+                ss.arbeidsgiver
+                from sykmelding s 
+                inner join sykmeldingstatus ss on ss.sykmelding_id = s.sykmelding_id and ss.timestamp = (select max(timestamp) from sykmeldingstatus where sykmelding_id = s.sykmelding_id)
+                where s.fnr = ?;
+              """
+                            .trimIndent()
+                    )
+                    .use { ps ->
+                        ps.setString(1, fnr)
+                        ps.executeQuery()
+                            .toList {
+                                getObject("arbeidsgiver")?.let {
+                                    objectMapper.readValue<ArbeidsgiverStatusDTO>(it.toString())
+                                }
+                            }
+                            .find { it?.orgnummer == arbeidsledigOrgnummer }
+                            ?.orgNavn
+                    }
+            }
+        }
+
     private fun ResultSet.toStatusEventDTO(sykmeldingId: String): SykmeldingStatusEventDTO {
         return if (next()) {
             SykmeldingStatusEventDTO(

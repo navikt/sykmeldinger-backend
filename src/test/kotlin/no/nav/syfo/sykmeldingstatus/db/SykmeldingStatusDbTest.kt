@@ -6,6 +6,7 @@ import java.time.ZoneOffset
 import kotlin.test.assertFailsWith
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
+import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.Blad
@@ -191,6 +192,36 @@ class SykmeldingStatusDbTest {
         status.tidligereArbeidsgiver?.orgnummer shouldBeEqualTo "orgnummer"
     }
 
+    @Test
+    fun `get arbeidsledigOrgnavn`() = testApplication {
+        TestDB.database.insertSymelding("1", "fnr", getSykmelding())
+        TestDB.database.insertStatus(
+            "1",
+            getStatus(
+                StatusEventDTO.SENDT.name,
+                OffsetDateTime.now().minusHours(2),
+                arbeidsgiverStatusDTO = ArbeidsgiverStatusDTO("123", "123", "orgNavn")
+            ),
+        )
+        val arbeidgiverOrgNavn = database.getArbeidsledigOrgNavnFromOrgnummer("fnr", "123")
+        arbeidgiverOrgNavn shouldBeEqualTo "orgNavn"
+    }
+
+    @Test
+    fun `get arbeidsledigOrgnavn med ugyldig orgnummer`() = testApplication {
+        TestDB.database.insertSymelding("1", "fnr", getSykmelding())
+        TestDB.database.insertStatus(
+            "1",
+            getStatus(
+                StatusEventDTO.SENDT.name,
+                OffsetDateTime.now().minusHours(2),
+                arbeidsgiverStatusDTO = ArbeidsgiverStatusDTO("123", "123", "orgNavn")
+            ),
+        )
+        val arbeidgiverOrgNavn = database.getArbeidsledigOrgNavnFromOrgnummer("fnr", "ugyldig")
+        arbeidgiverOrgNavn shouldBeEqualTo null
+    }
+
     @Nested
     @DisplayName("Inserting status")
     inner class InsertStatusGroup {
@@ -229,7 +260,7 @@ class SykmeldingStatusDbTest {
                             sporsmaltekst = "Arbeidssituasjon",
                             svar = Arbeidssituasjon.ARBEIDSLEDIG,
                         ),
-                    arbeidsledig = null,
+                    arbeidsledigOrgnummer = null,
                     uriktigeOpplysninger = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
@@ -309,7 +340,7 @@ class SykmeldingStatusDbTest {
                                     OffsetDateTime.now().minusDays(5).toLocalDate(),
                                 ),
                         ),
-                    arbeidsledig = null,
+                    arbeidsledigOrgnummer = null,
                     uriktigeOpplysninger = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -411,7 +442,7 @@ class SykmeldingStatusDbTest {
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
                         harForsikring = null,
-                        arbeidsledig = null,
+                        arbeidsledigOrgnummer = null,
                     )
 
                 database.insertStatus(event, formData) {}
@@ -508,7 +539,7 @@ class SykmeldingStatusDbTest {
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
                         uriktigeOpplysninger = null,
-                        arbeidsledig = null,
+                        arbeidsledigOrgnummer = null,
                     )
 
                 database.insertStatus(event, formData) {}

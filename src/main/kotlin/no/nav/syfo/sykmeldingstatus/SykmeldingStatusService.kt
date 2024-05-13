@@ -224,13 +224,7 @@ class SykmeldingStatusService(
             SENDT_AV_BRUKER_COUNTER.inc()
             return
         }
-        securelog.info(
-            "Prøver å opprette bekreftet status for {} {} {}",
-            kv("fødselsnummer", fnr),
-            kv("sykmeldingId", sykmeldingId),
-            kv("nesteStatus", nesteStatus)
-        )
-        createBekreftetStatus(fnr, sykmeldingId, sykmeldingFormResponse, nesteStatus)
+        createBekreftetStatus(fnr, sykmeldingId, sykmeldingFormResponse)
         securelog.info(
             "Opprettet bekreftet status for {} {} {}",
             kv("fødselsnummer", fnr),
@@ -240,44 +234,14 @@ class SykmeldingStatusService(
         BEKREFTET_AV_BRUKER_COUNTER.inc()
     }
 
-    private suspend fun createBekreftetStatus(
+    suspend fun createBekreftetStatus(
         fnr: String,
         sykmeldingId: String,
         sykmeldingFormResponse: SykmeldingFormResponse,
-        nesteStatus: StatusEventDTO,
     ) {
         val timestamp = OffsetDateTime.now(ZoneOffset.UTC)
         val tidligereArbeidsgiver =
-            if (sykmeldingFormResponse.arbeidssituasjon.svar == ARBEIDSLEDIG) {
-                securelog.info(
-                    "Prøver å finne tidligere arbeidsgiver for {} {} {} {}",
-                    kv("fødselsnummer", fnr),
-                    kv("sykmeldingId", sykmeldingId),
-                    kv("nesteStatus", nesteStatus),
-                    kv("tidligereAgBrukerInput", sykmeldingFormResponse.arbeidsgiverOrgnummer?.svar)
-                )
-                val arbeidsledig = sykmeldingFormResponse.arbeidsledig
-                if (arbeidsledig != null) {
-                    TidligereArbeidsgiverDTO(
-                        orgnummer = arbeidsledig.arbeidsledigFraOrgnummer!!.svar,
-                        orgNavn = arbeidsledig.arbeidsledigOrgnavn!!.svar,
-                        sykmeldingsId = sykmeldingId
-                    )
-                } else null
-            } else null
-        if (tidligereArbeidsgiver != null) {
-            securelog.info(
-                "Fant tidligere arbeidsgiver for {} {} {} {} {}",
-                kv("fødselsnummer", fnr),
-                kv("sykmeldingId", sykmeldingId),
-                kv("nesteStatus", nesteStatus),
-                kv(
-                    "tidligereAgBrukerInput",
-                    sykmeldingFormResponse.arbeidsledig?.arbeidsledigFraOrgnummer?.svar
-                ),
-                kv("tidligere arbeidsgiver", tidligereArbeidsgiver)
-            )
-        }
+            getTidligereArbeidsgiverIfExists(sykmeldingId, fnr, sykmeldingFormResponse)
         val sykmeldingStatusKafkaEventDTO =
             sykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
                 timestamp,
@@ -286,6 +250,32 @@ class SykmeldingStatusService(
                 tidligereArbeidsgiver,
             )
         updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
+    }
+
+    private suspend fun getTidligereArbeidsgiverIfExists(
+        sykmeldingId: String,
+        fnr: String,
+        sykmeldingFormResponse: SykmeldingFormResponse
+    ): TidligereArbeidsgiverDTO? {
+        if (sykmeldingFormResponse.arbeidssituasjon.svar != ARBEIDSLEDIG) return null
+        val arbeidsledigOrgnummer = sykmeldingFormResponse.arbeidsledigOrgnummer?.svar
+        val arbeidsledigOrgNavn =
+            sykmeldingStatusDb.getArbeidsledigOrgNavnFromOrgnummer(fnr, arbeidsledigOrgnummer)
+        if (arbeidsledigOrgNavn == null || arbeidsledigOrgnummer == null) return null
+        val tidligereArbeidsgiver =
+            TidligereArbeidsgiverDTO(
+                orgnummer = arbeidsledigOrgnummer,
+                orgNavn = arbeidsledigOrgNavn,
+                sykmeldingsId = sykmeldingId
+            )
+        securelog.info(
+            "Setter tidligere arbeidsgiver for {} {} {} {}",
+            kv("fødselsnummer", fnr),
+            kv("sykmeldingId", sykmeldingId),
+            kv("tidligereAgOrgnummer", tidligereArbeidsgiver.orgnummer),
+            kv("tidligereAgNavn", tidligereArbeidsgiver.orgNavn)
+        )
+        return tidligereArbeidsgiver
     }
 
     private suspend fun createSendtStatus(
