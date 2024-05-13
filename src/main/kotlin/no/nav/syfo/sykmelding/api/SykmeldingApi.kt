@@ -32,16 +32,11 @@ fun Route.registerSykmeldingApiV2() {
         val sykmeldingId = call.parameters["sykmeldingid"]!!
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
-        if (sykmeldingId == "null") {
-            logger.warn("Mottok kall for å hente sykmelding med id null, returnerer 404 Not Found")
-            call.respond(HttpStatusCode.NotFound)
-        } else {
-            logger.info("Henter ut tidligere arbeidsgivere for sykmeldingid: $sykmeldingId")
-            val tidligereArbeidsgivereList =
-                sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId)
-            if (!tidligereArbeidsgivereList.isNullOrEmpty()) {
-                call.respond(tidligereArbeidsgivereList)
-            }
+        logger.info("Henter ut tidligere arbeidsgivere for sykmeldingid: $sykmeldingId")
+        val tidligereArbeidsgivereList =
+            sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId)
+        if (!tidligereArbeidsgivereList.isNullOrEmpty()) {
+            call.respond(tidligereArbeidsgivereList)
         }
     }
 
