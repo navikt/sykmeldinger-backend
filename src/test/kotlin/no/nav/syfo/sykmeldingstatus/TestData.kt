@@ -187,7 +187,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
                 sporsmaltekst = "",
                 svar = JaEllerNei.JA,
             ),
-        arbeidsledig = null,
+        arbeidsledigOrgnummer = null,
         harBruktEgenmelding = null,
         egenmeldingsperioder = null,
         harForsikring = null,
@@ -197,7 +197,8 @@ internal fun opprettSendtSykmeldingUserEvent() =
     )
 
 internal fun opprettBekreftetSykmeldingUserEvent(
-    arbeidssituasjon: Arbeidssituasjon = Arbeidssituasjon.FRILANSER
+    arbeidssituasjon: Arbeidssituasjon = Arbeidssituasjon.FRILANSER,
+    arbeidledigOrgnummer: String? = null
 ) =
     SykmeldingFormResponse(
         erOpplysningeneRiktige =
@@ -212,7 +213,9 @@ internal fun opprettBekreftetSykmeldingUserEvent(
                 svar = arbeidssituasjon,
             ),
         arbeidsgiverOrgnummer = null,
-        arbeidsledig = null,
+        arbeidsledigOrgnummer =
+            if (arbeidledigOrgnummer == null) null
+            else SporsmalSvar(sporsmaltekst = "", svar = arbeidledigOrgnummer),
         riktigNarmesteLeder = null,
         harBruktEgenmelding =
             SporsmalSvar(

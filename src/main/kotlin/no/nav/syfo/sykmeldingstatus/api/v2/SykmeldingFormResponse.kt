@@ -12,7 +12,7 @@ data class SykmeldingFormResponse(
     val uriktigeOpplysninger: SporsmalSvar<List<UriktigeOpplysningerType>>?,
     val arbeidssituasjon: SporsmalSvar<Arbeidssituasjon>,
     val arbeidsgiverOrgnummer: SporsmalSvar<String>?,
-    val arbeidsledig: ArbeidsledigFraOrgnummer?,
+    val arbeidsledigOrgnummer: SporsmalSvar<String>?,
     val riktigNarmesteLeder: SporsmalSvar<JaEllerNei>?,
     val harBruktEgenmelding: SporsmalSvar<JaEllerNei>?,
     val egenmeldingsperioder: SporsmalSvar<List<Egenmeldingsperiode>>?,
@@ -20,11 +20,6 @@ data class SykmeldingFormResponse(
     val egenmeldingsdager: SporsmalSvar<List<LocalDate>>?,
     val harBruktEgenmeldingsdager: SporsmalSvar<JaEllerNei>?,
     val fisker: FiskerSvar?,
-)
-
-data class ArbeidsledigFraOrgnummer(
-    val arbeidsledigFraOrgnummer: SporsmalSvar<String>?,
-    val arbeidsledigOrgnavn: SporsmalSvar<String>?,
 )
 
 data class FiskerSvar(
