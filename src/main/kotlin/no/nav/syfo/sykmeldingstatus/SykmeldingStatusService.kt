@@ -157,23 +157,22 @@ class SykmeldingStatusService(
     ): List<TidligereArbeidsgiver>? {
         val sykmeldingerWithStatus = sykmeldingStatusDb.getSykmeldingWithStatus(fnr)
         val sykmeldingWithStatus = sykmeldingerWithStatus.find { it.sykmeldingId == sykmeldingId }
-        if (sykmeldingWithStatus != null) {
-            val muligeTidligereArbeidsgivere =
-                tidligereArbeidsgiverService.filterRelevantSykmeldinger(
-                    sykmeldingerWithStatus,
-                    sykmeldingWithStatus
-                )
-            securelog.info(
-                "finner tidligereAg til frontend {} {} {}",
-                kv("sykmeldingId", sykmeldingId),
-                kv("fnr", fnr),
-                kv("antall", muligeTidligereArbeidsgivere.size)
+        if (sykmeldingWithStatus == null) return null
+        val muligeTidligereArbeidsgivere =
+            tidligereArbeidsgiverService.filterRelevantSykmeldinger(
+                sykmeldingerWithStatus,
+                sykmeldingWithStatus
             )
+        securelog.info(
+            "finner tidligereAg til frontend {} {} {}",
+            kv("sykmeldingId", sykmeldingId),
+            kv("fnr", fnr),
+            kv("antall", muligeTidligereArbeidsgivere.size)
+        )
 
-            if (muligeTidligereArbeidsgivere.isNotEmpty()) {
-                return muligeTidligereArbeidsgivere.mapNotNull {
-                    transformToTidligereArbeidsgiver(it.first)
-                }
+        if (muligeTidligereArbeidsgivere.isNotEmpty()) {
+            return muligeTidligereArbeidsgivere.mapNotNull {
+                transformToTidligereArbeidsgiver(it.first)
             }
         }
         return null
