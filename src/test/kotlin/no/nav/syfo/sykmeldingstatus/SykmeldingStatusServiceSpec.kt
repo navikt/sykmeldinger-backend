@@ -14,6 +14,7 @@ import java.time.ZoneOffset
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
@@ -39,7 +40,6 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -1138,7 +1138,7 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertNull(tidligereArbeidsgivere)
+            assertTrue(tidligereArbeidsgivere.isEmpty())
         }
 
         @Test
@@ -1217,7 +1217,7 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertNull(tidligereArbeidsgivere)
+            assertTrue(tidligereArbeidsgivere.isEmpty())
         }
 
         @Test
@@ -1593,7 +1593,7 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertNull(tidligereArbeidsgivere)
+            assertEquals(emptyList(), tidligereArbeidsgivere)
         }
 
         @Test
@@ -1634,7 +1634,7 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertNull(tidligereArbeidsgivere)
+            assertEquals(emptyList(), tidligereArbeidsgivere)
         }
 
         @Test
@@ -1680,7 +1680,7 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertNull(tidligereArbeidsgivere)
+            assertEquals(emptyList(), tidligereArbeidsgivere)
         }
 
         @Test
@@ -1721,7 +1721,7 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertNull(tidligereArbeidsgivere)
+            assertEquals(emptyList(), tidligereArbeidsgivere)
         }
     }
 

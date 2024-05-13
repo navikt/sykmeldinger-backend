@@ -33,11 +33,7 @@ fun Route.registerSykmeldingApiV2() {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
         logger.info("Henter ut tidligere arbeidsgivere for sykmeldingid: $sykmeldingId")
-        val tidligereArbeidsgivereList =
-            sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId)
-        if (!tidligereArbeidsgivereList.isNullOrEmpty()) {
-            call.respond(tidligereArbeidsgivereList)
-        }
+        call.respond(sykmeldingStatusService.finnTidligereArbeidsgivere(fnr, sykmeldingId))
     }
 
     get("/sykmeldinger/{sykmeldingid}") {
