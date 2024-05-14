@@ -197,7 +197,7 @@ fun DatabaseInterface.insertStatus(
                             egenmeldingsdager = null,
                             harBruktEgenmeldingsdager = null,
                             fisker = null,
-                            arbeidsledigOrgnummer = null,
+                            arbeidsledig = null,
                         )
                         .toPGObject(),
                 )

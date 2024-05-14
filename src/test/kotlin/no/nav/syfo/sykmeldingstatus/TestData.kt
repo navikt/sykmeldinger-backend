@@ -23,6 +23,7 @@ import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.ArbeidsgiverStatusDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
+import no.nav.syfo.sykmeldingstatus.api.v2.ArbeidsledigFraOrgnummer
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.Egenmeldingsperiode
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
@@ -187,7 +188,7 @@ internal fun opprettSendtSykmeldingUserEvent() =
                 sporsmaltekst = "",
                 svar = JaEllerNei.JA,
             ),
-        arbeidsledigOrgnummer = null,
+        arbeidsledig = null,
         harBruktEgenmelding = null,
         egenmeldingsperioder = null,
         harForsikring = null,
@@ -213,9 +214,12 @@ internal fun opprettBekreftetSykmeldingUserEvent(
                 svar = arbeidssituasjon,
             ),
         arbeidsgiverOrgnummer = null,
-        arbeidsledigOrgnummer =
+        arbeidsledig =
             if (arbeidledigOrgnummer == null) null
-            else SporsmalSvar(sporsmaltekst = "", svar = arbeidledigOrgnummer),
+            else
+                ArbeidsledigFraOrgnummer(
+                    SporsmalSvar(sporsmaltekst = "", svar = arbeidledigOrgnummer)
+                ),
         riktigNarmesteLeder = null,
         harBruktEgenmelding =
             SporsmalSvar(

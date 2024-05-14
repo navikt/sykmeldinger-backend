@@ -6,11 +6,8 @@ import java.time.temporal.ChronoUnit
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
-import no.nav.syfo.utils.logger
 
 class TidligereArbeidsgiverService() {
-    private val logger = logger()
-
     fun filterRelevantSykmeldinger(
         allSykmeldinger: List<SykmeldingWithArbeidsgiverStatus>,
         currentSykmelding: SykmeldingWithArbeidsgiverStatus

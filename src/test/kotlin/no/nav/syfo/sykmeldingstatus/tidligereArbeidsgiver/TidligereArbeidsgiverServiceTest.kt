@@ -68,7 +68,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `flere arbeidsgivere med arbeidsledig forlengelse`() {
+    fun `flere arbeidsgivere brekrftet arbeidsledig forlengelse`() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -131,14 +131,14 @@ class TidligereArbeidsgiverServiceTest {
                     tom = 16.januar(2023),
                     sykmeldingId = "1",
                     orgnummer = AG1,
-                    status = STATUS_SENDT
+                    status = STATUS_SENDT,
                 ),
                 opprettSykmelding(
                     fom = 1.januar(2023),
                     tom = 16.januar(2023),
                     sykmeldingId = "2",
                     orgnummer = AG2,
-                    status = STATUS_SENDT
+                    status = STATUS_SENDT,
                 ),
                 opprettSykmelding(
                     fom = 1.januar(2023),
@@ -243,7 +243,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `flere arbeidsgivere med arbeidsledig overlappende`() {
+    fun `flere arbeidsgivere delvis overlapp`() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -285,7 +285,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `flere arbeidsgivere arbeidsledig ikke overlappende eller kant til kant `() {
+    fun `ikke overlappende eller kant til kant `() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -327,7 +327,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `Flere ag arbeidsledig fra ag1, forlengelse på arbeidsledig, men nå arbeidsledig fra ag2`() {
+    fun `Flere ag arbeidsledig fra ag1, forlengelse på arbeidsledig`() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -383,63 +383,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `Flere ag, arbeidsledig fra ag1, forlengelse på arbeidsledig ag1`() {
-        val sykmeldingerFraDb =
-            listOf(
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "1",
-                    orgnummer = AG1,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "2",
-                    orgnummer = AG2,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 17.januar(2023),
-                    tom = 31.januar(2023),
-                    sykmeldingId = "3",
-                    orgnummer = null,
-                    status = STATUS_BEKREFTET,
-                    tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            orgNavn = AG1,
-                            orgnummer = AG1,
-                            sykmeldingsId = "1"
-                        )
-                ),
-                opprettSykmelding(
-                    fom = 1.februar(2023),
-                    tom = 15.februar(2023),
-                    sykmeldingId = "4",
-                    orgnummer = null,
-                    status = STATUS_APEN
-                )
-            )
-
-        val currentSm =
-            opprettSykmelding(
-                fom = 1.februar(2023),
-                tom = 15.februar(2023),
-                sykmeldingId = "4",
-                orgnummer = null,
-                status = STATUS_APEN
-            )
-
-        val relevanteSykmeldinger =
-            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
-        assertNotNull(relevanteSykmeldinger)
-        assertEquals(1, relevanteSykmeldinger.size)
-        assertEquals(AG1, relevanteSykmeldinger.first().first.tidligereArbeidsgiver?.orgnummer)
-    }
-
-    @Test
-    fun `Flere ag, kant til kant med ag1 - brukersvar null, og ag2, tidligere ag svar fra bruker er null og ag2`() {
+    fun `kant til kant med begreftet uten tidligere ag`() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -496,41 +440,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `En ag - brukersvar null - skal ikke kaste exception`() {
-        val sykmeldingerFraDb =
-            listOf(
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "1",
-                    orgnummer = AG1,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 17.januar(2023),
-                    tom = 31.januar(2023),
-                    sykmeldingId = "3",
-                    orgnummer = null,
-                    status = STATUS_APEN,
-                ),
-            )
-        val currentSm =
-            opprettSykmelding(
-                fom = 17.januar(2023),
-                tom = 31.januar(2023),
-                sykmeldingId = "3",
-                orgnummer = null,
-                status = STATUS_APEN,
-            )
-
-        val relevanteSykmeldinger =
-            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
-        assertNotNull(relevanteSykmeldinger)
-        assertEquals(1, relevanteSykmeldinger.size)
-    }
-
-    @Test
-    fun `flere ag - skal ikke kaste exception`() {
+    fun `kant til kant med bekreftet og sendt som overlapper direkte`() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
@@ -577,88 +487,7 @@ class TidligereArbeidsgiverServiceTest {
     }
 
     @Test
-    fun `flere ag - brukersvar ikke null - matche på brukersvar`() {
-        val sykmeldingerFraDb =
-            listOf(
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "1",
-                    orgnummer = AG1,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "2",
-                    orgnummer = null,
-                    tidligereArbeidsgiver =
-                        TidligereArbeidsgiverDTO(
-                            orgNavn = AG1,
-                            orgnummer = AG1,
-                            sykmeldingsId = "1"
-                        ),
-                    status = STATUS_BEKREFTET,
-                ),
-                opprettSykmelding(
-                    fom = 17.januar(2023),
-                    tom = 31.januar(2023),
-                    sykmeldingId = "3",
-                    orgnummer = null,
-                    status = STATUS_APEN,
-                )
-            )
-        val currentSm =
-            opprettSykmelding(
-                fom = 17.januar(2023),
-                tom = 31.januar(2023),
-                sykmeldingId = "3",
-                orgnummer = null,
-                status = STATUS_APEN,
-            )
-
-        val relevanteSykmeldinger =
-            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
-        assertNotNull(relevanteSykmeldinger)
-        assertEquals(1, relevanteSykmeldinger.size)
-    }
-
-    @Test
-    fun `flere ag - brukersvar null - direkte overlapp`() {
-        val sykmeldingerFraDb =
-            listOf(
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "1",
-                    orgnummer = AG1,
-                    status = STATUS_SENDT
-                ),
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 16.januar(2023),
-                    sykmeldingId = "2",
-                    orgnummer = null,
-                    status = STATUS_APEN,
-                )
-            )
-        val currentSm =
-            opprettSykmelding(
-                fom = 1.januar(2023),
-                tom = 16.januar(2023),
-                sykmeldingId = "2",
-                orgnummer = null,
-                status = STATUS_APEN,
-            )
-
-        val relevanteSykmeldinger =
-            tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
-        assertNotNull(relevanteSykmeldinger)
-        assertEquals(0, relevanteSykmeldinger.size)
-    }
-
-    @Test
-    fun `flere ag - direkte overlapp`() {
+    fun `direkte overlapp`() {
         val sykmeldingerFraDb =
             listOf(
                 opprettSykmelding(
