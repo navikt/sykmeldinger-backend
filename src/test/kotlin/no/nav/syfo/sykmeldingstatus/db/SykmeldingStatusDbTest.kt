@@ -260,7 +260,7 @@ class SykmeldingStatusDbTest {
                             sporsmaltekst = "Arbeidssituasjon",
                             svar = Arbeidssituasjon.ARBEIDSLEDIG,
                         ),
-                    arbeidsledigOrgnummer = null,
+                    arbeidsledig = null,
                     uriktigeOpplysninger = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
@@ -340,7 +340,7 @@ class SykmeldingStatusDbTest {
                                     OffsetDateTime.now().minusDays(5).toLocalDate(),
                                 ),
                         ),
-                    arbeidsledigOrgnummer = null,
+                    arbeidsledig = null,
                     uriktigeOpplysninger = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
@@ -442,7 +442,7 @@ class SykmeldingStatusDbTest {
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
                         harForsikring = null,
-                        arbeidsledigOrgnummer = null,
+                        arbeidsledig = null,
                     )
 
                 database.insertStatus(event, formData) {}
@@ -539,7 +539,7 @@ class SykmeldingStatusDbTest {
                         harBruktEgenmeldingsdager = null,
                         egenmeldingsdager = null,
                         uriktigeOpplysninger = null,
-                        arbeidsledigOrgnummer = null,
+                        arbeidsledig = null,
                     )
 
                 database.insertStatus(event, formData) {}

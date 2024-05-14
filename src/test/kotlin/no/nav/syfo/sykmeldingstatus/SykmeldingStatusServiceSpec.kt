@@ -318,7 +318,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "123456789",
                         ),
-                    arbeidsledigOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -386,7 +386,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = "feilOrnummer",
                         ),
-                    arbeidsledigOrgnummer = null,
+                    arbeidsledig = null,
                     riktigNarmesteLeder =
                         SporsmalSvar(
                             sporsmaltekst = "",
@@ -463,7 +463,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = JaEllerNei.NEI,
                         ),
-                    arbeidsledigOrgnummer = null,
+                    arbeidsledig = null,
                     harBruktEgenmelding = null,
                     egenmeldingsperioder = null,
                     harForsikring = null,
@@ -513,7 +513,7 @@ class SykmeldingStatusServiceSpec {
                             sporsmaltekst = "",
                             svar = FRILANSER,
                         ),
-                    arbeidsledigOrgnummer = null,
+                    arbeidsledig = null,
                     arbeidsgiverOrgnummer = null,
                     riktigNarmesteLeder = null,
                     harBruktEgenmelding = null,
@@ -581,7 +581,7 @@ class SykmeldingStatusServiceSpec {
                                 sporsmaltekst = "",
                                 svar = "123456789",
                             ),
-                        arbeidsledigOrgnummer = null,
+                        arbeidsledig = null,
                         riktigNarmesteLeder = null,
                         harBruktEgenmelding = null,
                         egenmeldingsperioder = null,
@@ -1060,6 +1060,40 @@ class SykmeldingStatusServiceSpec {
         }
 
         @Test
+        fun `ingen relevante`() = testApplication {
+            val nySykmelding =
+                opprettSykmelding(
+                    fom = 16.januar(2023),
+                    tom = 31.januar(2023),
+                    status = "APEN",
+                    sykmeldingId = sykmeldingId,
+                )
+            coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
+                listOf(
+                    nySykmelding,
+                )
+
+            coEvery {
+                sykmeldingStatusDb.getLatestStatus(
+                    any(),
+                    any(),
+                )
+            } returns
+                SykmeldingStatusEventDTO(
+                    statusEvent = StatusEventDTO.APEN,
+                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+                    erAvvist = true,
+                )
+            val tidligereArbeidsgivere =
+                sykmeldingStatusService.finnTidligereArbeidsgivere(
+                    fnr,
+                    sykmeldingId,
+                )
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(0, tidligereArbeidsgivere.size)
+        }
+
+        @Test
         fun `bekreftet kant til kant med bekreftet`() = testApplication {
             val tidligereSykmelding =
                 opprettSykmelding(
@@ -1217,7 +1251,8 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertTrue(tidligereArbeidsgivere.isEmpty())
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(0, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1593,7 +1628,8 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertEquals(emptyList(), tidligereArbeidsgivere)
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(0, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1680,7 +1716,8 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertEquals(emptyList(), tidligereArbeidsgivere)
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(0, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1721,7 +1758,8 @@ class SykmeldingStatusServiceSpec {
                     fnr,
                     sykmeldingId,
                 )
-            assertEquals(emptyList(), tidligereArbeidsgivere)
+            assertNotNull(tidligereArbeidsgivere)
+            assertEquals(0, tidligereArbeidsgivere.size)
         }
     }
 

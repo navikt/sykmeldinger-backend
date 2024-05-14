@@ -258,7 +258,8 @@ class SykmeldingStatusService(
         sykmeldingFormResponse: SykmeldingFormResponse
     ): TidligereArbeidsgiverDTO? {
         if (sykmeldingFormResponse.arbeidssituasjon.svar != ARBEIDSLEDIG) return null
-        val arbeidsledigOrgnummer = sykmeldingFormResponse.arbeidsledigOrgnummer?.svar
+        val arbeidsledigOrgnummer =
+            sykmeldingFormResponse.arbeidsledig?.arbeidsledigFraOrgnummer?.svar
         val arbeidsledigOrgNavn =
             sykmeldingStatusDb.getArbeidsledigOrgNavnFromOrgnummer(fnr, arbeidsledigOrgnummer)
         if (arbeidsledigOrgNavn == null || arbeidsledigOrgnummer == null) return null

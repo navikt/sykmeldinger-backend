@@ -172,7 +172,7 @@ fun opprettSykmeldingUserEvent(): SykmeldingFormResponse {
         harBruktEgenmeldingsdager = null,
         egenmeldingsdager = null,
         fisker = null,
-        arbeidsledigOrgnummer = null,
+        arbeidsledig = null,
     )
 }
 
