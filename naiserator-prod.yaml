@@ -46,6 +46,10 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: loki
+        - id: elastic
   resources:
     limits:
       memory: 1028Mi
