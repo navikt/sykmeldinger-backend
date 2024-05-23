@@ -1,11 +1,10 @@
 package no.nav.syfo.sykmelding.api
 
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
-import io.ktor.server.auth.authentication
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.get
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
@@ -47,11 +46,7 @@ fun Route.registerSykmeldingApiV2() {
         } else {
             logger.info("Henter ut sykmelding for sykmeldingid: $sykmeldingId")
             val sykmelding = sykmeldingService.getSykmelding(fnr, sykmeldingId)
-            logger.info(
-                "Er over 70 år : {} Og sykmeldingsId: {}",
-                sykmelding?.pasient?.overSyttiAar,
-                sykmeldingId
-            )
+
             when (sykmelding) {
                 null ->
                     call.respond(HttpStatusCode.NotFound).also {
