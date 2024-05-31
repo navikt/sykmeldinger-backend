@@ -237,10 +237,10 @@ class SykmeldingStatusService(
             getTidligereArbeidsgiverIfExists(sykmeldingId, fnr, sykmeldingFormResponse)
         val sykmeldingStatusKafkaEventDTO =
             sykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
-                timestamp,
-                sykmeldingId,
-                null,
-                tidligereArbeidsgiver,
+                timestamp = timestamp,
+                sykmeldingId = sykmeldingId,
+                arbeidsgiver = null,
+                tidligereArbeidsgiver = tidligereArbeidsgiver,
             )
         updateStatus(sykmeldingStatusKafkaEventDTO, fnr, sykmeldingFormResponse)
     }
