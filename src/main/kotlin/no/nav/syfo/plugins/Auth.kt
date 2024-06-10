@@ -7,7 +7,8 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
-import java.net.URL
+import java.net.URI
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.getWellKnownTokenX
@@ -58,8 +59,8 @@ class AuthConfiguration(
 fun getProductionAuthConfig(env: Environment): AuthConfiguration {
     val wellKnownTokenX = getWellKnownTokenX(env.tokenXWellKnownUrl)
     val jwkProviderTokenX =
-        JwkProviderBuilder(URL(wellKnownTokenX.jwks_uri))
-            .cached(10, 24, TimeUnit.HOURS)
+        JwkProviderBuilder(URI.create(wellKnownTokenX.jwks_uri).toURL())
+            .cached(10, Duration.ofHours(24))
             .rateLimited(10, 1, TimeUnit.MINUTES)
             .build()
     val tokenXIssuer: String = wellKnownTokenX.issuer

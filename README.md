@@ -12,7 +12,7 @@ Backend-app for sykmeldinger-frontend
 
 #### Requirements
 
-* JDK 17
+* JDK 21
 
 ## Getting started
 #### Running locally
