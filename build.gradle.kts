@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -23,6 +25,9 @@ val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val snappyJavaVersion = "1.1.10.5"
 val kafkaVersion = "3.7.0"
+val commonsCompressVersion = "1.26.2"
+val javaVersion = JvmTarget.JVM_21
+
 plugins {
     id("application")
     kotlin("jvm") version "2.0.0"
@@ -33,6 +38,12 @@ plugins {
 
 application {
     mainClass.set("no.nav.syfo.ApplicationKt")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(javaVersion)
+    }
 }
 
 repositories {
@@ -106,6 +117,11 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    constraints {
+        implementation("org.apache.commons:commons-compress:$commonsCompressVersion") {
+            because("Due to vulnerabilities, see CVE-2024-26308")
+        }
+    }
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
 
