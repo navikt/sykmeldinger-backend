@@ -24,7 +24,7 @@ val commonsCodecVersion = "1.17.0"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.2"
 val snappyJavaVersion = "1.1.10.5"
-val kafkaVersion = "3.7.0"
+val kafkaVersion = "3.7.1"
 val commonsCompressVersion = "1.26.2"
 val javaVersion = JvmTarget.JVM_21
 
