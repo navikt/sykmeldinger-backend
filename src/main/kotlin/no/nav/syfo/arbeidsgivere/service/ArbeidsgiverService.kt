@@ -7,7 +7,6 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
-import no.nav.syfo.sykmelding.model.SykmeldingDTO
 
 class ArbeidsgiverService(
     private val narmestelederDb: NarmestelederDb,
@@ -15,7 +14,8 @@ class ArbeidsgiverService(
 ) {
 
     suspend fun getArbeidsgivereWithinSykmeldingPeriode(
-        sykmelding: SykmeldingDTO,
+        sykmeldingFom: LocalDate,
+        sykmeldingTom: LocalDate,
         fnr: String,
         date: LocalDate = LocalDate.now()
     ): List<Arbeidsgiverinfo> {
@@ -24,7 +24,8 @@ class ArbeidsgiverService(
             return emptyList()
         }
         val aktiveNarmesteledere = narmestelederDb.getNarmesteleder(fnr)
-        val arbeidsgivereWithinSykmeldingsperiode = filterArbeidsgivere(sykmelding, arbeidsgivere)
+        val arbeidsgivereWithinSykmeldingsperiode =
+            filterArbeidsgivere(sykmeldingFom, sykmeldingTom, arbeidsgivere)
         return arbeidsgivereWithinSykmeldingsperiode.map { arbeidsforhold ->
             val narmesteLeder =
                 aktiveNarmesteledere.find { it.orgnummer == arbeidsforhold.orgnummer }
@@ -80,10 +81,10 @@ class ArbeidsgiverService(
     }
 
     private fun filterArbeidsgivere(
-        sykmelding: SykmeldingDTO,
+        sykmeldingFom: LocalDate,
+        sykmeldingTom: LocalDate,
         allArbeidsgivere: List<Arbeidsforhold>,
     ): List<Arbeidsforhold> {
-        val (sykmeldingFom, sykmeldingTom) = getSykmeldingFomTom(sykmelding)
         return allArbeidsgivere.filter {
             isArbeidsforholdWithinSykmeldingPeriode(it, sykmeldingFom, sykmeldingTom)
         }
@@ -96,16 +97,10 @@ class ArbeidsgiverService(
     ): Boolean {
         val checkSluttdato =
             arbeidsforhold.tom == null ||
-                arbeidsforhold.fom.isAfter(sykmeldingFom) ||
+                arbeidsforhold.tom.isAfter(sykmeldingFom) ||
                 arbeidsforhold.tom == sykmeldingFom
         val checkStartdato =
             arbeidsforhold.fom.isBefore(sykmeldingTom) || arbeidsforhold.fom == sykmeldingTom
         return checkStartdato && checkSluttdato
-    }
-
-    private fun getSykmeldingFomTom(sykmelding: SykmeldingDTO): Pair<LocalDate, LocalDate> {
-        val fom = sykmelding.sykmeldingsperioder.minOf { it.fom }
-        val tom = sykmelding.sykmeldingsperioder.maxOf { it.tom }
-        return fom to tom
     }
 }
