@@ -27,17 +27,7 @@ class ArbeidsgiverService(
         val arbeidsgivereWithinSykmeldingsperiode =
             filterArbeidsgivere(sykmeldingFom, sykmeldingTom, arbeidsgivere)
         return arbeidsgivereWithinSykmeldingsperiode.map { arbeidsforhold ->
-            val narmesteLeder =
-                aktiveNarmesteledere.find { it.orgnummer == arbeidsforhold.orgnummer }
-            Arbeidsgiverinfo(
-                orgnummer = arbeidsforhold.orgnummer,
-                juridiskOrgnummer = arbeidsforhold.juridiskOrgnummer,
-                navn = arbeidsforhold.orgNavn,
-                aktivtArbeidsforhold =
-                    arbeidsforhold.tom == null ||
-                        !date.isAfter(arbeidsforhold.tom) && !date.isBefore(arbeidsforhold.fom),
-                naermesteLeder = narmesteLeder?.tilNarmesteLeder(arbeidsforhold.orgNavn),
-            )
+            arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date)
         }
     }
 
@@ -57,19 +47,24 @@ class ArbeidsgiverService(
                 compareByDescending(nullsLast()) { it.tom },
             )
             .distinctBy { it.orgnummer }
-            .map { arbeidsforhold ->
-                val narmesteLeder =
-                    aktiveNarmesteledere.find { it.orgnummer == arbeidsforhold.orgnummer }
-                Arbeidsgiverinfo(
-                    orgnummer = arbeidsforhold.orgnummer,
-                    juridiskOrgnummer = arbeidsforhold.juridiskOrgnummer,
-                    navn = arbeidsforhold.orgNavn,
-                    aktivtArbeidsforhold =
-                        arbeidsforhold.tom == null ||
-                            !date.isAfter(arbeidsforhold.tom) && !date.isBefore(arbeidsforhold.fom),
-                    naermesteLeder = narmesteLeder?.tilNarmesteLeder(arbeidsforhold.orgNavn),
-                )
-            }
+            .map { arbeidsforhold -> arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date) }
+    }
+
+    private fun arbeidsgiverinfo(
+        aktiveNarmesteledere: List<NarmestelederDbModel>,
+        arbeidsforhold: Arbeidsforhold,
+        date: LocalDate
+    ): Arbeidsgiverinfo {
+        val narmesteLeder = aktiveNarmesteledere.find { it.orgnummer == arbeidsforhold.orgnummer }
+        return Arbeidsgiverinfo(
+            orgnummer = arbeidsforhold.orgnummer,
+            juridiskOrgnummer = arbeidsforhold.juridiskOrgnummer,
+            navn = arbeidsforhold.orgNavn,
+            aktivtArbeidsforhold =
+                arbeidsforhold.tom == null ||
+                    !date.isAfter(arbeidsforhold.tom) && !date.isBefore(arbeidsforhold.fom),
+            naermesteLeder = narmesteLeder?.tilNarmesteLeder(arbeidsforhold.orgNavn),
+        )
     }
 
     private fun NarmestelederDbModel.tilNarmesteLeder(orgnavn: String): NarmesteLeder {
