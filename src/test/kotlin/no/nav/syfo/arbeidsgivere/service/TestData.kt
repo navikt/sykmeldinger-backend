@@ -6,9 +6,13 @@ import java.time.ZoneOffset
 import java.util.UUID
 import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
+import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.juni
+
+val ORGNR_1 = "111111111"
+val ORGNR_2 = "222222222"
 
 fun getArbeidsgiverforhold(
-    fom: LocalDate = LocalDate.of(2020, 6, 1),
+    fom: LocalDate = 1.juni(2020),
     tom: LocalDate? = null,
 ): List<Arbeidsforhold> {
     return listOf(
