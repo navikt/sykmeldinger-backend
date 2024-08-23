@@ -15,9 +15,9 @@ val nimbusdsVersion = "9.40"
 val kotestVersion = "5.8.0"
 val testcontainersVersion = "1.20.1"
 val swaggerUiVersion = "5.17.14"
-val kotlinVersion = "2.0.10"
-val flywayVersion = "10.17.1"
-val postgresVersion = "42.7.3"
+val kotlinVersion = "2.0.20"
+val flywayVersion = "10.17.2"
+val postgresVersion = "42.7.4"
 val koinVersion = "3.5.6"
 val hikariVersion = "5.1.0"
 val commonsCodecVersion = "1.17.1"
@@ -30,7 +30,7 @@ val javaVersion = JvmTarget.JVM_21
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.20"
     id("com.diffplug.spotless") version "6.25.0"
     id("com.gradleup.shadow") version "8.3.0"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
