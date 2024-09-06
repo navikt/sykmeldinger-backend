@@ -54,7 +54,6 @@ class TestDB private constructor() {
             val mockEnv = mockk<Environment>(relaxed = true)
             every { mockEnv.databaseUsername } returns "username"
             every { mockEnv.databasePassword } returns "password"
-            every { mockEnv.dbName } returns "database"
             every { mockEnv.jdbcUrl() } returns psqlContainer.jdbcUrl
             database = Database(mockEnv).initializeDatasource().runFlywayMigrations()
         }
