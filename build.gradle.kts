@@ -11,7 +11,7 @@ val prometheusVersion = "0.16.0"
 val jacksonVersion = "2.17.2"
 val kluentVersion = "1.73"
 val mockkVersion = "1.13.12"
-val nimbusdsVersion = "9.40"
+val nimbusdsVersion = "9.41"
 val kotestVersion = "5.8.0"
 val testcontainersVersion = "1.20.1"
 val swaggerUiVersion = "5.17.14"
@@ -23,7 +23,7 @@ val hikariVersion = "5.1.0"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
 val snakeYamlVersion = "2.3"
-val snappyJavaVersion = "1.1.10.6"
+val snappyJavaVersion = "1.1.10.7"
 val kafkaVersion = "3.8.0"
 val commonsCompressVersion = "1.27.1"
 val javaVersion = JvmTarget.JVM_21
@@ -32,7 +32,7 @@ plugins {
     id("application")
     kotlin("jvm") version "2.0.20"
     id("com.diffplug.spotless") version "6.25.0"
-    id("com.gradleup.shadow") version "8.3.0"
+    id("com.gradleup.shadow") version "8.3.1"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
