@@ -18,7 +18,7 @@ val swaggerUiVersion = "5.17.14"
 val kotlinVersion = "2.0.20"
 val flywayVersion = "10.18.0"
 val postgresVersion = "42.7.4"
-val koinVersion = "3.5.6"
+val koinVersion = "4.0.0"
 val hikariVersion = "5.1.0"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
@@ -32,7 +32,7 @@ plugins {
     id("application")
     kotlin("jvm") version "2.0.20"
     id("com.diffplug.spotless") version "6.25.0"
-    id("com.gradleup.shadow") version "8.3.1"
+    id("com.gradleup.shadow") version "8.3.2"
     id("org.hidetake.swagger.generator") version "2.19.2" apply true
 }
 
