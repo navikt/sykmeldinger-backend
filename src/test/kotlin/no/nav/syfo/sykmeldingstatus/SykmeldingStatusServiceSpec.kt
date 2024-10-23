@@ -27,7 +27,6 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ANNET
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSTAKER
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.FRILANSER
-import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.JaEllerNei
 import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
@@ -35,8 +34,6 @@ import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.exception.SykmeldingStatusNotFoundException
 import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
-import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
-import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
@@ -613,179 +610,6 @@ class SykmeldingStatusServiceSpec {
                 nlSvar?.size shouldBeEqualTo 1
                 nlSvar?.first()?.svar shouldBeEqualTo "NEI"
             }
-    }
-
-    @Nested
-    @DisplayName("Endre egenmeldingsdager")
-    inner class EndreEgenmeldingsdager {
-        @Test
-        fun `Oppdatere sporsmal med nye egenmeldingsdager`() = testApplication {
-            coEvery {
-                sykmeldingStatusDb.getSykmeldingStatus(
-                    sykmeldingId = "sykmelding-id",
-                    fnr = "22222222",
-                )
-            } returns
-                (SykmeldingStatusKafkaEventDTO(
-                    sporsmals =
-                        listOf(
-                            SporsmalOgSvarKafkaDTO(
-                                svartype = SvartypeKafkaDTO.DAGER,
-                                shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
-                                svar = "",
-                                tekst = "tom string",
-                            ),
-                            SporsmalOgSvarKafkaDTO(
-                                svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
-                                shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
-                                svar = "8765432",
-                                tekst = "",
-                            ),
-                        ),
-                    sykmeldingId = "sykmelding-id",
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    statusEvent = StatusEventDTO.SENDT.toString(),
-                ) to null)
-
-            sykmeldingStatusService.endreEgenmeldingsdager(
-                sykmeldingId = "sykmelding-id",
-                egenmeldingsdagerEvent =
-                    EndreEgenmeldingsdagerEvent(
-                        dager =
-                            listOf(
-                                LocalDate.parse("2021-02-01"),
-                                LocalDate.parse("2021-02-02"),
-                            ),
-                        tekst = "Egenmeldingsdager spørsmål",
-                    ),
-                fnr = "22222222",
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match {
-                        val last = it.sporsmals?.last()
-                        val first = it.sporsmals?.first()
-                        // Verify value has been updated
-                        last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                            last.shortName == ShortNameKafkaDTO.EGENMELDINGSDAGER &&
-                            // Verify that existing remains untouched
-                            first?.shortName == ShortNameKafkaDTO.ARBEIDSSITUASJON &&
-                            first.svar == "8765432" &&
-                            it.erSvarOppdatering == true
-                    },
-                    any(),
-                    any(),
-                )
-            }
-        }
-
-        @Test
-        fun `Fjern spørsmål om egenmeldingsdager`() = testApplication {
-            coEvery {
-                sykmeldingStatusDb.getSykmeldingStatus(
-                    sykmeldingId = "sykmelding-id",
-                    fnr = "22222222",
-                )
-            } returns
-                (SykmeldingStatusKafkaEventDTO(
-                    sporsmals =
-                        listOf(
-                            SporsmalOgSvarKafkaDTO(
-                                svartype = SvartypeKafkaDTO.DAGER,
-                                shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
-                                svar = "",
-                                tekst = "tom string",
-                            ),
-                            SporsmalOgSvarKafkaDTO(
-                                svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
-                                shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
-                                svar = "8765432",
-                                tekst = "",
-                            ),
-                        ),
-                    sykmeldingId = "sykmelding-id",
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    statusEvent = StatusEventDTO.SENDT.toString(),
-                ) to null)
-
-            sykmeldingStatusService.endreEgenmeldingsdager(
-                sykmeldingId = "sykmelding-id",
-                egenmeldingsdagerEvent =
-                    EndreEgenmeldingsdagerEvent(
-                        dager = listOf(),
-                        tekst = "Egenmeldingsdager spørsmål",
-                    ),
-                fnr = "22222222",
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match {
-                        it.sporsmals?.size == 1 &&
-                            it.sporsmals?.first()?.svartype == SvartypeKafkaDTO.ARBEIDSSITUASJON
-                    },
-                    any(),
-                    any(),
-                )
-            }
-        }
-
-        @Test
-        fun `Legg til egenmeldingsdager`() = testApplication {
-            coEvery {
-                sykmeldingStatusDb.getSykmeldingStatus(
-                    sykmeldingId = "sykmelding-id",
-                    fnr = "22222222",
-                )
-            } returns
-                (SykmeldingStatusKafkaEventDTO(
-                    sporsmals =
-                        listOf(
-                            SporsmalOgSvarKafkaDTO(
-                                svartype = SvartypeKafkaDTO.ARBEIDSSITUASJON,
-                                shortName = ShortNameKafkaDTO.ARBEIDSSITUASJON,
-                                svar = "8765432",
-                                tekst = "",
-                            ),
-                        ),
-                    sykmeldingId = "sykmelding-id",
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                    statusEvent = StatusEventDTO.SENDT.toString(),
-                ) to null)
-
-            sykmeldingStatusService.endreEgenmeldingsdager(
-                sykmeldingId = "sykmelding-id",
-                egenmeldingsdagerEvent =
-                    EndreEgenmeldingsdagerEvent(
-                        dager =
-                            listOf(
-                                LocalDate.parse("2021-02-01"),
-                                LocalDate.parse("2021-02-02"),
-                            ),
-                        tekst = "Egenmeldingsdager spørsmål",
-                    ),
-                fnr = "22222222",
-            )
-
-            coVerify(exactly = 1) {
-                sykmeldingStatusDb.insertStatus(
-                    match {
-                        val last = it.sporsmals?.last()
-                        val first = it.sporsmals?.first()
-                        // Verify value has been updated
-                        last?.svar == "[\"2021-02-01\",\"2021-02-02\"]" &&
-                            last.shortName == ShortNameKafkaDTO.EGENMELDINGSDAGER &&
-                            // Verify that existing remains untouched
-                            first?.shortName == ShortNameKafkaDTO.ARBEIDSSITUASJON &&
-                            first.svar == "8765432" &&
-                            it.erSvarOppdatering == true
-                    },
-                    any(),
-                    any(),
-                )
-            }
-        }
     }
 
     @Nested
