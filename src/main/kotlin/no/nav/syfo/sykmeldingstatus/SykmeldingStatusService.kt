@@ -15,23 +15,17 @@ import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ARBEIDSLEDIG
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.FISKER
-import no.nav.syfo.sykmeldingstatus.api.v2.EndreEgenmeldingsdagerEvent
 import no.nav.syfo.sykmeldingstatus.api.v2.LottOgHyre
-import no.nav.syfo.sykmeldingstatus.api.v2.SporsmalSvar
 import no.nav.syfo.sykmeldingstatus.api.v2.SykmeldingFormResponse
 import no.nav.syfo.sykmeldingstatus.db.SykmeldingStatusDb
 import no.nav.syfo.sykmeldingstatus.exception.InvalidSykmeldingStatusException
 import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
-import no.nav.syfo.sykmeldingstatus.kafka.model.ShortNameKafkaDTO
-import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
-import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereArbeidsgiverService
 import no.nav.syfo.utils.logger
-import no.nav.syfo.utils.objectMapper
 import no.nav.syfo.utils.securelog
 
 class SykmeldingStatusService(
@@ -305,74 +299,6 @@ class SykmeldingStatusService(
                 )
             },
         )
-    }
-
-    suspend fun endreEgenmeldingsdager(
-        sykmeldingId: String,
-        egenmeldingsdagerEvent: EndreEgenmeldingsdagerEvent,
-        fnr: String
-    ) {
-        val (sykmeldingStatusKafkaEventDTO, formResponse) =
-            sykmeldingStatusDb.getSykmeldingStatus(sykmeldingId, fnr)
-
-        val sykmeldingStatusKafkaEventDTOUpdated =
-            sykmeldingStatusKafkaEventDTO.copy(
-                sporsmals =
-                    updateEgenemeldingsdagerSporsmal(
-                        sykmeldingStatusKafkaEventDTO.sporsmals,
-                        egenmeldingsdagerEvent,
-                    ),
-                timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                erSvarOppdatering = true,
-            )
-
-        val sykmeldingFormResponseUpdated =
-            formResponse?.copy(
-                egenmeldingsdager =
-                    SporsmalSvar(
-                        egenmeldingsdagerEvent.tekst,
-                        egenmeldingsdagerEvent.dager,
-                    ),
-            )
-
-        sykmeldingStatusDb.insertStatus(
-            sykmeldingStatusKafkaEventDTOUpdated,
-            sykmeldingFormResponseUpdated,
-            beforeCommit = {
-                sykmeldingStatusKafkaProducer.send(
-                    sykmeldingStatusKafkaEventDTO = sykmeldingStatusKafkaEventDTOUpdated,
-                    fnr = fnr,
-                )
-            },
-        )
-    }
-
-    private fun updateEgenemeldingsdagerSporsmal(
-        sporsmalSvar: List<SporsmalOgSvarKafkaDTO>?,
-        egenmeldingsdagerEvent: EndreEgenmeldingsdagerEvent
-    ): List<SporsmalOgSvarKafkaDTO> {
-        requireNotNull(sporsmalSvar) {
-            "Forsøkte å oppdatere egenmeldingsdager, men spørsmål og svar er ikke satt."
-        }
-        return sporsmalSvar
-            .filter { it.shortName != ShortNameKafkaDTO.EGENMELDINGSDAGER }
-            .let {
-                if (egenmeldingsdagerEvent.dager.isNotEmpty()) {
-                    it.plus(
-                        listOf(
-                            SporsmalOgSvarKafkaDTO(
-                                tekst = egenmeldingsdagerEvent.tekst,
-                                shortName = ShortNameKafkaDTO.EGENMELDINGSDAGER,
-                                svartype = SvartypeKafkaDTO.DAGER,
-                                svar =
-                                    objectMapper.writeValueAsString(egenmeldingsdagerEvent.dager),
-                            ),
-                        ),
-                    )
-                } else {
-                    it
-                }
-            }
     }
 
     private suspend fun getArbeidsgiver(
