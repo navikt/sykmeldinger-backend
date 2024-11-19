@@ -3,6 +3,7 @@ package no.nav.syfo.arbeidsgivere.service
 import java.time.LocalDate
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
+import no.nav.syfo.arbeidsgivere.model.ArbeidsforholdType
 import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
@@ -19,7 +20,9 @@ class ArbeidsgiverService(
         fnr: String,
         date: LocalDate = LocalDate.now()
     ): List<Arbeidsgiverinfo> {
-        val arbeidsgivere = arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
+        val arbeidsgivere =
+            getArbeidsforhold(fnr)
+
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
         }
@@ -31,11 +34,22 @@ class ArbeidsgiverService(
         }
     }
 
+    private suspend fun getArbeidsforhold(fnr: String) =
+        arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
+            .filter { gylidgArbeidsforholdType(it) }
+
+    private fun gylidgArbeidsforholdType(arbeidsforhold: Arbeidsforhold): Boolean {
+        return when (arbeidsforhold.type) {
+            ArbeidsforholdType.FRILANSER_OPPDRAGSTAKER_HONORAR_PERSONER_MM -> false
+            else -> true
+        }
+    }
+
     suspend fun getArbeidsgivere(
         fnr: String,
         date: LocalDate = LocalDate.now()
     ): List<Arbeidsgiverinfo> {
-        val arbeidsgivere = arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
+        val arbeidsgivere = getArbeidsforhold(fnr = fnr)
 
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
