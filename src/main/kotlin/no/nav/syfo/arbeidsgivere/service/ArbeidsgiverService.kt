@@ -36,9 +36,9 @@ class ArbeidsgiverService(
 
     private suspend fun getArbeidsforhold(fnr: String) =
         arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
-            .filter { gylidgArbeidsforholdType(it) }
+            .filter { gyldigArbeidsforholdType(it) }
 
-    private fun gylidgArbeidsforholdType(arbeidsforhold: Arbeidsforhold): Boolean {
+    private fun gyldigArbeidsforholdType(arbeidsforhold: Arbeidsforhold): Boolean {
         return when (arbeidsforhold.type) {
             ArbeidsforholdType.FRILANSER_OPPDRAGSTAKER_HONORAR_PERSONER_MM -> false
             else -> true
