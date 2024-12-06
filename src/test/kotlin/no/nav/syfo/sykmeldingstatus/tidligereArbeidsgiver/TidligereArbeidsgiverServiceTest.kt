@@ -94,7 +94,7 @@ class TidligereArbeidsgiverServiceTest {
                     tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO(
                             orgNavn = AG1,
-                            orgnummer = "ag1",
+                            orgnummer = AG1,
                             sykmeldingsId = "1"
                         )
                 ),
@@ -118,8 +118,7 @@ class TidligereArbeidsgiverServiceTest {
         val relevanteSykmeldinger =
             tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
-        assertEquals(1, relevanteSykmeldinger.size)
-        assertEquals(AG1, relevanteSykmeldinger.first().first.tidligereArbeidsgiver?.orgnummer)
+        assertEquals(0, relevanteSykmeldinger.size)
     }
 
     @Test
@@ -378,8 +377,7 @@ class TidligereArbeidsgiverServiceTest {
         val relevanteSykmeldinger =
             tidligereArbeidsgiverService.filterRelevantSykmeldinger(sykmeldingerFraDb, currentSm)
         assertNotNull(relevanteSykmeldinger)
-        assertEquals(1, relevanteSykmeldinger.size)
-        assertEquals(AG1, relevanteSykmeldinger.first().first.tidligereArbeidsgiver?.orgnummer)
+        assertEquals(0, relevanteSykmeldinger.size)
     }
 
     @Test

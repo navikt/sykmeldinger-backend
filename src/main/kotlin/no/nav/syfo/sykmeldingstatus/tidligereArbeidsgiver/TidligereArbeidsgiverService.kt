@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import no.nav.syfo.sykmelding.model.SykmeldingsperiodeDTO
 import no.nav.syfo.sykmeldingstatus.kafka.SykmeldingWithArbeidsgiverStatus
+import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_BEKREFTET
 import no.nav.syfo.sykmeldingstatus.kafka.model.STATUS_SENDT
 
 class TidligereArbeidsgiverService() {
@@ -14,7 +15,11 @@ class TidligereArbeidsgiverService() {
     ): List<Pair<SykmeldingWithArbeidsgiverStatus, TidligereArbeidsgiverType>> {
         val sykmeldingerMedUnikeOrgnummer =
             allSykmeldinger
-                .filterNot { it.sykmeldingId == currentSykmelding.sykmeldingId }
+                .filterNot {
+                    it.sykmeldingId == currentSykmelding.sykmeldingId ||
+                        (it.statusEvent == STATUS_BEKREFTET &&
+                            it.tidligereArbeidsgiver?.orgnummer != null)
+                }
                 .filter {
                     it.statusEvent == STATUS_SENDT || it.tidligereArbeidsgiver?.orgnummer != null
                 }
