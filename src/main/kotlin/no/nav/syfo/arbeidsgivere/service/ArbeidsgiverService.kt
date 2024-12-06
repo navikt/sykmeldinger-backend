@@ -20,8 +20,7 @@ class ArbeidsgiverService(
         fnr: String,
         date: LocalDate = LocalDate.now()
     ): List<Arbeidsgiverinfo> {
-        val arbeidsgivere =
-            getArbeidsforhold(fnr)
+        val arbeidsgivere = getArbeidsforhold(fnr)
 
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
@@ -35,8 +34,7 @@ class ArbeidsgiverService(
     }
 
     private suspend fun getArbeidsforhold(fnr: String) =
-        arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
-            .filter { gyldigArbeidsforholdType(it) }
+        arbeidsforholdDb.getArbeidsforhold(fnr = fnr).filter { gyldigArbeidsforholdType(it) }
 
     private fun gyldigArbeidsforholdType(arbeidsforhold: Arbeidsforhold): Boolean {
         return when (arbeidsforhold.type) {
