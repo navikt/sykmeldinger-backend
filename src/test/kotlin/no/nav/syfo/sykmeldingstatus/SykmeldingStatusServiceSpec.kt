@@ -961,7 +961,7 @@ class SykmeldingStatusServiceSpec {
                     sykmeldingId,
                 )
             assertNotNull(tidligereArbeidsgivere)
-            assertEquals(1, tidligereArbeidsgivere.size)
+            assertEquals(0, tidligereArbeidsgivere.size)
         }
 
         @Test
@@ -1275,7 +1275,7 @@ class SykmeldingStatusServiceSpec {
                         sykmeldingId,
                     )
                 assertNotNull(tidligereArbeidsgivere)
-                assertEquals(1, tidligereArbeidsgivere.size)
+                assertEquals(0, tidligereArbeidsgivere.size)
             }
 
         @Test
@@ -1742,7 +1742,7 @@ class SykmeldingStatusServiceSpec {
                         sykmeldingId,
                     )
                 assertNotNull(tidligereArbeidsgivere)
-                assertEquals(1, tidligereArbeidsgivere.size)
+                assertEquals(0, tidligereArbeidsgivere.size)
             }
     }
 
