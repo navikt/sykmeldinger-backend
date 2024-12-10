@@ -8,6 +8,7 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
+import no.nav.syfo.utils.securelog
 
 class ArbeidsgiverService(
     private val narmestelederDb: NarmestelederDb,
@@ -20,8 +21,10 @@ class ArbeidsgiverService(
         fnr: String,
         date: LocalDate = LocalDate.now()
     ): List<Arbeidsgiverinfo> {
-        val arbeidsgivere =
-            getArbeidsforhold(fnr)
+        securelog.info(
+            "getting arbeidsforhold for $fnr, sykmeldingFom: $sykmeldingFom, sykmeldingTom: $sykmeldingTom"
+        )
+        val arbeidsgivere = getArbeidsforhold(fnr)
 
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
@@ -29,14 +32,18 @@ class ArbeidsgiverService(
         val aktiveNarmesteledere = narmestelederDb.getNarmesteleder(fnr)
         val arbeidsgivereWithinSykmeldingsperiode =
             filterArbeidsgivere(sykmeldingFom, sykmeldingTom, arbeidsgivere)
-        return arbeidsgivereWithinSykmeldingsperiode.map { arbeidsforhold ->
-            arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date)
-        }
+        val arbeidsforhold =
+            arbeidsgivereWithinSykmeldingsperiode.map { arbeidsforhold ->
+                arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date)
+            }
+        securelog.info(
+            "Arbeidsforhold for $fnr, ${arbeidsgivereWithinSykmeldingsperiode.joinToString { "id: ${it.id}: orgnummer:${it.orgnummer}: fom: ${it.fom}, tom:${it.tom}" }}"
+        )
+        return arbeidsforhold
     }
 
     private suspend fun getArbeidsforhold(fnr: String) =
-        arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
-            .filter { gyldigArbeidsforholdType(it) }
+        arbeidsforholdDb.getArbeidsforhold(fnr = fnr).filter { gyldigArbeidsforholdType(it) }
 
     private fun gyldigArbeidsforholdType(arbeidsforhold: Arbeidsforhold): Boolean {
         return when (arbeidsforhold.type) {
