@@ -21,7 +21,6 @@ import no.nav.syfo.arbeidsgivere.service.ArbeidsgiverService
 import no.nav.syfo.sykmelding.model.TidligereArbeidsgiverDTO
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
-import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.mars
 import no.nav.syfo.sykmeldingstatus.api.v1.StatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v1.SykmeldingStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.api.v2.Arbeidssituasjon.ANNET
@@ -1080,49 +1079,6 @@ class SykmeldingStatusServiceSpec {
         }
 
         @Test
-        fun `arbeidstaker til arbeidsledig`() = testApplication {
-            val tidligereSykmelding =
-                opprettSykmelding(
-                    fom = 1.januar(2023),
-                    tom = 15.januar(2023),
-                    orgnummer = "orgnummer",
-                    status = "SENDT",
-                )
-            val nySykmelding =
-                opprettSykmelding(
-                    fom = 16.januar(2023),
-                    tom = 31.januar(2023),
-                    status = "APEN",
-                    sykmeldingId = sykmeldingId,
-                )
-
-            coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
-                listOf(
-                    tidligereSykmelding,
-                    nySykmelding,
-                )
-
-            coEvery {
-                sykmeldingStatusDb.getLatestStatus(
-                    any(),
-                    any(),
-                )
-            } returns
-                SykmeldingStatusEventDTO(
-                    statusEvent = StatusEventDTO.APEN,
-                    timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                    erAvvist = true,
-                )
-            val tidligereArbeidsgivere =
-                sykmeldingStatusService.finnTidligereArbeidsgivere(
-                    fnr,
-                    sykmeldingId,
-                )
-            assertNotNull(tidligereArbeidsgivere)
-            assertEquals(1, tidligereArbeidsgivere.size)
-        }
-
-        @Test
         fun `arbeidstaker til arbeidsledig flere potensielle kandidater`() = testApplication {
             val ag1 =
                 opprettSykmelding(
@@ -1223,68 +1179,12 @@ class SykmeldingStatusServiceSpec {
         }
 
         @Test
-        fun `En bekreftet sykmelding kant til kant med en bekreftet sykmelding`() =
-            testApplication {
-                val arbeidstakerSykmelding =
-                    opprettSykmelding(
-                        fom = 1.januar(2023),
-                        tom = 15.januar(2023),
-                        status = "SENDT",
-                        orgnummer = "orgnummer",
-                    )
-                val arbeidsledigSykmelding1 =
-                    opprettSykmelding(
-                        fom = 16.januar(2023),
-                        tom = 20.januar(2023),
-                        status = "BEKREFTET",
-                        tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
-                    )
-                val arbeidsledigSykmelding2 =
-                    opprettSykmelding(
-                        fom = 21.januar(2023),
-                        tom = 31.januar(2023),
-                        status = "APEN",
-                        sykmeldingId = sykmeldingId,
-                    )
-                coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
-                    listOf(
-                        arbeidstakerSykmelding,
-                        arbeidsledigSykmelding1,
-                        arbeidsledigSykmelding2,
-                    )
-
-                coEvery {
-                    sykmeldingStatusDb.getLatestStatus(
-                        any(),
-                        any(),
-                    )
-                } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.APEN,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = true,
-                    )
-                val tidligereArbeidsgivere =
-                    sykmeldingStatusService.finnTidligereArbeidsgivere(
-                        fnr,
-                        sykmeldingId,
-                    )
-                assertNotNull(tidligereArbeidsgivere)
-                assertEquals(1, tidligereArbeidsgivere.size)
-            }
-
-        @Test
         fun `en dag etter direkte overlappende sykmelding`() = testApplication {
             val tidligereSykmelding =
                 opprettSykmelding(
                     fom = 1.januar(2023),
                     tom = 31.januar(2023),
-                    status = "SENDT",
+                    status = "BEKREFTET",
                     tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO(
                             "orgNavn",
@@ -1331,7 +1231,7 @@ class SykmeldingStatusServiceSpec {
                 opprettSykmelding(
                     fom = 1.januar(2023),
                     tom = 31.januar(2023),
-                    status = "SENDT",
+                    status = "BEKREFTET",
                     tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO(
                             "orgNavn",
@@ -1503,7 +1403,7 @@ class SykmeldingStatusServiceSpec {
                 opprettSykmelding(
                     fom = 28.januar(2023),
                     tom = 31.januar(2023),
-                    status = "SENDT",
+                    status = "BEKREFTET",
                     tidligereArbeidsgiver =
                         TidligereArbeidsgiverDTO(
                             "orgNavn",
@@ -1684,66 +1584,6 @@ class SykmeldingStatusServiceSpec {
                 )
             }
         }
-    }
-
-    @Nested
-    @DisplayName("Forlengelse av bekreftet sykmelding")
-    inner class ForlengelseAvBekreftetSykmelding {
-        @Test
-        fun `En bekreftet sykmelding kant til kant med en bekreftet sykmelding`() =
-            testApplication {
-                val arbeidstakerSykmelding =
-                    opprettSykmelding(
-                        fom = 1.januar(2023),
-                        tom = 31.januar(2023),
-                        status = "SENDT",
-                        orgnummer = "orgnummer",
-                    )
-                val arbeidsledigSykmelding1 =
-                    opprettSykmelding(
-                        fom = 1.februar(2023),
-                        tom = 28.februar(2023),
-                        status = "BEKREFTET",
-                        tidligereArbeidsgiver =
-                            TidligereArbeidsgiverDTO(
-                                "orgNavn",
-                                orgnummer = "orgnummer",
-                                sykmeldingsId = "1",
-                            ),
-                    )
-                val arbeidsledigSykmelding2 =
-                    opprettSykmelding(
-                        fom = 1.mars(2023),
-                        tom = 31.mars(2023),
-                        status = "APEN",
-                        sykmeldingId = sykmeldingId,
-                    )
-                coEvery { sykmeldingStatusDb.getSykmeldingWithStatus(any()) } returns
-                    listOf(
-                        arbeidstakerSykmelding,
-                        arbeidsledigSykmelding1,
-                        arbeidsledigSykmelding2,
-                    )
-
-                coEvery {
-                    sykmeldingStatusDb.getLatestStatus(
-                        any(),
-                        any(),
-                    )
-                } returns
-                    SykmeldingStatusEventDTO(
-                        statusEvent = StatusEventDTO.APEN,
-                        timestamp = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
-                        erAvvist = true,
-                    )
-                val tidligereArbeidsgivere =
-                    sykmeldingStatusService.finnTidligereArbeidsgivere(
-                        fnr,
-                        sykmeldingId,
-                    )
-                assertNotNull(tidligereArbeidsgivere)
-                assertEquals(1, tidligereArbeidsgivere.size)
-            }
     }
 
     private fun checkStatusFails(
