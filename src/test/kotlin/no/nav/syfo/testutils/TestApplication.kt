@@ -53,6 +53,12 @@ private fun getTestEnvironment(): Environment =
         dbName = "",
         databasePassword = "",
         databaseUsername = "",
+        eregUrl = "",
+        aadAccessTokenUrl = "",
+        clientId = "",
+        clientSecret = "",
+        aaregScope = "",
+        aaregUrl = "",
     )
 
 val mockedAuthModule = module {

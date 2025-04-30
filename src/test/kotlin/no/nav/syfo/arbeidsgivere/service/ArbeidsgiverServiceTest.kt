@@ -7,6 +7,7 @@ import io.mockk.coVerify
 import io.mockk.mockkClass
 import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
+import no.nav.syfo.arbeidsforhold.ArbeidsforholdService
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
 import no.nav.syfo.arbeidsgivere.model.ArbeidsforholdType
@@ -20,11 +21,12 @@ import org.junit.jupiter.api.Test
 class ArbeidsgiverServiceTest {
     val arbeidsforholdDb = mockkClass(ArbeidsforholdDb::class)
     val narmestelederDb = mockkClass(NarmestelederDb::class)
-
+    val arbeidsforholdService = mockkClass(ArbeidsforholdService::class)
     val arbeidsgiverService =
         ArbeidsgiverService(
             narmestelederDb = narmestelederDb,
             arbeidsforholdDb = arbeidsforholdDb,
+            arbeidsfhorholdService = arbeidsforholdService
         )
 
     @BeforeEach

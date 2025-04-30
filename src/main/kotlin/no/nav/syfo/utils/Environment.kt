@@ -12,6 +12,12 @@ data class Environment(
     val dbHost: String = getEnvVar("DB_HOST"),
     val dbPort: String = getEnvVar("DB_PORT"),
     val dbName: String = getEnvVar("DB_DATABASE"),
+    val eregUrl: String = getEnvVar("EREG_URL"),
+    val aaregUrl: String = getEnvVar("AAREG_URL"),
+    val aaregScope: String = getEnvVar("AAREG_SCOPE"),
+    val aadAccessTokenUrl: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val clientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"

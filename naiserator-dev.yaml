@@ -61,6 +61,10 @@ spec:
   tokenx:
     enabled: true
   accessPolicy:
+    outbound:
+      external:
+        - host: ereg-services-q1.dev-fss-pub.nais.io
+        - host: aareg-services-q2.dev-fss-pub.nais.io
     inbound:
       rules:
         - application: sykmeldinger
@@ -74,3 +78,14 @@ spec:
           cluster: dev-gcp
   secureLogs:
     enabled: true
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
+  env:
+    - name: EREG_URL
+      value: https://ereg-services-q1.dev-fss-pub.nais.io
+    - name: AAREG_URL
+      value: https://aareg-services-q2.dev-fss-pub.nais.io
+    - name: AAREG_SCOPE
+      value: api://dev-fss.arbeidsforhold.aareg-services-nais/.default

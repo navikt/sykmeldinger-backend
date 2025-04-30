@@ -7,7 +7,22 @@ enum class ArbeidsforholdType {
     FRILANSER_OPPDRAGSTAKER_HONORAR_PERSONER_MM,
     MARITIMT_ARBEIDSFORHOLD,
     ORDINAERT_ARBEIDSFORHOLD,
-    PENSJON_OG_ANDRE_TYPER_YTELSER_UTEN_ANSETTELSESFORHOLD
+    PENSJON_OG_ANDRE_TYPER_YTELSER_UTEN_ANSETTELSESFORHOLD;
+
+    companion object {
+        fun parse(kode: String): ArbeidsforholdType {
+            return when (kode) {
+                "forenkletOppgjoersordning" -> FORENKLET_OPPGJOERSORDNING
+                "frilanserOppdragstakerHonorarPersonerMm" ->
+                    FRILANSER_OPPDRAGSTAKER_HONORAR_PERSONER_MM
+                "maritimtArbeidsforhold" -> MARITIMT_ARBEIDSFORHOLD
+                "ordinaertArbeidsforhold" -> ORDINAERT_ARBEIDSFORHOLD
+                "pensjonOgAndreTyperYtelserUtenAnsettelsesforhold" ->
+                    PENSJON_OG_ANDRE_TYPER_YTELSER_UTEN_ANSETTELSESFORHOLD
+                else -> throw IllegalArgumentException("Incorrect arbeidsforhold type $kode")
+            }
+        }
+    }
 }
 
 data class Arbeidsforhold(
