@@ -64,11 +64,14 @@ class ArbeidsgiverService(
     private suspend fun ArbeidsgiverService.getCurrentArbeidsforhold(
         fnr: String
     ): List<Arbeidsforhold> {
-        val arbeidsgivereFromDb = arbeidsforholdDb.getArbeidsforhold(fnr = fnr).sortedBy { it.id }
-        val arbeidsforholdFromApi = tryGetArbeidsforholdFromApi(fnr)?.sortedBy { it.id }
+        val arbeidsgivereFromDb = arbeidsforholdDb.getArbeidsforhold(fnr = fnr)
+        val arbeidsforholdFromApi = tryGetArbeidsforholdFromApi(fnr)
 
         val currentArbeidsforhold =
-            if (arbeidsforholdFromApi != null && arbeidsgivereFromDb != arbeidsforholdFromApi) {
+            if (
+                    arbeidsforholdFromApi != null &&
+                        !hasTheSameArbeidsforhold(arbeidsgivereFromDb, arbeidsforholdFromApi)
+                ) {
                     log.warn("Arbeidsforhold is not equal from db and API, updating")
                     securelog.warn(
                         "arbeidsforhold not equal from db and API for $fnr, arbeidsforholdDb: ${objectMapper.writeValueAsString(arbeidsgivereFromDb)}, arbeidsforholdApi: ${objectMapper.writeValueAsString(arbeidsforholdFromApi)}",
@@ -81,13 +84,23 @@ class ArbeidsgiverService(
                 } else {
                     if (arbeidsforholdFromApi == null) {
                         securelog.error("Arbeidsforhold for api is null for $fnr")
-                    } else if (arbeidsgivereFromDb == arbeidsforholdFromApi) {
+                    } else if (
+                        hasTheSameArbeidsforhold(arbeidsgivereFromDb, arbeidsforholdFromApi)
+                    ) {
                         securelog.info("arbeidsforhold equal form db and api for $fnr")
                     }
                     arbeidsgivereFromDb
                 }
                 .filter { gyldigArbeidsforholdType(it) }
         return currentArbeidsforhold
+    }
+
+    private fun hasTheSameArbeidsforhold(
+        arbeidsgivereFromDb: List<Arbeidsforhold>,
+        arbeidsforholdFromApi: List<Arbeidsforhold>
+    ): Boolean {
+        return arbeidsgivereFromDb.map { it.copy(id = 0) }.toSet() ==
+            arbeidsforholdFromApi.map { it.copy(id = 0) }.toSet()
     }
 
     private fun gyldigArbeidsforholdType(arbeidsforhold: Arbeidsforhold): Boolean {
