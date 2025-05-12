@@ -9,6 +9,7 @@ import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.securelog
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
@@ -61,8 +62,8 @@ class SykmeldingService(
             }
 
             val allDataExists: Boolean = sykmeldingDb.getSykmelding(sykmeldingId, fnr) != null
-            logger.info(
-                "404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId"
+            securelog.info(
+                "404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId, fnr: $fnr"
             )
         }
     }
