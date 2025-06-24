@@ -119,14 +119,19 @@ class ArbeidsgiverService(
         if (arbeidsgivere.isEmpty()) {
             return emptyList()
         }
+
         val aktiveNarmesteledere = narmestelederDb.getNarmesteleder(fnr)
 
-        return arbeidsgivere
+        val arbeidsforhold = arbeidsgivere
             .sortedWith(
                 compareByDescending(nullsLast()) { it.tom },
             )
             .distinctBy { it.orgnummer }
             .map { arbeidsforhold -> arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date) }
+
+        securelog.info("getting arbeidsforhold for $fnr, ${objectMapper.writeValueAsString(arbeidsforhold)}")
+
+        return arbeidsforhold
     }
 
     private fun arbeidsgiverinfo(
