@@ -6,8 +6,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockkClass
 import java.time.LocalDate
+import kotlinx.coroutines.runBlocking
+import no.nav.syfo.arbeidsforhold.ArbeidsforholdService
 import no.nav.syfo.arbeidsgivere.db.ArbeidsforholdDb
 import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
+import no.nav.syfo.arbeidsgivere.model.ArbeidsforholdType
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.februar
 import no.nav.syfo.sykmeldingstatus.TestHelper.Companion.januar
@@ -18,11 +21,12 @@ import org.junit.jupiter.api.Test
 class ArbeidsgiverServiceTest {
     val arbeidsforholdDb = mockkClass(ArbeidsforholdDb::class)
     val narmestelederDb = mockkClass(NarmestelederDb::class)
-
+    val arbeidsforholdService = mockkClass(ArbeidsforholdService::class)
     val arbeidsgiverService =
         ArbeidsgiverService(
             narmestelederDb = narmestelederDb,
             arbeidsforholdDb = arbeidsforholdDb,
+            arbeidsfhorholdService = arbeidsforholdService
         )
 
     @BeforeEach
@@ -227,10 +231,77 @@ class ArbeidsgiverServiceTest {
             arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                 1.januar(2023),
                 31.januar(2023),
-                "1"
+                "1",
             )
         arbeidsgiverinformasjon.size shouldBeEqualTo 1
         arbeidsgiverinformasjon[0].aktivtArbeidsforhold shouldBeEqualTo true
+    }
+
+    @Test
+    fun `Henter ikke arbeidsforhold som er frilansere`() {
+        runBlocking {
+            coEvery { arbeidsforholdDb.getArbeidsforhold(any()) } returns
+                getArbeidsgiverforhold(
+                    fom = 1.januar(2020),
+                    tom = null,
+                    type = ArbeidsforholdType.FRILANSER_OPPDRAGSTAKER_HONORAR_PERSONER_MM,
+                )
+
+            val arbeidsgiverinformasjon =
+                arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
+                    1.januar(2023),
+                    31.januar(2023),
+                    "1",
+                )
+            arbeidsgiverinformasjon.size shouldBeEqualTo 0
+        }
+    }
+
+    @Test
+    fun `Henter alle arbeidsforhold som ikke er frilansere`() {
+        runBlocking {
+            coEvery { arbeidsforholdDb.getArbeidsforhold(any()) } returns
+                getArbeidsgiverforhold(
+                    fom = 1.januar(2020),
+                    tom = null,
+                    type = ArbeidsforholdType.ORDINAERT_ARBEIDSFORHOLD,
+                ) +
+                    getArbeidsgiverforhold(
+                        fom = 1.januar(2020),
+                        tom = null,
+                        type = ArbeidsforholdType.MARITIMT_ARBEIDSFORHOLD,
+                    ) +
+                    getArbeidsgiverforhold(
+                        fom = 1.januar(2020),
+                        tom = null,
+                        type =
+                            ArbeidsforholdType
+                                .PENSJON_OG_ANDRE_TYPER_YTELSER_UTEN_ANSETTELSESFORHOLD,
+                    ) +
+                    getArbeidsgiverforhold(
+                        fom = 1.januar(2020),
+                        tom = null,
+                        type = ArbeidsforholdType.FORENKLET_OPPGJOERSORDNING,
+                    ) +
+                    getArbeidsgiverforhold(
+                        fom = 1.januar(2020),
+                        tom = null,
+                        type = ArbeidsforholdType.FRILANSER_OPPDRAGSTAKER_HONORAR_PERSONER_MM,
+                    ) +
+                    getArbeidsgiverforhold(
+                        fom = 1.januar(2020),
+                        tom = null,
+                        type = null,
+                    )
+
+            val arbeidsgiverinformasjon =
+                arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
+                    1.januar(2023),
+                    31.januar(2023),
+                    "1",
+                )
+            arbeidsgiverinformasjon.size shouldBeEqualTo 5
+        }
     }
 
     @Test
@@ -255,14 +326,14 @@ class ArbeidsgiverServiceTest {
                         orgNavn = "Navn 1",
                         fom = 31.januar(2023),
                         tom = null,
-                    )
+                    ),
                 )
 
             val arbeidsgiverinformasjonSm1 =
                 arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                     1.januar(2023),
                     30.januar(2023),
-                    "1"
+                    "1",
                 )
             arbeidsgiverinformasjonSm1.size shouldBeEqualTo 1
             arbeidsgiverinformasjonSm1[0].aktivtArbeidsforhold shouldBeEqualTo false
@@ -272,7 +343,7 @@ class ArbeidsgiverServiceTest {
                 arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                     31.januar(2023),
                     15.februar(2023),
-                    "1"
+                    "1",
                 )
 
             arbeidsgiverinformasjonSm2.size shouldBeEqualTo 1
@@ -292,7 +363,7 @@ class ArbeidsgiverServiceTest {
             arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                 31.januar(2023),
                 15.februar(2023),
-                "1"
+                "1",
             )
 
         arbeidsgiverinformasjon.size shouldBeEqualTo 1
@@ -311,7 +382,7 @@ class ArbeidsgiverServiceTest {
             arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                 1.januar(2023),
                 31.januar(2023),
-                "1"
+                "1",
             )
 
         arbeidsgiverinformasjon.size shouldBeEqualTo 1
@@ -331,7 +402,7 @@ class ArbeidsgiverServiceTest {
                 arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                     1.januar(2023),
                     31.januar(2023),
-                    "1"
+                    "1",
                 )
 
             arbeidsgiverinformasjon.size shouldBeEqualTo 0
@@ -349,7 +420,7 @@ class ArbeidsgiverServiceTest {
             arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                 15.januar(2023),
                 31.januar(2023),
-                "1"
+                "1",
             )
 
         arbeidsgiverinformasjon.size shouldBeEqualTo 1
@@ -366,7 +437,7 @@ class ArbeidsgiverServiceTest {
             arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                 15.januar(2023),
                 31.januar(2023),
-                "1"
+                "1",
             )
         arbeidsgiverinformasjon.size shouldBeEqualTo 1
     }
@@ -383,7 +454,7 @@ class ArbeidsgiverServiceTest {
             arbeidsgiverService.getArbeidsgivereWithinSykmeldingPeriode(
                 31.januar(2023),
                 15.februar(2023),
-                "1"
+                "1",
             )
 
         arbeidsgiverinformasjon.size shouldBeEqualTo 1

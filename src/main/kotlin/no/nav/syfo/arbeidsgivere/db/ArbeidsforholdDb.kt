@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
 import no.nav.syfo.arbeidsgivere.model.Arbeidsforhold
+import no.nav.syfo.arbeidsgivere.model.ArbeidsforholdType
 
 class ArbeidsforholdDb(private val database: DatabaseInterface) {
     suspend fun getArbeidsforhold(fnr: String): List<Arbeidsforhold> =
@@ -33,4 +34,5 @@ fun ResultSet.toArbeidsforhold(): Arbeidsforhold =
         orgNavn = getString("orgnavn"),
         fom = getDate("fom").toLocalDate(),
         tom = getDate("tom")?.toLocalDate(),
+        type = getString("type")?.let { ArbeidsforholdType.valueOf(it) }
     )
