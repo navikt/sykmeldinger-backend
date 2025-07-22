@@ -57,7 +57,7 @@ spec:
       memory: 1Gi
     requests:
       cpu: 30m
-      memory: 300Mi
+      memory: 400Mi
   kafka:
     pool: nav-dev
   tokenx:
