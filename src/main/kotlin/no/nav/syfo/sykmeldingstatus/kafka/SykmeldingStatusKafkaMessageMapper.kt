@@ -25,10 +25,10 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.SvartypeKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
 import no.nav.syfo.sykmeldingstatus.toStatusEvent
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import no.nav.syfo.utils.objectMapper
 
-private val logger = logger("SykmeldingStatusKafkaMessageMapper")
+private val logger = applog("SykmeldingStatusKafkaMessageMapper")
 
 fun SykmeldingFormResponse.tilSykmeldingStatusKafkaEventDTO(
     timestamp: OffsetDateTime,

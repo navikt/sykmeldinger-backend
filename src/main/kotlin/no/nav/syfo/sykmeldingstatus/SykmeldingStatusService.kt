@@ -25,15 +25,17 @@ import no.nav.syfo.sykmeldingstatus.kafka.producer.SykmeldingStatusKafkaProducer
 import no.nav.syfo.sykmeldingstatus.kafka.tilStatusEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.tilSykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.tidligereArbeidsgiver.TidligereArbeidsgiverService
-import no.nav.syfo.utils.logger
-import no.nav.syfo.utils.securelog
+import no.nav.syfo.utils.applog
+import no.nav.syfo.utils.teamLogger
 
 class SykmeldingStatusService(
     private val sykmeldingStatusKafkaProducer: SykmeldingStatusKafkaProducer,
     private val arbeidsgiverService: ArbeidsgiverService,
     private val sykmeldingStatusDb: SykmeldingStatusDb,
 ) {
-    private val logger = logger()
+    private val logger = applog()
+    private val teamlog = teamLogger()
+
     private val tidligereArbeidsgiverService = TidligereArbeidsgiverService()
 
     companion object {
@@ -202,7 +204,7 @@ class SykmeldingStatusService(
 
         if (nesteStatus == StatusEventDTO.SENDT) {
             createSendtStatus(fnr, sykmeldingId, sykmeldingFormResponse)
-            securelog.info(
+            teamlog.info(
                 "Opprettet sendt status for {} {} {}",
                 kv("fødselsnummer", fnr),
                 kv("sykmeldingId", sykmeldingId),
@@ -212,7 +214,7 @@ class SykmeldingStatusService(
             return
         }
         createBekreftetStatus(fnr, sykmeldingId, sykmeldingFormResponse)
-        securelog.info(
+        teamlog.info(
             "Opprettet bekreftet status for {} {} {}",
             kv("fødselsnummer", fnr),
             kv("sykmeldingId", sykmeldingId),
@@ -256,7 +258,7 @@ class SykmeldingStatusService(
                 orgNavn = arbeidsledigOrgNavn,
                 sykmeldingsId = sykmeldingId
             )
-        securelog.info(
+        teamlog.info(
             "Setter tidligere arbeidsgiver for {} {} {} {}",
             kv("fødselsnummer", fnr),
             kv("sykmeldingId", sykmeldingId),

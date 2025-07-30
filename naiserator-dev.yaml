@@ -64,6 +64,9 @@ spec:
     enabled: true
   accessPolicy:
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: ereg-services-q1.dev-fss-pub.nais.io
         - host: aareg-services-q1.dev-fss-pub.nais.io
@@ -78,8 +81,6 @@ spec:
         - application: sykepengesoknad
           namespace: flex
           cluster: dev-gcp
-  secureLogs:
-    enabled: true
   azure:
     application:
       enabled: true

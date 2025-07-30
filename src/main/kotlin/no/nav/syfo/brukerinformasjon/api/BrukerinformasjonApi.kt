@@ -12,19 +12,19 @@ import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
 import no.nav.syfo.utils.objectMapper
-import no.nav.syfo.utils.securelog
+import no.nav.syfo.utils.teamlog
 import org.koin.ktor.ext.inject
 
 fun Route.registrerBrukerinformasjonApi() {
     val arbeidsgiverService by inject<ArbeidsgiverService>()
     val sykmeldingService by inject<SykmeldingService>()
-
+    val teamlog = teamlog("BrukerinformasjonApi")
     get("/brukerinformasjon") {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
 
         val arbeidsgivere = arbeidsgiverService.getArbeidsgivere(fnr = fnr)
-        securelog.info("arbeidsgivere for $fnr, ${objectMapper.writeValueAsString(arbeidsgivere)}")
+        teamlog.info("arbeidsgivere for $fnr, ${objectMapper.writeValueAsString(arbeidsgivere)}")
         call.respond(
             Brukerinformasjon(
                 arbeidsgivere = arbeidsgivere,
@@ -46,7 +46,9 @@ fun Route.registrerBrukerinformasjonApi() {
                     sykmeldingTom,
                     fnr = fnr
                 )
-            securelog.info("arbeidsgivere for $fnr, sykmeldingId $sykmeldingId, fom: $sykmeldingFom, tom: $sykmeldingTom, ${objectMapper.writeValueAsString(arbeidsgivere)}")
+            teamlog.info(
+                "arbeidsgivere for $fnr, sykmeldingId $sykmeldingId, fom: $sykmeldingFom, tom: $sykmeldingTom, ${objectMapper.writeValueAsString(arbeidsgivere)}"
+            )
             call.respond(
                 Brukerinformasjon(
                     arbeidsgivere = arbeidsgivere,

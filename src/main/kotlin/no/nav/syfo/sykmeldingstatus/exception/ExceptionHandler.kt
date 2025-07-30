@@ -3,10 +3,10 @@ package no.nav.syfo.sykmeldingstatus.exception
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.plugins.statuspages.StatusPagesConfig
 import io.ktor.server.response.respond
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 
 fun StatusPagesConfig.setUpSykmeldingStatusExeptionHandler() {
-    val logger = logger()
+    val logger = applog()
 
     exception<InvalidSykmeldingStatusException> { call, cause ->
         call.respond(HttpStatusCode.BadRequest, cause.message ?: "Unknown error")

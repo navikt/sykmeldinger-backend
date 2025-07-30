@@ -17,11 +17,11 @@ import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
 import no.nav.syfo.utils.Environment
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.koin.dsl.module
 
 fun Application.configureTestApplication() {
-    val logger = logger()
+    val logger = applog()
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
