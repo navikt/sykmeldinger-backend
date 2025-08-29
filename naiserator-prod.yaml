@@ -57,7 +57,7 @@ spec:
       memory: 1028Mi
     requests:
       cpu: 50m
-      memory: 600Mi
+      memory: 700Mi
   kafka:
     pool: nav-prod
   tokenx:
