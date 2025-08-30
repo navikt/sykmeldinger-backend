@@ -6,10 +6,10 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.plugins.statuspages.StatusPagesConfig
 import io.ktor.server.response.respond
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 
 fun StatusPagesConfig.setUpSykmeldingExceptionHandler() {
-    val logger = logger()
+    val logger = applog()
 
     exception<ServerResponseException> { call, cause ->
         call.respond(cause.response.status, cause.response.bodyAsText())

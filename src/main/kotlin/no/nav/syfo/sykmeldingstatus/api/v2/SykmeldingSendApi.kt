@@ -8,10 +8,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.koin.ktor.ext.inject
 
-private val logger = logger("Route.registrerSykmeldingSendApiV3")
+private val logger = applog("Route.registrerSykmeldingSendApiV3")
 
 fun Route.registrerSykmeldingSendApiV3() {
     val sendtSykmeldingStatusService by inject<SykmeldingStatusService>()

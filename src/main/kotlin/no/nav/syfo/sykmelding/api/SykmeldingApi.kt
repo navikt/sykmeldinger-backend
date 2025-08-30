@@ -8,12 +8,13 @@ import io.ktor.server.routing.*
 import no.nav.syfo.plugins.BrukerPrincipal
 import no.nav.syfo.sykmelding.SykmeldingService
 import no.nav.syfo.sykmeldingstatus.SykmeldingStatusService
-import no.nav.syfo.utils.logger
-import no.nav.syfo.utils.securelog
+import no.nav.syfo.utils.applog
+import no.nav.syfo.utils.teamlog
 import org.koin.ktor.ext.inject
 
 fun Route.registerSykmeldingApiV2() {
-    val logger = logger()
+    val logger = applog("SykmeldingApiV2")
+    val teamlog = teamlog("SykmeldingApiV2")
     val sykmeldingService by inject<SykmeldingService>()
     val sykmeldingStatusService by inject<SykmeldingStatusService>()
 
@@ -21,7 +22,7 @@ fun Route.registerSykmeldingApiV2() {
         val principal: BrukerPrincipal = call.authentication.principal()!!
         val fnr = principal.fnr
         val sykmeldinger = sykmeldingService.getSykmeldinger(fnr = fnr)
-        securelog.info(
+        teamlog.info(
             "getting sykmeldinger for fnr: $fnr, sykmeldingIds ${sykmeldinger.map { it.id }}",
         )
         call.respond(sykmeldinger)
@@ -51,7 +52,7 @@ fun Route.registerSykmeldingApiV2() {
                 null ->
                     call.respond(HttpStatusCode.NotFound).also {
                         sykmeldingService.logInfo(sykmeldingId, fnr)
-                        securelog.info(
+                        teamlog.info(
                             "Fikk null fra sql, prøvde å hente ut sykmelding for " +
                                 "fnr: $fnr med sykmeldingid: $sykmeldingId",
                         )

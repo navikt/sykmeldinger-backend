@@ -8,13 +8,12 @@ import no.nav.syfo.metrics.MISSING_DATA_COUNTER
 import no.nav.syfo.sykmelding.db.SykmeldingDb
 import no.nav.syfo.sykmelding.model.RegelStatusDTO
 import no.nav.syfo.sykmelding.model.SykmeldingDTO
-import no.nav.syfo.utils.logger
-import no.nav.syfo.utils.securelog
+import no.nav.syfo.utils.teamLogger
 
 class SykmeldingService(
     private val sykmeldingDb: SykmeldingDb,
 ) {
-    private val logger = logger()
+    private val teamlog = teamLogger()
 
     suspend fun getSykmelding(fnr: String, sykmeldingid: String): SykmeldingDTO? =
         withContext(Dispatchers.IO) {
@@ -62,7 +61,7 @@ class SykmeldingService(
             }
 
             val allDataExists: Boolean = sykmeldingDb.getSykmelding(sykmeldingId, fnr) != null
-            securelog.info(
+            teamlog.info(
                 "404 and Sykmelding: $sykmeldingExists, behandligsutfall: $behandlingsutfallExsists, status: $sykmeldingStatusExists, sykmeldt: $sykmeldtExists, allData: $allDataExists, sykmeldingId: $sykmeldingId, fnr: $fnr"
             )
         }

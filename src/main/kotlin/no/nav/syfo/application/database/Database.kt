@@ -8,7 +8,7 @@ import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
 import no.nav.syfo.utils.Environment
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.flywaydb.core.Flyway
 
 class Database(
@@ -16,7 +16,7 @@ class Database(
     private val retries: Long = 30,
     private val sleepTime: Long = 1_000
 ) : DatabaseInterface {
-    private val logger = logger()
+    private val logger = applog()
 
     private lateinit var dataSource: HikariDataSource
     override val connection: Connection

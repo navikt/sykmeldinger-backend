@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import no.nav.syfo.sykmeldingstatus.kafka.model.KafkaMetadataDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaMessageDTO
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
@@ -16,7 +16,7 @@ class SykmeldingStatusKafkaProducer(
     private val topicName: String,
 ) {
     companion object {
-        private val logger = logger()
+        private val logger = applog()
         private const val SOURCE = "sykmeldinger-backend"
     }
 

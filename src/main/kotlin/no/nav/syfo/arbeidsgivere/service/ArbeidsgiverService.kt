@@ -9,9 +9,9 @@ import no.nav.syfo.arbeidsgivere.model.Arbeidsgiverinfo
 import no.nav.syfo.arbeidsgivere.model.NarmesteLeder
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.arbeidsgivere.narmesteleder.db.NarmestelederDbModel
+import no.nav.syfo.utils.applog
 import no.nav.syfo.utils.objectMapper
-import no.nav.syfo.utils.securelog
-import org.slf4j.LoggerFactory
+import no.nav.syfo.utils.teamLogger
 
 class ArbeidsgiverService(
     private val narmestelederDb: NarmestelederDb,
@@ -19,7 +19,8 @@ class ArbeidsgiverService(
     private val arbeidsfhorholdService: ArbeidsforholdService,
 ) {
     companion object {
-        private val log = LoggerFactory.getLogger(ArbeidsgiverService::class.java)
+        private val log = applog()
+        private val teamlog = teamLogger()
     }
 
     suspend fun tryGetArbeidsforholdFromApi(fnr: String): List<Arbeidsforhold>? {
@@ -28,7 +29,7 @@ class ArbeidsgiverService(
             return arbeidsforholdFromApi
         } catch (ex: Exception) {
             log.error("could not get arbeidsforhold from api", ex)
-            securelog.error("Could not get arbeidsforhold from api for $fnr", ex)
+            teamlog.error("Could not get arbeidsforhold from api for $fnr", ex)
             return null
         }
     }
@@ -39,7 +40,7 @@ class ArbeidsgiverService(
         fnr: String,
         date: LocalDate = LocalDate.now()
     ): List<Arbeidsgiverinfo> {
-        securelog.info(
+        teamlog.info(
             "getting arbeidsforhold for $fnr, sykmeldingFom: $sykmeldingFom, sykmeldingTom: $sykmeldingTom"
         )
 
@@ -55,7 +56,7 @@ class ArbeidsgiverService(
             arbeidsgivereWithinSykmeldingsperiode.map { arbeidsforhold ->
                 arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date)
             }
-        securelog.info(
+        teamlog.info(
             "Arbeidsforhold for $fnr, ${arbeidsgivereWithinSykmeldingsperiode.joinToString { "id: ${it.id}: orgnummer:${it.orgnummer}: fom: ${it.fom}, tom:${it.tom}" }}"
         )
         return arbeidsforhold
@@ -73,7 +74,7 @@ class ArbeidsgiverService(
                         !hasTheSameArbeidsforhold(arbeidsgivereFromDb, arbeidsforholdFromApi)
                 ) {
                     log.warn("Arbeidsforhold is not equal from db and API, updating")
-                    securelog.warn(
+                    teamlog.warn(
                         "arbeidsforhold not equal from db and API for $fnr, arbeidsforholdDb: ${objectMapper.writeValueAsString(arbeidsgivereFromDb)}, arbeidsforholdApi: ${objectMapper.writeValueAsString(arbeidsforholdFromApi)}",
                     )
                     arbeidsfhorholdService.updateArbeidsforhold(
@@ -83,11 +84,11 @@ class ArbeidsgiverService(
                     arbeidsforholdFromApi
                 } else {
                     if (arbeidsforholdFromApi == null) {
-                        securelog.error("Arbeidsforhold for api is null for $fnr")
+                        teamlog.error("Arbeidsforhold for api is null for $fnr")
                     } else if (
                         hasTheSameArbeidsforhold(arbeidsgivereFromDb, arbeidsforholdFromApi)
                     ) {
-                        securelog.info("arbeidsforhold equal form db and api for $fnr")
+                        teamlog.info("arbeidsforhold equal form db and api for $fnr")
                     }
                     arbeidsgivereFromDb
                 }
@@ -122,14 +123,19 @@ class ArbeidsgiverService(
 
         val aktiveNarmesteledere = narmestelederDb.getNarmesteleder(fnr)
 
-        val arbeidsforhold = arbeidsgivere
-            .sortedWith(
-                compareByDescending(nullsLast()) { it.tom },
-            )
-            .distinctBy { it.orgnummer }
-            .map { arbeidsforhold -> arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date) }
+        val arbeidsforhold =
+            arbeidsgivere
+                .sortedWith(
+                    compareByDescending(nullsLast()) { it.tom },
+                )
+                .distinctBy { it.orgnummer }
+                .map { arbeidsforhold ->
+                    arbeidsgiverinfo(aktiveNarmesteledere, arbeidsforhold, date)
+                }
 
-        securelog.info("getting arbeidsforhold for $fnr, ${objectMapper.writeValueAsString(arbeidsforhold)}")
+        teamlog.info(
+            "getting arbeidsforhold for $fnr, ${objectMapper.writeValueAsString(arbeidsforhold)}"
+        )
 
         return arbeidsforhold
     }

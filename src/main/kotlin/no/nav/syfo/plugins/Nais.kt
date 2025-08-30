@@ -13,11 +13,11 @@ import java.util.concurrent.ExecutionException
 import no.nav.syfo.sykmelding.exception.setUpSykmeldingExceptionHandler
 import no.nav.syfo.sykmeldingstatus.api.v2.setUpSykmeldingSendApiV2ExeptionHandler
 import no.nav.syfo.sykmeldingstatus.exception.setUpSykmeldingStatusExeptionHandler
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.koin.ktor.ext.inject
 
 fun Application.configureNaisResources() {
-    val logger = logger()
+    val logger = applog()
     val applicationState by inject<ApplicationState>()
 
     install(CallId) {

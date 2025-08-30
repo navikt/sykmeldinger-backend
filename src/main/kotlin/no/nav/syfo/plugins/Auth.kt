@@ -13,10 +13,10 @@ import java.util.concurrent.TimeUnit
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.getWellKnownTokenX
 import no.nav.syfo.utils.Environment
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.koin.ktor.ext.inject
 
-private val logger = logger("Application.configureAuth")
+private val logger = applog("Application.configureAuth")
 
 fun Application.configureAuth() {
     val config by inject<AuthConfiguration>()

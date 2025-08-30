@@ -26,7 +26,9 @@ spec:
   replicas:
     min: 1
     max: 1
-    cpuThresholdPercentage: 90
+    scalingStrategy:
+      cpu:
+        thresholdPercentage: 90
   port: 8080
   liveness:
     path: /internal/is_alive
@@ -54,14 +56,17 @@ spec:
     limits:
       memory: 1Gi
     requests:
-      cpu: 50m
-      memory: 768Mi
+      cpu: 30m
+      memory: 400Mi
   kafka:
     pool: nav-dev
   tokenx:
     enabled: true
   accessPolicy:
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: ereg-services-q1.dev-fss-pub.nais.io
         - host: aareg-services-q1.dev-fss-pub.nais.io
@@ -76,8 +81,6 @@ spec:
         - application: sykepengesoknad
           namespace: flex
           cluster: dev-gcp
-  secureLogs:
-    enabled: true
   azure:
     application:
       enabled: true

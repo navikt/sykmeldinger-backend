@@ -25,7 +25,7 @@ import no.nav.syfo.sykmeldingstatus.kafka.model.ArbeidsgiverStatusKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SporsmalOgSvarKafkaDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.SykmeldingStatusKafkaEventDTO
 import no.nav.syfo.sykmeldingstatus.kafka.model.TidligereArbeidsgiverKafkaDTO
-import no.nav.syfo.utils.logger
+import no.nav.syfo.utils.applog
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 
@@ -44,7 +44,7 @@ private fun toPGObject(jsonObject: Any) =
     }
 
 class SykmeldingStatusDb(private val databaseInterface: DatabaseInterface) {
-    private val logger = logger()
+    private val logger = applog()
 
     suspend fun insertStatus(
         event: SykmeldingStatusKafkaEventDTO,
