@@ -78,7 +78,7 @@ fun hasClientIdAudience(credentials: JWTCredential, clientId: String): Boolean {
     return credentials.payload.audience.contains(clientId)
 }
 
-fun unauthorized(credentials: JWTCredential): Principal? {
+fun unauthorized(credentials: JWTCredential): Unit? {
     logger.warn(
         "Auth: Unexpected audience for jwt {}, {}",
         StructuredArguments.keyValue("issuer", credentials.payload.issuer),
@@ -108,4 +108,4 @@ data class BrukerPrincipal(
     val fnr: String,
     val principal: JWTPrincipal,
     val token: String,
-) : Principal
+)
