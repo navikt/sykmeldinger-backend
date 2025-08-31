@@ -159,9 +159,8 @@ tasks {
     }
 
 
-    test {
-        useJUnitPlatform {
-        }
+      test {
+        useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
             showStackTraces = true
