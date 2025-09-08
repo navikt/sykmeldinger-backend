@@ -111,6 +111,8 @@ dependencies {
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 
