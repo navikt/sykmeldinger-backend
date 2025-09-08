@@ -4,7 +4,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.9.0"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.2.2"
 val logbackVersion = "1.5.8"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
@@ -17,8 +17,8 @@ val testcontainersVersion = "1.20.2"
 val swaggerUiVersion = "5.17.14"
 val kotlinVersion = "2.0.20"
 val flywayVersion = "10.18.2"
-val postgresVersion = "42.7.7"
-val koinVersion = "4.0.0"
+val postgresVersion = "42.7.4"
+val koinVersion = "4.1.0"
 val hikariVersion = "6.0.0"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
@@ -111,6 +111,8 @@ dependencies {
 
     swaggerUI("org.webjars:swagger-ui:$swaggerUiVersion")
 
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
 
@@ -159,9 +161,8 @@ tasks {
     }
 
 
-    test {
-        useJUnitPlatform {
-        }
+      test {
+        useJUnitPlatform {}
         testLogging {
             events("skipped", "failed")
             showStackTraces = true
