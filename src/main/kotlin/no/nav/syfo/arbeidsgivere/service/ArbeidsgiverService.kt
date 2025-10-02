@@ -28,8 +28,8 @@ class ArbeidsgiverService(
             val arbeidsforholdFromApi = arbeidsfhorholdService.getArbeidsforhold(fnr)
             return arbeidsforholdFromApi
         } catch (ex: Exception) {
-            log.error("could not get arbeidsforhold from api", ex)
-            teamlog.error("Could not get arbeidsforhold from api for $fnr", ex)
+            log.warn("could not get arbeidsforhold from api", ex)
+            teamlog.warn("Could not get arbeidsforhold from api for $fnr", ex)
             return null
         }
     }
@@ -84,7 +84,7 @@ class ArbeidsgiverService(
                     arbeidsforholdFromApi
                 } else {
                     if (arbeidsforholdFromApi == null) {
-                        teamlog.error("Arbeidsforhold for api is null for $fnr")
+                        teamlog.warn("Arbeidsforhold for api is null for $fnr")
                     } else if (
                         hasTheSameArbeidsforhold(arbeidsgivereFromDb, arbeidsforholdFromApi)
                     ) {
