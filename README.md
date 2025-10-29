@@ -1,6 +1,13 @@
 # sykmeldinger-backend
 [![Deploy to dev and prod](https://github.com/navikt/sykmeldinger-backend/actions/workflows/deploy.yml/badge.svg)](https://github.com/navikt/sykmeldinger-backend/actions/workflows/deploy.yml)
 
+> [!WARNING]
+> 
+> **Deprecated!**
+> 
+> Denne appen er nå slått sammen med [Ditt Sykefravær](https://github.com/navikt/ditt-sykefravaer)
+
+
 Backend-app for sykmeldinger-frontend
 
 ## Technologies used
